@@ -836,8 +836,8 @@ Notation "x ; y" :=
 Notation "{ x }" := x (in custom acom, x at level 50) : acom_scope.
 Notation "'if' x 'then' y 'else' z" :=
          (DCIf x y z)
-           (in custom acom at level 89, x custom com at level 99,
-            y at level 99, z at level 99) : acom_scope.
+           (in custom acom at level 88, x custom com at level 89,
+            y at level 89, z at level 89) : acom_scope.
 Notation "'while' x '{{' inv '}}' 'do' y" :=
          (DCWhile x inv y)
            (in custom acom at level 88, x custom com at level 89,
