@@ -1,4 +1,4 @@
-COQDOCJS_DIR ?= coqdocjs
+COQDOCJS_DIR ?= ../coqdocjs
 EXTRA_DIR = $(COQDOCJS_DIR)/extra
 COQDOCFLAGS ?= \
   --toc --toc-depth 4 --html --interpolate \
@@ -7,13 +7,17 @@ COQDOCFLAGS ?= \
 export COQDOCFLAGS
 COQMAKEFILE ?= Makefile.coq
 COQDOCJS_LN ?= false
+.DEFAULT_GOAL := invoke-coqmakefile
 
 clean: Makefile.coq
-	@+$(MAKE) -f Makefile.coq cleanall
-	@rm -f Makefile.coq Makefile.coq.conf
+	@+$(MAKE) -f $(COQMAKEFILE) cleanall
+	@rm -f $(COQMAKEFILE) $(COQMAKEFILE).conf
 
 Makefile.coq: _CoqProject
-	$(COQBIN)coq_makefile -f _CoqProject -o Makefile.coq
+	$(COQBIN)coq_makefile -f _CoqProject -o $(COQMAKEFILE)
+
+invoke-coqmakefile: $(COQMAKEFILE)
+	$(MAKE) -f $^
 
 coqdoc: $(COQMAKEFILE)
 	$(MAKE) -f $^ html
@@ -24,4 +28,4 @@ else
 	cp -R $(EXTRA_DIR)/resources html
 endif
 
-.PHONY: coqdoc
+.PHONY: invoke-coqmakefile

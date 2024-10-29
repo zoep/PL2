@@ -51,3 +51,4 @@ Makefile.coq.conf
 
 .DS_Store
 lectures/html/*
+*~

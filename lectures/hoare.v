@@ -1,6 +1,6 @@
 Require Import Coq.Strings.String Coq.Init.Nat Lia.
 
-Require Import lecture2.imp.
+Require Import imp.
 
 (** * Introduction to Axiomatic Semantics *)
 
@@ -182,7 +182,7 @@ Notation "P [ X |-> a ]" := (assertion_sub P X a)
 *)
 
 
-(** *** Conditionals *)
+(** **** Conditionals *)
 
 (** The proof rule for conditional expressions says that given a
     precondition [P] on the initial state, the postcondition [Q] holds
@@ -203,13 +203,13 @@ Notation "P [ X |-> a ]" := (assertion_sub P X a)
                       {{ P AND (FALSE b) }} c2 {{ Q }}
         ------------------------------------------------------------- (H_Seq)
                      {{ P }} if b the c1 else c2 {{ Q }}
- >>
+>>
 
 Note that, according to our definitions above [P AND (TRUE b)]
 is just notation for the assertion [fun st => P st /\ binterp st b = true]. *)
 
 
-(** *** Loops *)
+(** **** Loops *)
 
 (** The last command we have to examine is while loops. Loops
     repeatedly execute the command in their body. Therefore the
@@ -255,9 +255,9 @@ is just notation for the assertion [fun st => P st /\ binterp st b = true]. *)
 *)
 
 
-(** *** Consequence Rules *)
+(** **** Consequence Rules *)
 
-(** **** Precondition Strengthening *)
+(** ***** Precondition Strengthening *)
 
 (** The rules we've written cover all Imp commands. However, they are
     too restrictive to allow us to prove all specifications. Consider
@@ -305,7 +305,7 @@ Notation "P ->> Q" := (assert_implies P Q)
 
 
 
-(** **** Postcondition Weakening *)
+(** ***** Postcondition Weakening *)
 
 (** Conversely, we can reason that if we can prove a a triple [{{ P }}
     c {{ Q }}] then we can prove a triple [{{ P }} c {{ Q' }}], where
@@ -622,7 +622,7 @@ Proof.
   - eapply H_PreStrenghtening; [ apply H_Asgn | hoare_auto ].
 Qed.
 
-(** ** Soundness and Completeness *)
+(** ** Hoare Logic: Soundness and Completeness *)
 
 (** For the program logic we defined to be meaningful, it needs to be
     sound with respect to the operational semantics of the language We
@@ -777,7 +777,7 @@ Qed.
     not [c] terminates. *)
 
 
-(** ** Weakest Preconditions and Verification Conditions *)
+(** *** Weakest Preconditions and Verification Conditions *)
 
 (** Even though Hoare logic is not decidable, Hoare-style reasoning
     about programs can be automated to a large extent.
