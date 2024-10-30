@@ -64,7 +64,7 @@ Example assertion1 : assertion := fun st => st RES = 42.
 Example assertion2 : assertion := fun st => binterp st <{ 0 < RES + Z }> = true.
 
 (** Because we will very often make claims about the value of boolean
-    expressions in certain states, we will define a shorthands for it *)
+    expressions in certain states, we will define shorthands for them *)
 
 Definition TRUE (b : bexp) : assertion := fun st => binterp st b = true.
 Definition FALSE (b : bexp) : assertion := fun st => binterp st b = false.
@@ -140,7 +140,7 @@ Definition assertion_sub (P : assertion) (X : string) (a : aexp) : assertion :=
 Notation "P [ X |-> a ]" := (assertion_sub P X a)
   (at level 10, X at next level, a custom com) : hoare_spec_scope.
 
-(** Let's see how it this functions works in practice when applied to
+(** Let's see how it this function works in practice when applied to
     the assertion [fun st => st X * st Y = 42]:
 
     [(fun st => st RES = 42) [ RES |-> X * Y ]] =
@@ -163,13 +163,13 @@ Notation "P [ X |-> a ]" := (assertion_sub P X a)
 
 (** **** Sequencing *)
 
-(** The proof rule for sequencing says that a given a precondition [P],
+(** The proof rule for sequencing says that given a precondition [P],
     a postcondition [Q] holds on the sequencing of two commands if
     there is an assertion [R] such that:
 
     - command [c1] when run on a state that satisfies [P] it
       produces a state that satisfies [R]
-    - command [c1] when run on a state that satisfies [R] it
+    - command [c2] when run on a state that satisfies [R] it
       produces a state that satisfies [Q]
 
     Put formally:
@@ -221,13 +221,13 @@ is just notation for the assertion [fun st => P st /\ binterp st b = true]. *)
 
     The proof rule of [while b then c] says that if [P] is an
     invariant of the body of the loop [c], then it is also an
-    invariant of the while loop. In a way, it is like applying the
-    repeatedly the rule for sequencing for the command [c; c;...; c].
+    invariant of the while loop. In a way, it is like repeatedly applying
+    the rule of sequencing for the command [c; c;...; c].
 
 <<
 
            {{ P }} c {{ P }}
-----------------------------------------(H_Seq_first_try)
+----------------------------------------(H_While_first_try)
     {{ P }} while b then c {{ P }} >>
 >>
 
@@ -236,7 +236,7 @@ is just notation for the assertion [fun st => P st /\ binterp st b = true]. *)
     information about the value of the loop condition at the beginning
     of each iteration and at the end of the loop.
 
-    We can strengthen the precondition of the body to asserts that the
+    We can strengthen the precondition of the body to assert that the
     condition of the while is [true]. This makes sense, since the body
     will only be executed if the condition evaluates to true. This
     precondition gives us more information about the state where [c]
@@ -249,7 +249,7 @@ is just notation for the assertion [fun st => P st /\ binterp st b = true]. *)
 
 <<
                   {{ P AND (TRUE b) }} c {{ P }}
----------------------------------------------------------------------------(H_Seq)
+---------------------------------------------------------------------------(H_While)
             {{ P }} while b then c {{ P AND (FALSE b) }}
 >>
 *)
@@ -269,14 +269,14 @@ is just notation for the assertion [fun st => P st /\ binterp st b = true]. *)
      While we would expect such specification to be provable, we cannot directly
      prove it.
 
-     Keeping the postcondition the same, this specification that we can derive
+     Keeping the postcondition the same, this is a specification that we can derive
      using our rules.
 <<
     {{ fun st => 42 < st Y + 1 }} X := Y + 1 {{ fun st => 42 < st X }}
 >>
 
     This precondition is _weaker_ that the previous one, meaning that
-    if a states satisfies [{{ fun st => st Y = 42 }}] then it must also
+    if a state satisfies [{{ fun st => st Y = 42 }}] then it must also
     satisfy [{{ fun st => 42 < st Y + 1 }}]. *)
 
 
@@ -298,7 +298,7 @@ Notation "P ->> Q" := (assert_implies P Q)
 <<
           {{ P' }} c {{ Q }}
                 P ->> P'
-----------------------------------------(H_PreStrenghtening)
+----------------------------------------(H_PreStrengthening)
            {{ P }} c {{ Q }}
 >>
 *)
@@ -310,12 +310,12 @@ Notation "P ->> Q" := (assert_implies P Q)
 (** Conversely, we can reason that if we can prove a a triple [{{ P }}
     c {{ Q }}] then we can prove a triple [{{ P }} c {{ Q' }}], where
     [Q'] is any postcondition that follows from [Q]. This rule is called
-    strengthening of the postcondition.
+    weakening of the postcondition.
 
 
 <<
-          {{ P' }} c {{ Q }}
-                P ->> P'
+          {{ P }} c {{ Q' }}
+                Q' ->> Q
 ----------------------------------------(H_PostWeakening)
            {{ P }} c {{ Q }}
 >>
@@ -361,7 +361,7 @@ Inductive triple : assertion -> com -> assertion -> Type :=
       {{ P }} c {{ Q' }} ->
       (Q' ->> Q) -> (* weakening of the postcondintion *)
       {{ P }} c {{ Q }}
-  | H_PreStrenghtening :
+  | H_PreStrengthening :
     forall (P Q P' : assertion) (c : com),
       {{ P' }} c {{ Q }} ->
       (P ->> P') -> (* strengthening of the precondintion *)
@@ -384,7 +384,7 @@ Proof.
   - Fail eapply H_Asgn.
     (* We cannot apply this rule directly. We have to strengthen
        the precondition first *)
-    eapply H_PreStrenghtening.
+    eapply H_PreStrengthening.
     + apply H_Asgn.
 
     + unfold assert_implies, assertion_sub, update_st. simpl.
@@ -399,7 +399,7 @@ Example if_minus_plus :
   {{fun st => st Y = st X + st Z }}.
 Proof.
   apply H_If.
-  - eapply H_PreStrenghtening.
+  - eapply H_PreStrengthening.
     + apply H_Asgn.
 
     + unfold assert_and, TRUE, assert_implies, assertion_sub, update_st. simpl.
@@ -407,7 +407,7 @@ Proof.
       intros st [_ Heqb]. apply Compare_dec.leb_complete in Heqb.
       lia.
 
-  - eapply H_PreStrenghtening.
+  - eapply H_PreStrengthening.
     + apply H_Asgn.
 
     + unfold assert_and, TRUE, assert_implies, assertion_sub, update_st. simpl.
@@ -427,7 +427,7 @@ Proof.
   - eapply H_Seq.
     + apply H_Asgn.
     + apply H_Asgn.
-  - eapply H_PreStrenghtening.
+  - eapply H_PreStrengthening.
     + apply H_Asgn.
     + unfold assert_and, TRUE, assert_implies, assertion_sub, update_st. simpl.
       intros st [Heq1 Heq2]. lia.
@@ -544,7 +544,7 @@ Qed.
 
 (** Let's now prove the correctness of a program that uses loops.
     In particular, we will show that an iterative computation of Fibonacci
-    number computes the n-th Fibonacci number correctly according a
+    numbers computes the n-th Fibonacci number correctly according to a
     functional specification of Fibonacci numbers. *)
 
 (** We first define a recursive function that naively computes the nth
@@ -603,32 +603,32 @@ Proof.
                  it implies the final postcondition.
              Here the invariant we pick is that [PREV] will contain
              the value [fib X] and that [CURR] will contain the value
-             [fib (X + 1)]. When the loop end [X] will be equal to [n]
+             [fib (X + 1)]. When the loop ends [X] will be equal to [n]
              and [PREV] will hold the desired result. *)
           pose (INV := fun st => st CURR = fib (st X + 1) /\ st PREV = fib (st X)).
 
-          apply H_PreStrenghtening with (P' := INV); [ | now unfold INV; hoare_auto ].
+          apply H_PreStrengthening with (P' := INV); [ | now unfold INV; hoare_auto ].
           eapply H_PostWeakening with (Q' := INV AND (FALSE <{ X <> n }>));
             [ | now unfold INV; hoare_auto ].
           (* While loop *)
           eapply H_While.
           eapply H_Seq; [ eapply H_Seq; [ eapply H_Seq | ] |]; try apply H_Asgn.
-          eapply H_PreStrenghtening; [ apply H_Asgn |  ].
+          eapply H_PreStrengthening; [ apply H_Asgn |  ].
           unfold INV. simpl. unfold_all. simpl.
           intros st [[H1 H2] H3]. rewrite H1, H2.
           repeat rewrite PeanoNat.Nat.add_1_r. simpl. lia.
-      * eapply H_PreStrenghtening; [ apply H_Asgn | hoare_auto ].
-    + eapply H_PreStrenghtening; [ apply H_Asgn | hoare_auto ].
-  - eapply H_PreStrenghtening; [ apply H_Asgn | hoare_auto ].
+      * eapply H_PreStrengthening; [ apply H_Asgn | hoare_auto ].
+    + eapply H_PreStrengthening; [ apply H_Asgn | hoare_auto ].
+  - eapply H_PreStrengthening; [ apply H_Asgn | hoare_auto ].
 Qed.
 
 (** ** Hoare Logic: Soundness and Completeness *)
 
 (** For the program logic we defined to be meaningful, it needs to be
-    sound with respect to the operational semantics of the language We
-    say that a triple [{{ P }} c {{ Q }}] is _valid_ if that any
+    sound with respect to the operational semantics of the language. We
+    say that a triple [{{ P }} c {{ Q }}] is _valid_ if any
     terminating execution of the program [c] that starts from a state
-    that satisfies [P], ends in a states that satisfies [Q].
+    that satisfies [P], ends in a state that satisfies [Q].
     We write a predicate on a triple [P], [c], [Q] that expresses this
     formally. *)
 
@@ -671,7 +671,7 @@ Proof.
   - hoare_auto.
 Qed.
 
-(** An other useful property is completeness: if we can show that a
+(** Another useful property is completeness: if we can show that a
     triple [P], [c], [Q] is valid with respect to the operational
     semantics of [c], then we can build a derivation [{{ P }} c {{ Q
     }}].
@@ -701,31 +701,31 @@ Lemma hoare_wp:
 Proof.
   intros c; induction c; intros Q.
   - (* CSkip *)
-    eapply H_PreStrenghtening. now constructor.
+    eapply H_PreStrengthening. now constructor.
     intros c Hwp. apply Hwp. constructor.
   - (* CAsgn *)
-    eapply H_PreStrenghtening. now constructor.
+    eapply H_PreStrengthening. now constructor.
     intros c Hwp. apply Hwp. constructor; eauto.
   - (* CSeq *)
     eapply H_Seq with (Q := wp c2 Q); eauto.
-    apply H_PreStrenghtening with (P' := wp c1 (wp c2 Q)).
+    apply H_PreStrengthening with (P' := wp c1 (wp c2 Q)).
     apply H_PostWeakening with (Q' := wp c2 Q); eauto.
     hoare_auto.
     intros ? H ? ? ? ?. eapply H.
     econstructor; eauto.
   - (* CIf *)
     apply H_If.
-    + apply H_PreStrenghtening with (P' := wp c1 Q). now auto.
+    + apply H_PreStrengthening with (P' := wp c1 Q). now auto.
       intros ? [H ?] ? ?; eapply H; eauto.
       constructor; eauto.
-    + apply H_PreStrenghtening with (P' := wp c2 Q). now auto.
+    + apply H_PreStrengthening with (P' := wp c2 Q). now auto.
       intros ? [H ?] ? ?; eapply H; eauto.
       apply E_IfFalse; eauto.
   - (* CWhile *)
     apply H_PostWeakening with (Q' := wp (CWhile b c) Q AND FALSE b); eauto.
     (* We use [wp (CWhile b c) Q] as the loop invariant *)
     + apply H_While.
-      apply H_PreStrenghtening with (P' := wp c (wp (CWhile b c) Q)).
+      apply H_PreStrengthening with (P' := wp c (wp (CWhile b c) Q)).
       eapply H_PostWeakening; eauto.
       hoare_auto.
       intros ? [H ?] ? ? ? ?. eapply H.
@@ -753,7 +753,7 @@ Theorem hoare_complete (c : com) (P Q : assertion) :
   {{ P }} c {{ Q }}.
 Proof.
   intros H.
-  apply H_PreStrenghtening with (P' := wp c Q).
+  apply H_PreStrengthening with (P' := wp c Q).
   apply hoare_wp.
   apply wp_is_wp. assumption.
 Qed.
@@ -856,8 +856,8 @@ Open Scope acom_scope.
     of Hoare logic.
 
     For a while loop [DCWhile b INV c], the weakest precondition is
-    the invariant itself.  However, for it to a precondition that is
-    indeed an invariant and also it implies the desired postcondition,
+    the invariant itself.  However, for it to be a precondition that is
+    indeed an invariant and also to imply the desired postcondition,
     it must additionally satisfy that
 
     1. [TRUE b AND INV ->> wlp INV c]
@@ -927,24 +927,24 @@ Proof.
     hoare_auto.
   - (* CIf *)
     eapply H_If.
-    + eapply H_PreStrenghtening.
+    + eapply H_PreStrengthening.
       eapply IHac1.
       hoare_auto.
       hoare_auto.
-    + eapply H_PreStrenghtening.
+    + eapply H_PreStrengthening.
       eapply IHac2.
       hoare_auto.
       hoare_auto.
   - (* CWhile *)
     eapply H_PostWeakening. apply (H_While INV).
-    eapply H_PreStrenghtening. eapply IHac. now auto.
+    eapply H_PreStrengthening. eapply IHac. now auto.
     now auto. now auto.
 Qed.
 
 
 (** As a corollary, we can prove that in order to prove any triple [{{
     P }} ac {{ Q }}] for an annotated program, it suffices to prove
-    that the precondition [P] imply the weakest precondition and that
+    that the precondition [P] implies the weakest precondition and that
     the verification conditions hold. *)
 
 Corollary verify_triple :
@@ -953,7 +953,7 @@ Corollary verify_triple :
     {{ P }} erase ac {{ Q }}.
 Proof.
   intros ac P Q H1 H2.
-  eapply H_PreStrenghtening.
+  eapply H_PreStrengthening.
   now apply wlp_sound; auto.
   assumption.
 Qed.
@@ -961,7 +961,7 @@ Qed.
 
 (** *** Fibonacci, Again *)
 
-(** That gives as a verification strategy for any triple we want to
+(** That gives us a verification strategy for any triple we want to
     prove.  Let's apply it to the verification of the Fibonacci
     program we wrote earlier. *)
 
