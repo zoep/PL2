@@ -69,6 +69,10 @@ Example assertion2 : assertion := fun st => binterp st <{ 0 < RES + Z }> = true.
 Definition TRUE (b : bexp) : assertion := fun st => binterp st b = true.
 Definition FALSE (b : bexp) : assertion := fun st => binterp st b = false.
 
+(** Using these, we can express [assertion2] more concisely. *)
+
+Example assertion2' : assertion := TRUE <{ 0 < RES + Z }> .
+
 (** It is also convenient to define the conjunction and the
     disjunction of two assertions *)
 
@@ -144,6 +148,9 @@ Notation "P [ X |-> a ]" := (assertion_sub P X a)
     the assertion [fun st => st X * st Y = 42]:
 
     [(fun st => st RES = 42) [ RES |-> X * Y ]] =
+
+
+
     [fun st => (fun st => st RES = 42) [ RES !-> ainterp st (X * Y); st]] =
     [fun st => ([ RES !-> ainterp st (X * Y)]; st) RES = 42] =
     [fun st => ainterp st (X * Y) = 42]
@@ -314,8 +321,8 @@ Notation "P ->> Q" := (assert_implies P Q)
 
 
 <<
-          {{ P' }} c {{ Q }}
-                P ->> P'
+          {{ P }} c {{ Q' }}
+                Q' ->> Q 
 ----------------------------------------(H_PostWeakening)
            {{ P }} c {{ Q }}
 >>
@@ -331,7 +338,7 @@ Notation "P ->> Q" := (assert_implies P Q)
 Reserved Notation "{{ P }} c {{ Q }}"
   (at level 90, c custom com at level 99).
 
-Inductive triple : assertion -> com -> assertion -> Type :=
+Inductive triple : assertion -> com -> assertion -> Prop :=
   | H_Skip :
     forall (P : assertion),
       {{ P }} <{ skip }> {{ P }}
@@ -380,14 +387,16 @@ Example hoare_asgn_example :
   {{ fun st => st X = 11 /\ st Y = 42 }}.
 Proof.
   eapply H_Seq.
-  - eapply H_Asgn.
+  - apply H_Asgn. 
   - Fail eapply H_Asgn.
     (* We cannot apply this rule directly. We have to strengthen
        the precondition first *)
     eapply H_PreStrenghtening.
     + apply H_Asgn.
-
-    + unfold assert_implies, assertion_sub, update_st. simpl.
+    + intros st _. 
+      unfold assertion_sub. 
+      simpl. 
+      unfold update_st. simpl.
       auto.
 Qed.
 
@@ -403,14 +412,14 @@ Proof.
     + apply H_Asgn.
 
     + unfold assert_and, TRUE, assert_implies, assertion_sub, update_st. simpl.
-
+      
       intros st [_ Heqb]. apply Compare_dec.leb_complete in Heqb.
       lia.
 
   - eapply H_PreStrenghtening.
     + apply H_Asgn.
 
-    + unfold assert_and, TRUE, assert_implies, assertion_sub, update_st. simpl.
+    + unfold assert_and, FALSE, TRUE, assert_implies, assertion_sub, update_st. simpl.
 
       intros st [_ Heqb]. apply Compare_dec.leb_complete_conv in Heqb.
       lia.
@@ -429,8 +438,11 @@ Proof.
     + apply H_Asgn.
   - eapply H_PreStrenghtening.
     + apply H_Asgn.
-    + unfold assert_and, TRUE, assert_implies, assertion_sub, update_st. simpl.
-      intros st [Heq1 Heq2]. lia.
+    + intros st [H1 H2].
+      unfold assertion_sub. 
+      simpl. 
+      unfold update_st. simpl.
+      subst. split; lia. 
 Qed.
 
 (** *** Automation *)
@@ -448,10 +460,18 @@ Qed.
 
 Create HintDb hoareDB.
 
-(** We add all the constructors of [triple] to the database, so [auto]
-    can apply them automatically. *)
+
+(** We can add lemmas in the database, and [auto] will use them during the proof search.
+    This is done with the [Hint Resolve] command. *)
+
+Hint Resolve H_Skip : hoareDB. 
+
+(** To add all the constructors of [triple] we can use [Hint
+    Constructors]. It has the same effect as doing [Hint Resolve] for
+    each one of them *)
 
 Hint Constructors triple : hoareDB.
+
 
 (** Let's define a tactic to perform all the unfold that we usually do
     in a Hoare triple proof. *)
@@ -459,6 +479,7 @@ Hint Constructors triple : hoareDB.
 Ltac unfold_all :=
   unfold assert_implies, assertion_sub,
     binterp, update_st, TRUE, FALSE, assert_and in *.
+
 
 (** And a tactic to simplify the environment during a proof. *)
 Ltac simplify_env :=
@@ -536,9 +557,14 @@ Lemma if_minus_plus_auto :
        else Y := X + Z }>
   {{ fun st => st Y = st X + st Z }}.
 Proof.
-  time (now eauto 10 with hoareDB).
+  (* time (now eauto 10 with hoareDB). *)
   (* Tactic call ran for 36.803 secs (36.14u,0.637s) (success) *)
+  apply H_If.  
+  - time (now eauto 10 with hoareDB).
+  - time (now eauto 10 with hoareDB).  
 Qed.
+
+Print if_minus_plus_auto.
 
 (** *** Case study: Proof of Fibonacci *)
 
@@ -568,7 +594,7 @@ Definition PREV := "prev".
 Definition FIB_FAST (n : nat) : com :=
   <{ PREV := 0;
      CURR := 1;
-     X := 0;
+     X := 0;     
      while (X <> n) do
      { Y := CURR + PREV;
        PREV := CURR;
@@ -590,36 +616,45 @@ Lemma fib_fast_correct :
     {{ fun _ => True }} FIB_FAST n {{ fun st => st RES = fib n }}.
 Proof.
   intros n. unfold FIB_FAST.
-  apply H_Seq with (Q := fun st => st PREV = 0).
-  - apply H_Seq with (Q := fun st => st PREV = 0 /\ st CURR = 1).
-    + apply H_Seq with (Q := fun st => st PREV = 0 /\ st CURR = 1 /\ st X = 0).
-      * eapply H_Seq.
-        -- (* final assignment *)
-           apply H_Asgn.
-        -- (* Loop invariant. Find an assertion that
-              1. If it holds before the execution of the loop body,
-                 it holds after the execution of the  loop body
-              2. Together with the negation of the while condition,
-                 it implies the final postcondition.
-             Here the invariant we pick is that [PREV] will contain
-             the value [fib X] and that [CURR] will contain the value
-             [fib (X + 1)]. When the loop end [X] will be equal to [n]
-             and [PREV] will hold the desired result. *)
-          pose (INV := fun st => st CURR = fib (st X + 1) /\ st PREV = fib (st X)).
+  repeat eapply H_Seq.
+  - apply H_Asgn.
+  - (* Loop invariant. Find an assertion that
+        1. If it holds before the execution of the loop body,
+           it holds after the execution of the  loop body
+        2. Together with the negation of the while condition,
+            it implies the final postcondition.
+        Here the invariant we pick is that [PREV] will contain
+        the value [fib X] and that [CURR] will contain the value
+        [fib (X + 1)]. When the loop end [X] will be equal to [n]
+        and [PREV] will hold the desired result. *)
+    set (INV := fun st =>
+                  st CURR = fib (st X + 1) /\
+                    st PREV = fib (st X)).
 
-          apply H_PreStrenghtening with (P' := INV); [ | now unfold INV; hoare_auto ].
-          eapply H_PostWeakening with (Q' := INV AND (FALSE <{ X <> n }>));
-            [ | now unfold INV; hoare_auto ].
-          (* While loop *)
-          eapply H_While.
-          eapply H_Seq; [ eapply H_Seq; [ eapply H_Seq | ] |]; try apply H_Asgn.
-          eapply H_PreStrenghtening; [ apply H_Asgn |  ].
+    eapply H_PostWeakening. 
+
+    + eapply H_While with (P := INV). 
+      { repeat eapply H_Seq. 
+        * apply H_Asgn.
+        * apply H_Asgn.
+        * apply H_Asgn.
+        * eapply H_PreStrenghtening.
+          apply H_Asgn.
+          
           unfold INV. simpl. unfold_all. simpl.
           intros st [[H1 H2] H3]. rewrite H1, H2.
-          repeat rewrite PeanoNat.Nat.add_1_r. simpl. lia.
-      * eapply H_PreStrenghtening; [ apply H_Asgn | hoare_auto ].
-    + eapply H_PreStrenghtening; [ apply H_Asgn | hoare_auto ].
-  - eapply H_PreStrenghtening; [ apply H_Asgn | hoare_auto ].
+          repeat rewrite PeanoNat.Nat.add_1_r.
+          simpl. lia.
+      }
+    + unfold INV. hoare_auto.
+  - apply H_Asgn.
+  - apply H_Asgn.
+  - eapply H_PreStrenghtening.
+    apply H_Asgn.
+
+    intros st _.
+    unfold_all. simpl. 
+    hoare_auto. 
 Qed.
 
 (** ** Hoare Logic: Soundness and Completeness *)
