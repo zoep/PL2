@@ -46,7 +46,7 @@ Import ListNotations.
 
 (** Coq files are commonly developed interactively, as we will do in
     the lectures. For this it is imperative to have an IDE with
-    support for inteactive Coq development.
+    support for interactive Coq development.
 
     Coq has also support batch compilation with the `coqc` command
     file `file.v` can also be compiled from the command line, using
@@ -72,8 +72,8 @@ Import ListNotations.
 
     Coq comes with an extensive #<a
     href="https://coq.inria.fr/doc/V8.19.0/stdlib/">standard
-    library</a># that prodives common data structures (e.g., booleans, list, numbers, pairs, maps, and more).
-    Αll of these are not primitives but defined using inductive types. We will cover many of these in this lecture.
+    library</a># that provides common data structures (e.g., booleans, list, numbers, pairs, maps, and more).
+    All of these are not primitives but defined using inductive types. We will cover many of these in this lecture.
 
     Note: "Primitive Objects" including 63-bit machine integers and
     persistent arrays, have been added to recent versions Coq, be we
@@ -106,7 +106,7 @@ Definition id (A : Type) (x : A) : A := x.
               of conditions
     [Compute]: evaluate an expression
 
-  Here we use [Check] to se the type of [id]. *)
+  Here we use [Check] to see the type of [id]. *)
 
 Check id.
 
@@ -237,7 +237,7 @@ Proof.
 
   (* A complete proof ends with [Qed] which exits the interactive
      proof mode.  It stands for the Latin phrase "quod erat
-     demonstrandum" which is tranditionally used in mathematical text
+     demonstrandum" which is traditionally used in mathematical text
      to finish a proof. *)
 Qed.
 
@@ -278,7 +278,7 @@ Admitted.
     them. We will start by defining the boolean datatype.
 
     Note: Because Coq's standard library already includes these
-    definitions, we put them in a seperate namespace that we create
+    definitions, we put them in a separate namespace that we create
     using a [Module]. After the end of the module, we can use these
     names to refer to the definitions in the standard library. *)
 
@@ -291,7 +291,7 @@ Inductive bool : Type :=
 | false : bool.
 
 (** We can define functions that operate on this type. We define
-    negation, conjunction and disjuntion.*)
+    negation, conjunction and disjunction.*)
 Definition negb (x : bool) :=
   match x with
   | true => false
@@ -465,12 +465,12 @@ Check Num.
 (** We could also define operations on such numbers (e.g., addition,
     multiplication, etc). You can try this as an exercise at home.
 
-    However, we would like a represetation for truly infinite
+    However, we would like a representation for truly infinite
     mathematical numbers, and not numbers of certain bit width.
 
     We could define a datatype for infinite binary numbers, and such
-    representations are included in Coq's stadard library.  Binary
-    numbers, however, are a good way for representating numbers on a
+    representations are included in Coq's standard library.  Binary
+    numbers, however, are a good way for representing numbers on a
     machine and performing operations on them with logical circuits.
     But when it comes to proofs, they are not a very convenient
     representation.
@@ -480,7 +480,7 @@ Check Num.
     represent positive numbers. The idea is similar to counting using
     tally marks:
 
-    I represents 1, II represents 2, ΙΙΙ represents 3, and so on.
+    I represents 1, II represents 2, III represents 3, and so on.
 
     We can define this as an inductive type in Coq:
 
@@ -492,7 +492,7 @@ Module Nat.
   | O : nat
   | S : nat -> nat.
 
-  (** Intuitevely, the constructor [O] represents zero and [S] applied
+  (** Intuitively, the constructor [O] represents zero and [S] applied
       to any number represents the successor of this number.
 
       In mathematical language, we would describe the set of [nat]s as
@@ -592,7 +592,7 @@ Module Nat.
 End Nat.
 
 (** From now on we will use the standard library's [nat], which is
-    identical to our definiion above. **)
+    identical to our definition above. **)
 
 Print nat.
 Print add.
@@ -659,7 +659,7 @@ Proof.
      is only for demonstration purposes. *)
   rewrite <- Heq1.
 
-  (* Rewrites can be applyed not only to the goal, but also to
+  (* Rewrites can be applied not only to the goal, but also to
      specific hypotheses in the context using the keyword [in].
 
      For example, [rewrite <- Heq1 in Heq2] will replace the
@@ -744,7 +744,7 @@ Qed.
     from a false assumption. This is referred to as the principle of
     explosion or, in Latin, "Ex falso quodlibet".
 
-    We can exploit disctinctness of constructors using the
+    We can exploit distinctness of constructors using the
     [discriminate] tactic, as reflected in the following lemmas. *)
 
 Lemma O_eq_S_absurd :
@@ -822,7 +822,7 @@ Proof.
     simpl. reflexivity.
     (* Note: [simpl] is not necessary here, as [reflexivity] will do
        it internally and succeed regardless of us using it first. This
-       is true for other tactis as well. *)
+       is true for other tactics as well. *)
 Qed.
 
 
@@ -872,7 +872,7 @@ Proof.
 
     (* [assert] let's us prove individual statements within a proof,
        and then puts the statement in the proof context with the
-       choosen name, here [Heq']. It can be very handy as it allows as
+       chosen name, here [Heq']. It can be very handy as it allows as
        to prove intermediate results during a proof. *)
     assert (Heq' : n' + 0 = n').
     { (* How do we prove this? *)
@@ -970,7 +970,7 @@ Module Pairs.
 
   Check pair.
 
-  (** In order to contruct pairs we call the [pair] contructor. The
+  (** In order to construct pairs we call the [pair] constructor. The
       type tells us that we fist have to provide the types of the
       arguments and then the arguments.  *)
 
@@ -990,7 +990,7 @@ Module Pairs.
    *)
 
 
-  (** We can also tell Coq that the type arguments are impicit and can
+  (** We can also tell Coq that the type arguments are implicit and can
       be elided.  *)
 
   Arguments pair {A} {B}.
@@ -1008,7 +1008,7 @@ Module Pairs.
 
   Check (@pair nat bool 42 true).
 
-  (** We again define convinient notations *)
+  (** We again define convenient notations *)
 
   Notation "( x , y )" := (pair x y).
   Notation "A * B" := (prod A B) : type_scope.
@@ -1236,7 +1236,7 @@ Qed.
     complexity?).
 
     We wish to write a faster version of [rev] and prove that it
-    conincides with rev.
+    coincides with rev.
 
     We will use a very common functional programming pattern: a tail
     recursive function with an accumulator. Instead of appending
@@ -1303,7 +1303,7 @@ Lemma rev_rev_fast_aux :
 Proof.
   intros A l.
   (* [revert] is the opposite of [intros]. *)
-  (* We cound also just do: [intros A l.] *)
+  (* We could also just do: [intros A l.] *)
 
   (* What is the [P] of induction now? *)
 
