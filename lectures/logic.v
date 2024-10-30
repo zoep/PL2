@@ -63,7 +63,7 @@ Check is_even.
 *)
 
 (** [is_even] a predicate over natural numbers, and can be used to
-    assert that the proposition [is_even n] holds for a natual number
+    assert that the proposition [is_even n] holds for a natural number
     [n]. We can use it to state lemmas.  *)
 
 
@@ -285,7 +285,7 @@ Qed.
      using [reflexivity] and [assumption]. If this fails, it tries to
      apply a hypothesis (or a lemma that has been registered in the
      hint database), and this application produces a number of
-     sugoals. The tactic [auto (n-1)] is then called on each of those
+     subgoals. The tactic [auto (n-1)] is then called on each of those
      subgoals. If all the subgoals are solved, the job is completed,
      otherwise [auto n] tries to apply a different hypothesis
      (backtracking). *)
@@ -540,7 +540,7 @@ Qed.
 
 (** Practice: write an inductive predicate Forall that takes as input
     a predicate over the type [A] and a list of type [list A], and
-    holds if all elements of the list satisify the prefdicate. *)
+    holds if all elements of the list satisfy the predicate. *)
 
 (* In class *)
 Inductive Forall {A : Type} (P : A -> Prop) : list A -> Prop :=
@@ -638,7 +638,7 @@ Module TrueFalse.
   (** Being able to prove [False] within a proof system would actually
       mean that the proof system is not sound
 
-     In fact, if we were afle to prove [False] we would be able to
+     In fact, if we were able to prove [False] we would be able to
      prove anything. *)
 
   Lemma ex_falso_quodlibet:
@@ -1128,14 +1128,14 @@ Qed.
     - If [C x1 ... xn = C y1 ... yn] then [x1 = y1] ... [xn = yn] (injectivity of constructors)
 *)                       
                        
-Lemma congurence_example_1 :
+Lemma congruence_example_1 :
   forall n m p, S n = S m -> n + p = m + p.
 Proof.
   intros. (* intros without arguments will pick arbitrary names *)
   congruence.
 Qed.
 
-Lemma congurence_example_2 :
+Lemma congruence_example_2 :
   forall n m p, S n = S m -> S m = S p -> n = p.
 Proof.
   intros. (* intros without arguments will pick arbitrary names *)
