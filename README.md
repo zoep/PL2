@@ -2,6 +2,7 @@
 Material for the course _Programming Languages II_
 
 Institution: National Technical University of Athens
+
 Instructor: Zoe Paraskevopoulou
 
 This course material is currently a work in progress. As the semester

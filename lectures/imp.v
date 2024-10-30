@@ -806,7 +806,7 @@ natural numbers. *)
 
 (** *** State *)
 
-(** The definition of the state type. It is usefult to make these
+(** The definition of the state type. It is useful to make these
     definitions parametric on the type [A], as we may used them later
     when we extend the language. *)
 Definition state (A : Type) := string -> A.
@@ -863,9 +863,9 @@ Inductive bexp : Type :=
 (** Now, we define some more complicated notations, so that we can
     write concrete syntax to generate AST terms. *)
 
-(** a string [x] can be converted to an aexp [AId x] when used in an [aexp] positon. *)
+(** a string [x] can be converted to an aexp [AId x] when used in an [aexp] position. *)
 Coercion AId : string >-> aexp.
-(** a nat [n] can be converted to an aexp [ANum n] when used in an [aexp] positon. *)
+(** a nat [n] can be converted to an aexp [ANum n] when used in an [aexp] position. *)
 Coercion ANum : nat >-> aexp.
 
 Declare Custom Entry com. (* declare the scope of the new syntax. *)
@@ -946,7 +946,7 @@ Fixpoint binterp (st : imp_state) (b : bexp) : bool :=
 
 (** *** [Imp] Commands: AST *)
 
-(** We are ready tp define the AST for commands. It closely follows
+(** We are ready to define the AST for commands. It closely follows
    the structure of the informal grammar. *)
 Inductive com : Type :=
   | CSkip : com
@@ -1311,12 +1311,12 @@ Proof.
 
       + eexists.  split; [| split ].
         * eapply E_WhileTrue.
-          -- (* Proove that the condition is true *)
+          -- (* Prove that the condition is true *)
              simpl. rewrite Heq. reflexivity.
           -- (* Evaluate the first iteration *)
              econstructor. econstructor. reflexivity.
              econstructor. reflexivity.
-          -- (* Evalute subsequent iterations. Here we use the IH *)
+          -- (* Evaluate subsequent iterations. Here we use the IH *)
              eassumption.
 
         * rewrite Hst1. unfold update_st. simpl. lia.
@@ -1334,7 +1334,7 @@ Proof.
 
     + eexists. split.
       * unfold pow.
-        (* apply the constructors to evaluate the intialization commands *)
+        (* apply the constructors to evaluate the initialization commands *)
         eapply E_Seq; [ apply E_Asgn; reflexivity | ].
         eapply E_Seq; [ apply E_Asgn; reflexivity | ].
         eapply E_Seq; [ apply E_Asgn; reflexivity | ].
