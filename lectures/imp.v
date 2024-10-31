@@ -5,7 +5,7 @@ Require Import Coq.Strings.String Coq.Init.Nat Lia.
 (** In this section we will use Coq to study the semantics of simple
     languages, prove properties about them and use them to reason
     about the behaviour of programs. We will start from a simple
-    language of arithmetic expressions and we will built up to a small
+    language of arithmetic expressions and we will build up to a small
     imperative language, that can be seen as a small core subset of
     imperative languages like C or Java.
 
@@ -39,7 +39,7 @@ Definition answer : exp := Mult (Num 6) (Plus (Num 4) (Num 3)).
 
 (** *** Arithmetic Expressions: Interpreter *)
 
-(** Perhaps the most natural thing to do is to wrote an
+(** Perhaps the most natural thing to do is to write an
     interpreter. The interpreter is a recursive function that
     evaluates an arithmetic expression to the number it computes in a
     bottom-up fashion. *)
@@ -58,7 +58,7 @@ Compute (interp answer).
 
 (** Another thing we can do is to define a big-step semantics for
     [exp]. A big-step semantics is a relation that defines what is the
-    result of evaluating an expression is. [eval_exp e n] means "e
+    result of evaluating an expression. [eval_exp e n] means "e
     evaluates to n") *)
 
 Inductive eval_exp : exp -> nat -> Prop :=
@@ -81,12 +81,12 @@ Inductive eval_exp : exp -> nat -> Prop :=
     eval_exp (Mult e1 e2) (n1 * n2).
 
 (** It closely resembles the structure of an interpreter. The
-    difference is that the interpreter can be used to evaluate and
-    expression, where as [eval_exp] is a logical proposition, we can
+    difference is that the interpreter can be used to evaluate an
+    expression, whereas [eval_exp] is a logical proposition, we can
     only construct proofs that an expression evaluates to a number,
     but we cannot compute with it.
 
-    In this case, the choosing the relational vs. the computational
+    In this case, choosing the relational vs. the computational
     definition is mostly a matter of preference. However, in general,
     relations give more freedom: as opposed to functions, they can be
     partial or non-deterministic *)
@@ -144,7 +144,7 @@ Qed.
     We will define a tactic that inverts a hypothesis (that should be
     a proof of an inductive type), substitutes the generated
     equations, and clears the initial hypothesis. These are steps that
-    are used very often together and will come handy when writing
+    are used very often together and will come in handy when writing
     proofs.
 
     Recall that inverting a proof of an inductive proposition
@@ -201,7 +201,7 @@ Proof.
 Qed.
 
 
-(** The above proof is very repetitive. Three case are similar to each other.
+(** The above proof is very repetitive. The three cases are similar to each other.
     We can use [tacticals] which are tactics that operate on other tactics to
     make the proof script smaller *)
 
@@ -215,7 +215,7 @@ Qed.
     simplest form [tactic1; tactic2] will apply [tactic1] and then it
     will apply [tactic2] to all generated goals. *)
 
-(** The sequence operator has a general form:
+(** The sequence operator has the general form:
 
     [tactic ; [tactic_1 | tactic_2 | ... | tactic_n ].]
 
@@ -279,7 +279,7 @@ Qed.
     tactic from the list that doesn't fail. *)
 
 
-(** With the use of tacticals and we can make the proof
+(** With the use of tacticals we can make the proof
     [eval_exp_interp_long_proof] much shorter. *)
 Theorem eval_exp_interp :
   forall e n,
@@ -304,7 +304,7 @@ Qed.
     The expression that is reduced, which is called a _redex_, is
     always of the form [n1 + n1], [n1 * n2], [n1 - n2] where [n1],
     [n2] are numbers (rules [step_Plus], [step_Minus],
-    [step_Mult]). The redex can be n arbitrary depth inside the
+    [step_Mult]). The redex can be at an arbitrary depth inside the
     expression (rules [step_Plus_l], [step_Plus_r], [step_Minus_l],
     [step_Minus_r], [step_Mult_l], [step_Mult_r].  *)
 
@@ -510,7 +510,7 @@ Proof.
     eexists; apply step_Mult.
 Qed.
 
-(** The above lemma tells us that if [e] cannot be evaluate further
+(** The above lemma tells us that if [e] cannot be evaluated further
     then it must be a [Num] expression. This is called a _value_ which
     is the final result of the evaluation.
 
@@ -543,16 +543,16 @@ Qed.
     transition to [Plus e1' e2]. (lemma [multi_Plus_compose_l])
 
     For the right operand we can say the same, but only if the left
-    operand is already a value. Recall, that according to our
+    operand is already a value. Recall that according to our
     small-step semantics we can perform reductions on the right
     operand only if the left is evaluated. (lemma
     [multi_Plus_compose_r])
 
-    To show these to lemmas, we proceed by induction on the derivation
+    To show these two lemmas, we proceed by induction on the derivation
     of the multi-step relation.
 
     Lastly, we can combine the above lemmas together and prove an easy
-    corollary: if if [e1] can transition to [Num n1] through multiple
+    corollary: if [e1] can transition to [Num n1] through multiple
     small steps, and [e2] can transition to [e2'] then the entire
     [Plus e1 e2] expression can also transition to [Plus (Num n1)
     e2']. (lemma [multi_Plus_compose])
@@ -787,7 +787,7 @@ Qed.
 *)
 
 (** where <var> are variables, <aexp> arithmetic expressions, similar to
-those we saw above, and <bexp> boolean expression which we will examine
+those we saw above, and <bexp> is a boolean expression which we will examine
 next.
 
 The difference is that now <aexp>s and <bexp>s can contain variables.
@@ -807,7 +807,7 @@ natural numbers. *)
 (** *** State *)
 
 (** The definition of the state type. It is useful to make these
-    definitions parametric on the type [A], as we may used them later
+    definitions parametric on the type [A], as we may use them later
     when we extend the language. *)
 Definition state (A : Type) := string -> A.
 
@@ -1022,7 +1022,7 @@ Unset Printing Coercions.
 
 (** *** [Imp] Commands: Big-step Semantics *)
 
-(** Let's know move on to defining the semantics of [com] programs.
+(** Let's now move on to defining the semantics of [com] programs.
     We will start with big-step semantics.
 
     We chose the notation [st =[ c ]=> st'] to write that program [c]
@@ -1168,7 +1168,7 @@ Qed.
 
 (** *** Induction on the Derivation *)
 
-(** We can also prove theorem about the evaluation of [com]
+(** We can also prove a theorem about the evaluation of [com]
     programs. Here we prove that [ceval] is deterministic. That is,
     any two executions of the same program in the same state yield the
     same result. *)
@@ -1219,15 +1219,15 @@ Proof.
 Qed.
 
 (** Note that induction over the program here wouldn't work. When
-    reasoning about the execution want an inductive hypothesis that
+    reasoning about the execution we want an inductive hypothesis that
     tells us what happens about smaller parts of the execution. When
     the language has loops this is not possible by simply doing
     induction over the terms. *)
 
-(** *** Writing and Interpreter *)
+(** *** Writing an Interpreter *)
 
 (** This language has unbounded loops, which means that execution can
-    diverge (i.e., a program doesn't terminate. Therefore we cannot
+    diverge (i.e., a program doesn't terminate). Therefore we cannot
     define a Coq function to interpret this language as this could
     never terminate.
 
@@ -1280,7 +1280,7 @@ Theorem pow_result :
       st =[ pow base exp ]=> st' /\ st' RES = base ^ exp.
 Proof.
 
-  (* first we will prove a more general statement for the while loop
+  (* First we will prove a more general statement for the while loop
      by induction on the value of Z in the state. *)
   assert (Hloop :
            forall n st,
