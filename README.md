@@ -16,5 +16,5 @@ advances, content will be added, restructured, and updated.
 
 # Installation Instructions
 For instructions on installing the Coq proof assistant, refer to
-[INSTALL.md] (in Greek).
+[INSTALL.md](https://github.com/zoep/PL2/blob/main/INSTALL.md) (in Greek).
 

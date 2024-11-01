@@ -58,7 +58,7 @@ Import ListNotations.
     not relevant for computation. The files then can be compiled and
     executed as normal OCaml/Haskell/Scheme files. This allows us to
     build software in Coq that comes with correctness proofs and
-    extract it one of these languages. This software is commonly
+    extract it in one of these languages. This software is commonly
     called [certified]. *)
 
 
@@ -67,7 +67,7 @@ Import ListNotations.
 (**  Coq has very few primitive types:
 
        - The function type: [->] or [forall _, _].
-       - The type of types: [Type] and [Sort] as special case of [Type].
+       - The type of types: [Type] and [Sort] are a special case of [Type].
        - [Prop] the type of logical propositions
 
     Coq comes with an extensive #<a
@@ -76,7 +76,7 @@ Import ListNotations.
     All of these are not primitives but defined using inductive types. We will cover many of these in this lecture.
 
     Note: "Primitive Objects" including 63-bit machine integers and
-    persistent arrays, have been added to recent versions Coq, be we
+    persistent arrays, have been added to recent versions Coq, but we
     will not cover them in this class. *)
 
 
@@ -137,7 +137,7 @@ Check (id (forall A : Type, A -> A) id).
     outermost position in the type of a definition (prenex
     polymorphism).  That is, type variables may not be instantiated
     with polymorphic types as we did above. Coq has a more expressive
-    type system that let's us do this kind of thing. *)
+    type system that lets us do this kind of thing. *)
 
 
 (** We can also ask Coq to evaluate an application. *)
@@ -159,7 +159,7 @@ Compute (id (forall A : Type, A -> A) id).
 *)
 
 
-(** We can also write anonymous function, using the syntax above. *)
+(** We can also write anonymous functions, using the syntax above. *)
 
 Check (fun (A : Type) (x : A) => x).
 
@@ -175,8 +175,8 @@ Compute (id (forall A : Type, A -> A) id (forall A : Type, A -> A) id).
 
 
 (** Functions in Coq must be _total_. This means they must return an
-    output of each element of their domain. They cannot loop forever
-    or error out. This is important the for logical consistency of the
+    output for each element of their domain. They cannot loop forever
+    or error out. This is important for the logical consistency of the
     system. We will revisit this concept again in the course. *)
 
 
@@ -370,7 +370,7 @@ Locate "&&".
 Check (true || false).
 
 
-(** Tip: Coq IDEs provide keybindings that allows us to quickly
+(** Tip: Coq IDEs provide keybindings that allow us to quickly
     use [Print], [Check], [Search], and [Locate].
 
 
@@ -431,10 +431,10 @@ Qed.
 Definition orb' (b1:bool) (b2:bool) : bool := if b1 then true else b2.
 
 (** Recall that [bool] is not a primitive type, The if-then-else
-    construct is just syntactic sugar for pattern matching can be used
+    construct is just syntactic sugar for pattern matching and can be used
     to eliminate _any_ inductive type with exactly two constructors.
     The "then" branch is taken if the guard evaluates to the first
-    constructor of the type and the "then" branch is taken if the
+    constructor of the type and the "else" branch is taken if the
     guard is evaluated to the second constructor of the type. *)
 
 End Bool.
@@ -452,7 +452,7 @@ Inductive bin_num4 : Type :=
 | Num : bool -> bool -> bool -> bool -> bin_num4.
 
 (** [Num] is a constructor that takes 4 arguments and returns a
-   [bin_num_4 ].  Its type is: *)
+   [bin_num4 ].  Its type is: *)
 
 Check Num.
 
@@ -567,12 +567,12 @@ Module Nat.
       necessary for logical consistency.
 
       Such functions are called structurally recursive. Trying to
-      define a non structurally recursive function with produce an
+      define a non structurally recursive function will produce an
       error.
 
       Note: In Coq, there are ways to define generally recursive
       functions (that terminate but are not structurally recursive),
-      but we will not see this at this course.  *)
+      but we will not see this in this course.  *)
 
 
   Fail Fixpoint test (n : nat) : nat :=
@@ -599,7 +599,7 @@ Print add.
 
 
 (** Searching about [nat] will retrieve all the definitions (including
-    theorems) that involving [nat]. This come quite handy in
+    theorems) that involving [nat]. This comes in quite handy in
     proofs. *)
 
 Search nat.
@@ -668,7 +668,7 @@ Proof.
   rewrite <- Heq1 in Heq2.
 
   (* the [assumption] tactic allows us to derive a goal that is
-     already an present as a hypothesis in the context. *)
+     already present as a hypothesis in the context. *)
   assumption.
 Qed.
 
@@ -714,7 +714,7 @@ Proof.
   assumption.
 Qed.
 
-(** It is interesting to note that injectivity in not a primitive
+(** It is interesting to note that injectivity is not a primitive
     property that is encoded in the logic. It is a property that
     can be proved using the properties of equality.
 
@@ -740,7 +740,7 @@ Qed.
 
 (** Constructors of inductive types are distinct, meaning that values
     constructed from different constructor must be different. This
-    means that [S n = O] is an absurd In logic, we can prove anything
+    means that [S n = O] is an absurd. In logic, we can prove anything
     from a false assumption. This is referred to as the principle of
     explosion or, in Latin, "Ex falso quodlibet".
 
@@ -854,7 +854,7 @@ Qed.
 (** In the previous proof we observe that [n + 0] does not directly
     simplify to [n]. Of course, it ought to be equal to it. Let's
     prove it once and for all, so we can use it in proofs.  (As you
-    might expect, such statement is also part for the standard
+    might expect, such statement is also part of the standard
     library.)  *)
 
 Lemma add_n_O : forall n : nat, n + 0 = n.
@@ -915,7 +915,7 @@ Abort. (* The keyword [Abort] aborts the current proof. *)
 
      Then, for all [n], [P(n)] holds.
 
-     Therefore, to show a goal of the form [forall n, P n], is
+     Therefore, to show a goal of the form [forall n, P n], it
      suffices to show (1) and (2)
 
      Let's see this in practice.
@@ -971,7 +971,7 @@ Module Pairs.
   Check pair.
 
   (** In order to construct pairs we call the [pair] constructor. The
-      type tells us that we fist have to provide the types of the
+      type tells us that we first have to provide the types of the
       arguments and then the arguments.  *)
 
   Check (pair nat bool 42 true).
@@ -1094,7 +1094,7 @@ Module Lists.
       ambiguity *)
   Notation "x :: y" := (cons x y) (at level 60, right associativity).
   Notation "[ ]" := nil.
-  (** This is some notation "magic" that let's us write arbitrarily long
+  (** This is some notation "magic" that lets us write arbitrarily long
       notations. *)
   Notation "[ x ; .. ; y ]" := (cons x .. (cons y []) ..).
 
@@ -1168,7 +1168,7 @@ Module Lists.
 End Lists.
 
 (** Let's switch to the lists from the standard library that are
-    identical to out definitions above, and prove some lemmas *)
+    identical to our definitions above, and prove some lemmas *)
 
 (** To prove the following lemmas we will use induction on lists. The
     principle of induction on lists asserts that:
@@ -1336,7 +1336,7 @@ Proof.
     rewrite <- app_assoc. simpl. reflexivity.
 Qed.
 
-(** Finally, we can used the above [Lemma] to prove a top-level
+(** Finally, we can use the above [Lemma] to prove a top-level
     theorem about [rev_fast]. *)
 
 Theorem rev_rev_fast :
@@ -1381,9 +1381,9 @@ Fixpoint nth {A:Type} (n : nat) (l : list A) (def : A) : A :=
 (** *** Option *)
 
 (** Another common datatype is [Option]. Among other things, [Option]
-    is useful to encode partial function. Recall that functions in Coq
+    is useful to encode partial functions. Recall that functions in Coq
     have to be total. By using an option result type we can indicate
-    the "absence" of result in certain case, while still writing a
+    the "absence" of result in certain cases, while still writing a
     total function. *)
 
 Module Option.
