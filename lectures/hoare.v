@@ -113,10 +113,10 @@ Open Scope hoare_spec_scope.
 
 (** The rule for assignment is less trivial. Let's say that we want to
     prove that the assertion [fun st => st RES = 42] holds after running
-    command [ RES := X * Y ].  What is the precondition that must be
+    the command [ RES := X * Y ].  What is the precondition that must be
     true on the initial state in order for this to be provable?
 
-    For the triple to be derivable, we must now that the initial state
+    For the triple to be derivable, we must show that the initial state
     satisfies the assertion [fun st => st X * st Y = 42]. How did we
     obtain such triple? We replaced the left-hand side of the
     assignment in the postcondition with the value of the right-hand
@@ -144,8 +144,8 @@ Definition assertion_sub (P : assertion) (X : string) (a : aexp) : assertion :=
 Notation "P [ X |-> a ]" := (assertion_sub P X a)
   (at level 10, X at next level, a custom com) : hoare_spec_scope.
 
-(** Let's see how it this function works in practice when applied to
-    the assertion [fun st => st X * st Y = 42]:
+(** Let's see how this function works in practice when applied to
+    the assertion [fun st => st RES = 42]:
 
     [(fun st => st RES = 42) [ RES |-> X * Y ]] =
 
@@ -174,9 +174,9 @@ Notation "P [ X |-> a ]" := (assertion_sub P X a)
     a postcondition [Q] holds on the sequencing of two commands if
     there is an assertion [R] such that:
 
-    - command [c1] when run on a state that satisfies [P] it
+    - command [c1] when run on a state that satisfies [P]
       produces a state that satisfies [R]
-    - command [c2] when run on a state that satisfies [R] it
+    - command [c2] when run on a state that satisfies [R]
       produces a state that satisfies [Q]
 
     Put formally:
@@ -212,13 +212,13 @@ Notation "P [ X |-> a ]" := (assertion_sub P X a)
                      {{ P }} if b the c1 else c2 {{ Q }}
 >>
 
-Note that, according to our definitions above [P AND (TRUE b)]
+Note that according to our definitions above, [P AND (TRUE b)]
 is just notation for the assertion [fun st => P st /\ binterp st b = true]. *)
 
 
 (** **** Loops *)
 
-(** The last command we have to examine is while loops. Loops
+(** The last command we have to examine is the while loop. Loops
     repeatedly execute the command in their body. Therefore the
     postcondition at the end of each iteration will be the
     precondition at the beginning of the next one.
@@ -239,18 +239,18 @@ is just notation for the assertion [fun st => P st /\ binterp st b = true]. *)
 >>
 
 
-    Even though this rule is sound, it doesn't use all the available
+    Even though this rule is sound, it doesn't use all of the available
     information about the value of the loop condition at the beginning
     of each iteration and at the end of the loop.
 
     We can strengthen the precondition of the body to assert that the
-    condition of the while is [true]. This makes sense, since the body
+    condition of the while loop is [true]. This makes sense, since the body
     will only be executed if the condition evaluates to true. This
     precondition gives us more information about the state where [c]
     executes.
 
-    Similarly, the postcondition of the while can be strengthened to
-    also assert that the while condition is be false.
+    Similarly, the postcondition of the while loop can be strengthened to
+    also assert that the while condition is false.
 
     In summary, we have the rule
 
@@ -282,13 +282,13 @@ is just notation for the assertion [fun st => P st /\ binterp st b = true]. *)
     {{ fun st => 42 < st Y + 1 }} X := Y + 1 {{ fun st => 42 < st X }}
 >>
 
-    This precondition is _weaker_ that the previous one, meaning that
+    This precondition is _weaker_ than the previous one, meaning that
     if a state satisfies [{{ fun st => st Y = 42 }}] then it must also
     satisfy [{{ fun st => 42 < st Y + 1 }}]. *)
 
 
 (** Let us first formally define what it means for an assertion to
-    imply an other assertion and define some notation for it.
+    imply another assertion and define some notation for it.
 
     Assertion implication [P ->> Q] holds when for any state on which
     [P] holds, so does [Q]. *)
@@ -314,7 +314,7 @@ Notation "P ->> Q" := (assert_implies P Q)
 
 (** ***** Postcondition Weakening *)
 
-(** Conversely, we can reason that if we can prove a a triple [{{ P }}
+(** Conversely, we can reason that if we can prove a triple [{{ P }}
     c {{ Q }}] then we can prove a triple [{{ P }} c {{ Q' }}], where
     [Q'] is any postcondition that follows from [Q]. This rule is called
     weakening of the postcondition.
@@ -448,7 +448,7 @@ Qed.
 (** *** Automation *)
 
 (** Derivation of Hoare triples can get tedious and repetitive for
-    even a small program, so let's examine how can we automate this
+    even a small program, so let's examine how we can automate this
     process. *)
 
 (** We first create a new _hint database_. Using such a database we
@@ -473,7 +473,7 @@ Hint Resolve H_Skip : hoareDB.
 Hint Constructors triple : hoareDB.
 
 
-(** Let's define a tactic to perform all the unfold that we usually do
+(** Let's define a tactic to perform all the unfolds that we usually do
     in a Hoare triple proof. *)
 
 Ltac unfold_all :=
@@ -516,7 +516,7 @@ Ltac simplify_env :=
     ltac_expr : hintdb] to extend auto with tactics other than apply.
     [number] is a cost that we can assign to each operation, [pattern]
     is the pattern that should be matched in order of the tactic
-    [ltac_expr] to be applied, and [hintdb] the hind database we want
+    [ltac_expr] to be applied, and [hintdb] the hint database we want
     to add this hint to. [auto] will try to apply such hints at each
     step of the search. We add a few of these hints. *)
 
@@ -620,7 +620,7 @@ Proof.
   - apply H_Asgn.
   - (* Loop invariant. Find an assertion that
         1. If it holds before the execution of the loop body,
-           it holds after the execution of the  loop body
+           then it also holds after the execution of the loop body
         2. Together with the negation of the while condition,
             it implies the final postcondition.
         Here the invariant we pick is that [PREV] will contain
