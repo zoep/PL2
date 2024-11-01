@@ -8,7 +8,8 @@ function fib(n: nat) : nat
 
 // Imperative computation of nth Fibonacci
 method ComputeFib(n: nat) returns (b: nat)
-ensures b == fib(n)
+requires true
+ensures (b == fib(n))
 {
   if n == 0 { return 0; }
   var i := 1;
@@ -16,13 +17,14 @@ ensures b == fib(n)
   var a := 0;
   b := 1;
   while i < n
-    invariant 0 < i <= n
-    invariant a == fib(i - 1)
-    invariant b == fib(i)
+    invariant (b == fib(i))
+    invariant (a == fib(i - 1))
+    invariant (0 <= i <= n)
   {
     a, b := b, a + b;
     i := i + 1;
   }
+
 }
 
 method Main()

@@ -21,8 +21,9 @@ predicate sorted(a: array<int>)
 {
   forall j, k :: 0 <= j < k < a.Length ==> a[j] <= a[k]
 }
+
 method BinarySearch(a: array<int>, value: int) returns (index: int)
-  requires 0 <= a.Length && sorted(a)
+  requires sorted(a)
   ensures 0 <= index ==> index < a.Length && a[index] == value
   ensures index < 0 ==> forall k :: 0 <= k < a.Length ==> a[k] != value
 {
@@ -69,6 +70,7 @@ module ArithmeticProgression {
     res := (n * (n + 1))/2;
   }
 }
+
 
 module GeometricProgression {
   // compute 2^n
@@ -120,6 +122,8 @@ module GeometricProgression {
     res := res - 1;
   }
 }
+
+
 
 // Sum of geometric progression, general form WIP
 module GeometricProgressionGeneral {
