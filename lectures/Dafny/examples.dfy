@@ -55,22 +55,28 @@ module ArithmeticProgression {
     if n == 0 then 0 else n + sum(n-1)
   }
 
+  // A lemma proved by induction
   lemma sum_lemma(n : nat) 
     ensures (sum(n) == n * (n + 1)/2)
   {
-    if n == 0 { }
-    else { sum_lemma(n-1); }
+    if n == 0 { } // base case
+    else { 
+      // with this recursive call we give a hint to the solver to use the 
+      // the _induction hypothesis_, which is the lemma we are trying to prove with n - 1 as an argument.
+      // From this it can derive it for n, and we are done.
+      sum_lemma(n-1); 
+    }
   }
 
   // Compute 1 + 2 + ... + n, quickly
   method FastSum(n: nat) returns (res: nat)
   ensures res == sum(n) // ensures that the result is correct
   {
-    sum_lemma(n);
+    sum_lemma(n); // Instruct the solver to use the [sum_lemma]. 
+                  // This "ghost method" call will be compiled away.
     res := (n * (n + 1))/2;
   }
 }
-
 
 module GeometricProgression {
   // compute 2^n
@@ -87,23 +93,30 @@ module GeometricProgression {
     if n == 0 then 1  else pow2(n) + sum(n-1)
   }
 
-  // unused
+  
+  // A lemma proved by induction, unused
   lemma pow_mul_lemma(n : nat, m:nat) 
     ensures (pow2(n)*pow2(m) == pow2(n+m))
   {
     if n == 0 { }
-    else { pow_mul_lemma(n-1,m); }
+    else { 
+      pow_mul_lemma(n-1,m);  // use the IH
+    }
   }
 
+  // A lemma proved by induction
   lemma sum_lemma(n : nat) 
     ensures (sum(n) == pow2(n+1)-1)
   {
     if n == 0 { }
-    else { sum_lemma(n-1); }
+    else { 
+      sum_lemma(n-1); // use the IH
+    }
   }
   
+  // compute n^2
   method compute_pow2(n:nat) returns (x:int)
-	  ensures x == pow2(n)
+	  ensures x == pow2(n) // functional specification
   { x := 1;
 	  var i := n;
 
@@ -117,15 +130,16 @@ module GeometricProgression {
   method FastSum(n: nat) returns (res: nat)
   ensures res == sum(n) // ensures that the result is correct
   {
-    sum_lemma(n);
+    sum_lemma(n); // Intruct the solver to use the [sum_lemma]. 
+                  // Since lemmas are "ghost methods", this call will be compiled away
     res := compute_pow2(n+1);
     res := res - 1;
   }
 }
 
 
-
-// Sum of geometric progression, general form WIP
+// Sum of geometric progression, general form. 
+// WORK IN PROGRESS. PLEASE INGORE.
 module GeometricProgressionGeneral {
   // Compute the power
   function pow(b: nat, e: nat) : nat
@@ -160,7 +174,7 @@ module GeometricProgressionGeneral {
       // assert (a*(r-1)/(r-1) == a);
       // assert (sum(a,r,n) == a);
       // assert (a*(pow(r,1)-1)/(r-1) == a);
-      assume (sum(a,r,n) == a*(pow(r,n+1)-1)/(r-1));
+      assume (sum(a,r,n) == a*(pow(r,n+1)-1)/(r-1)); // this is like an "admit" in Coq
     }
     // else {  
       /*     
