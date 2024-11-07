@@ -137,7 +137,6 @@ module GeometricProgression {
   }
 }
 
-
 // Sum of geometric progression, general form. 
 // WORK IN PROGRESS. PLEASE INGORE.
 module GeometricProgressionGeneral {
