@@ -174,13 +174,9 @@ Module CBN.
   Inductive step : term -> term -> Prop :=
   | step_abs : forall x t1 t2,
       <{ (\x, t1) t2 }> --> <{ [x:=t2]t1 }>
-  | step_app1 : forall t1 t1' t2,
+  | step_app : forall t1 t1' t2,
       t1 --> t1' ->
       <{ t1 t2 }> --> <{ t1' t2 }>
-  | step_app2 : forall v1 t2 t2',
-      value v1 = true ->
-      t2 --> t2' ->
-      <{ v1 t2 }> --> <{ v1 t2' }>
 
   where "t '-->' t'" := (step t t').
 
@@ -195,6 +191,7 @@ Import CBV.
 (** ** Big-step Call-by-value Semantics **)
 
 Reserved Notation "t '==>' t'" (at level 40).
+
 
 Inductive bigstep : term -> term -> Prop :=
 | bigstep_abs : forall x t1,
