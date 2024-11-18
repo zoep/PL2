@@ -841,3 +841,64 @@ Proof.
     inv Hstep; eauto.
     eapply substitution_preserves_typing; eauto.
 Qed. 
+
+(** ** Type Checking *)
+
+
+Notation " x <- e1 ;; e2" := (match e1 with
+                              | Some x => e2
+                              | None => None
+                              end)
+         (right associativity, at level 60).
+
+(** Second, we define [return] and [fail] as synonyms for [Some] and
+    [None]: *)
+
+Notation " 'return' e "
+  := (Some e) (at level 60).
+
+Notation " 'fail' "
+  := None.
+
+Fixpoint ty_eqb (A B: type) : bool :=
+  match A, B with
+  | Bool, Bool => true
+  | Nat, Nat => true
+  | <[[ A1 -> A2 ]]>, <[[ B1 -> B2 ]]> =>
+      andb (ty_eqb A1 B1) (ty_eqb A2 B2)
+  | <[[ A1 + A2 ]]>, <[[ B1 + B2 ]]> =>
+      andb (ty_eqb A1 B1) (ty_eqb A2 B2)
+  | <[[ A1 * A2 ]]>, <[[ B1 * B2 ]]> =>
+      andb (ty_eqb A1 B1) (ty_eqb A2 B2)
+  | _, _ => false
+  end.
+
+
+
+Fixpoint type_check (Gamma : context) (t : term) : option type :=
+  match t with
+  (*  Pure STLC*)
+  | T_Var x => Gamma x
+  | <[ fun x : A -> t' ]> =>
+      B <- type_check (x |-> A ; Gamma) t' ;;
+      return <[[ A -> B ]]>
+  | <[ t1 t2 ]> =>
+      A <- type_check Gamma t1 ;;
+      B <- type_check Gamma t2 ;;
+      match A with
+      | <[[ A1 -> A2 ]]> =>
+          if ty_eqb A1 B then return A2 else fail
+      | _ => fail
+      end
+  | <[ true ]> => return <[[ Bool ]]>
+  | <[ false ]> => return <[[ Bool ]]>
+  | <[ if b then t1 else t2 ]> =>
+      A <- type_check Gamma b ;;
+      B <- type_check Gamma t1 ;;
+      C <- type_check Gamma t2 ;;
+      match A with
+      | <[[ Bool ]]> => if ty_eqb B C then return B else fail
+      | _ => fail
+      end
+  | _ => fail
+  end.
