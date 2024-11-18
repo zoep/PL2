@@ -991,8 +991,13 @@ Fixpoint type_check (Gamma : context) (t : term) : option type :=
   | <[ case t of | inl y1 => t1 | inr y2 => t2 ]> =>
       A <- type_check Gamma t1 ;;
       match A with
-      | <[[ A1 + A2 ]]> => return A2
+      | <[[ A1 + A2 ]]> =>
+          B <- type_check (y1 |-> A1 ; Gamma) t1 ;; 
+          C <- type_check (y2 |-> A2 ; Gamma) t2 ;;
+          if ty_eqb B C then return B else fail
       | _ => fail
-  
-  | _ => fail 
+      end
+  | <[ let y := t1 in t2 ]> =>
+      A <- type_check Gamma t1 ;;
+      type_check (y |-> A ; Gamma) t2
   end.
