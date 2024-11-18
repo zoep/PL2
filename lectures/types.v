@@ -12,7 +12,7 @@ Inductive type : Type :=
 | Arrow : type -> type -> type
 | Nat   : type
 | Bool  : type
-| Unit  : type
+(* | Unit  : type *)
 | Sum   : type -> type -> type
 | Prod  : type -> type -> type.
 
@@ -148,7 +148,6 @@ Open Scope ML_scope.
 Definition x : string := "x".
 Definition y : string := "y".
 Definition z : string := "z".
-
 
 (** ** Operational Semantics *)
 
@@ -378,7 +377,7 @@ Notation "x '|->' v" := (update empty x v)
 
 Definition context := string -> option type.
 
-Reserved Notation "Gamma '|-' t ':' T" (at level 40, t custom ML, T custom ML_ty at level 0).
+Reserved Notation "Gamma '⊢' t ':' T" (at level 40, t custom ML, T custom ML_ty at level 0).
 
 Notation "{ x }" := x (in custom ML at level 1, x constr).
 
@@ -386,69 +385,72 @@ Inductive has_type : context -> term -> type -> Prop :=
   (* pure STLC *)
   | Ty_Var : forall Gamma x A,
       Gamma x = Some A ->
-      Gamma |- x : A
+      Gamma ⊢ x : A
   | Ty_Abs : forall Gamma x t A B ,
-      (x |-> A ; Gamma) |- t : B ->
-      Gamma |- (fun x : A -> t) : (A -> B)
+      (x |-> A ; Gamma) ⊢ t : B ->
+      Gamma ⊢ (fun x : A -> t) : (A -> B)
   | Ty_App : forall Gamma t1 t2 A B,
-      Gamma |- t1 : (A -> B) ->
-      Gamma |- t2 : A ->
-      Gamma |- t1 t2 : B
+      Gamma ⊢ t1 : (A -> B) ->
+      Gamma ⊢ t2 : A ->
+      Gamma ⊢ t1 t2 : B
   (* numbers *)
   | Ty_Nat : forall Gamma (n : nat),
-      Gamma |- n : Nat
+      Gamma ⊢ n : Nat
   | Ty_BopNat : forall Gamma bop t1 t2,
-      Gamma |- t1 : Nat ->
-      Gamma |- t2 : Nat ->
+      Gamma ⊢ t1 : Nat ->
+      Gamma ⊢ t2 : Nat ->
       is_nat_op bop = true ->
-      Gamma |- { T_BOp bop t1 t2 } : Nat
+      Gamma ⊢ { T_BOp bop t1 t2 } : Nat
   | Ty_BopCmp : forall Gamma bop t1 t2,
-      Gamma |- t1 : Nat ->
-      Gamma |- t2 : Nat ->
+      Gamma ⊢ t1 : Nat ->
+      Gamma ⊢ t2 : Nat ->
       is_cmp_op bop = true ->
-      Gamma |- { T_BOp bop t1 t2 } : Bool
+      Gamma ⊢ { T_BOp bop t1 t2 } : Bool
   (* bools *)
   | Ty_Bool : forall Gamma (b : bool),
-      Gamma |- b : Bool
+      Gamma ⊢ b : Bool
   | Ty_BopBool : forall Gamma bop t1 t2,
-      Gamma |- t1 : Bool ->
-      Gamma |- t2 : Bool ->
+      Gamma ⊢ t1 : Bool ->
+      Gamma ⊢ t2 : Bool ->
       is_bool_op bop = true ->
-      Gamma |- { T_BOp bop t1 t2 } : Bool
+      Gamma ⊢ { T_BOp bop t1 t2 } : Bool
+  | Ty_UOp : forall Gamma uop t1,
+      Gamma ⊢ t1 : Bool ->
+      Gamma ⊢ { T_UOp uop t1 } : Bool
   | Ty_If : forall Gamma t1 t2 t3 A,
-      Gamma |- t1 : Bool ->
-      Gamma |- t2 : A ->
-      Gamma |- t3 : A ->
-      Gamma |- if t1 then t2 else t3 : A
+      Gamma ⊢ t1 : Bool ->
+      Gamma ⊢ t2 : A ->
+      Gamma ⊢ t3 : A ->
+      Gamma ⊢ if t1 then t2 else t3 : A
   (* sums *)
   | Ty_Inl : forall Gamma t1 A B,
-      Gamma |- t1 : A ->
-      Gamma |- (inl B t1) : (A + B)
+      Gamma ⊢ t1 : A ->
+      Gamma ⊢ (inl B t1) : (A + B)
   | Ty_Inr : forall Gamma t2 A B,
-      Gamma |- t2 : B ->
-      Gamma |- (inr A t2) : (A + B)
+      Gamma ⊢ t2 : B ->
+      Gamma ⊢ (inr A t2) : (A + B)
   | Ty_Case : forall Gamma t x1 A t1 x2 B t2 C,
-      Gamma |- t : (A + B) ->
-      (x1 |-> A ; Gamma) |- t1 : C ->
-      (x2 |-> B ; Gamma) |- t2 : C ->
-      Gamma |- (case t of | inl x1 => t1 | inr x2 => t2) : C
+      Gamma ⊢ t : (A + B) ->
+      (x1 |-> A ; Gamma) ⊢ t1 : C ->
+      (x2 |-> B ; Gamma) ⊢ t2 : C ->
+      Gamma ⊢ (case t of | inl x1 => t1 | inr x2 => t2) : C
   (* pairs *)
   | Ty_Pair : forall Gamma t1 t2 A B,
-      Gamma |- t1 : A ->
-      Gamma |- t2 : B ->
-      Gamma |- (t1, t2) : (A * B)
+      Gamma ⊢ t1 : A ->
+      Gamma ⊢ t2 : B ->
+      Gamma ⊢ (t1, t2) : (A * B)
   | Ty_Fst : forall Gamma t1 A B,
-      Gamma |- t1 : (A * B) ->
-      Gamma |- t1.1 : A
+      Gamma ⊢ t1 : (A * B) ->
+      Gamma ⊢ t1.1 : A
   | Ty_Snd : forall Gamma t1 (A B : type),
-      Gamma |- t1 : (A * B) ->
-      Gamma |- t1.2 : B
+      Gamma ⊢ t1 : (A * B) ->
+      Gamma ⊢ t1.2 : B
   (* let *)
   | Ty_Let : forall Gamma x t1 t2 A B,
-      Gamma |- t1 : A ->
-      (x |-> A ; Gamma) |- t2 : B ->
-      Gamma |- (let x := t1 in t2) : B
-where "Gamma '|-' t ':' T" := (has_type Gamma t T).
+      Gamma ⊢ t1 : A ->
+      (x |-> A ; Gamma) ⊢ t2 : B ->
+      Gamma ⊢ (let x := t1 in t2) : B
+where "Gamma '⊢' t ':' T" := (has_type Gamma t T).
 
 Hint Constructors value : core.
 Hint Constructors step : core.
@@ -463,7 +465,7 @@ Ltac inv H := inversion H; clear H; subst.
 
 Lemma canonical_forms_bool :
   forall t,
-    empty |- t : Bool ->
+    empty ⊢ t : Bool ->
     value t ->
     (t = <[ true ]>) \/ (t = <[ false ]>).
 Proof.
@@ -474,7 +476,7 @@ Qed.
 
 Lemma canonical_forms_nat :
   forall t,
-    empty |- t : Nat ->
+    empty ⊢ t : Nat ->
     value t ->
     exists (n : nat), t = <[ n ]>.
 Proof.
@@ -484,7 +486,7 @@ Qed.
 
 Lemma canonical_forms_fun :
   forall t T1 T2,
-    empty |- t : (T1 -> T2) ->
+    empty ⊢ t : (T1 -> T2) ->
     value t ->
     exists x u, t = <[ fun x : T1  -> u ]>.
 Proof.
@@ -494,7 +496,7 @@ Qed.
 
 Lemma canonical_forms_sum :
   forall t T1 T2,
-    empty |- t : (T1 + T2) ->
+    empty ⊢ t : (T1 + T2) ->
     value t ->
     (exists t1, t = <[ inl T2 t1 ]> /\ value t1) \/
     (exists t2, t = <[ inr T1 t2 ]> /\ value t2).
@@ -505,7 +507,7 @@ Qed.
 
 Lemma canonical_forms_prod :
   forall t T1 T2,
-    empty |- t : (T1 * T2) ->
+    empty ⊢ t : (T1 * T2) ->
     value t ->
     exists t1 t2, t = <[ (t1, t2) ]> /\ value t1 /\ value t2.
 Proof.
@@ -525,14 +527,14 @@ Lemma is_cmp_op_lemma :
   forall bop, is_cmp_op bop = true -> exists f, cmp_op bop = Some f. 
 Proof. intros []; simpl; try discriminate; eauto. Qed.
 
-(** Theorem: Suppose empty |-- t \in T.  Then either
+(** Theorem: Suppose empty ⊢- t \in T.  Then either
       1. t is a value, or
       2. t --> t' for some t'.
 
     Proof: By induction on the given typing derivation. *)
 
 Theorem progress : forall t T,
-     empty |- t : T ->
+     empty ⊢ t : T ->
      value t \/ exists t', t --> t'.
 Proof with eauto.
   intros t T Ht.
@@ -541,7 +543,7 @@ Proof with eauto.
   - (* Ty_Var *)
     (* The final rule in the given typing derivation cannot be
        [T_Var], since it can never be the case that
-       [empty |-- x \in T] (since the context is empty). *)
+       [empty ⊢- x \in T] (since the context is empty). *)
     discriminate H.
   - (* T_Abs *)
     (* If the [T_Abs] rule was the last used, then
@@ -550,8 +552,8 @@ Proof with eauto.
   - (* T_App *)
     (* If the last rule applied was T_App, then [t = t1 t2],
        and we know from the form of the rule that
-         [empty |-- t1 \in T1 -> T2]
-         [empty |-- t2 \in T1]
+         [empty ⊢- t1 \in T1 -> T2]
+         [empty ⊢- t2 \in T1]
        By the induction hypothesis, each of t1 and t2 either is
        a value or can take a step. *)
     right.
@@ -610,6 +612,13 @@ Proof with eauto.
 
     edestruct (canonical_forms_bool t1); eauto; subst;
     edestruct (canonical_forms_bool t2); eauto; subst; eauto.
+
+  - (* T_Uop bool *)
+    destruct uop0.
+    destruct IHHt as [ | [t1' Hstp]];
+      subst; [ reflexivity | | now eauto]. 
+     
+    edestruct (canonical_forms_bool t1); eauto; subst; eauto.
 
   - (* TY_If *)
     destruct IHHt1 as [ | [t1' Hstp]];
@@ -699,8 +708,8 @@ Require Import Coq.Logic.FunctionalExtensionality.
 Lemma weakening :
   forall Gamma Gamma' t A,
     submap Gamma Gamma' ->
-    Gamma  |- t : A  ->
-    Gamma' |- t : A.
+    Gamma  ⊢ t : A  ->
+    Gamma' ⊢ t : A.
 Proof.
   intros Gamma Gamma' t  A Hsub Ht.
   revert Gamma' Hsub.
@@ -709,8 +718,8 @@ Qed.
 
 Lemma weakening_empty :
   forall Gamma t A,
-    empty |- t : A  ->
-    Gamma |- t : A.
+    empty ⊢ t : A  ->
+    Gamma ⊢ t : A.
 Proof.
   intros Gamma t A.
   eapply weakening.
@@ -749,9 +758,9 @@ Qed.
 
 Lemma substitution_preserves_typing :
   forall Gamma x v t A B,
-    (x |-> B ; Gamma) |- t : A ->
-    empty |- v : B   ->
-    Gamma |- [x:=v]t : A.
+    (x |-> B ; Gamma) ⊢ t : A ->
+    empty ⊢ v : B   ->
+    Gamma ⊢ [x:=v]t : A.
 Proof.
   intros Gamma x v t A B Ht Hv.
   revert Gamma A Ht Hv. 
@@ -809,9 +818,9 @@ Qed.
 
 Theorem preservation :
   forall t t' A,
-    empty |- t : A  ->
+    empty ⊢ t : A  ->
     t --> t'  ->
-    empty |- t' : A.
+    empty ⊢ t' : A.
 Proof.
   intros t t' A Htyp. revert t'.
   remember empty as Gamma.
@@ -852,6 +861,9 @@ Proof.
 
     now destruct bop0; simpl in *; try congruence. (* TODO nicer *)
 
+  - (* Ty_UOp *)
+    inv Hstep; eauto.
+
   - (* Ty_If *)
     inv Hstep; eauto.
 
@@ -860,7 +872,7 @@ Proof.
     
   - (* Ty_inr *)
     inv Hstep; eauto.
-
+    
   - (* Ty_case *)
     inv Hstep; eauto.
     + inv Htyp1.
@@ -989,7 +1001,7 @@ Fixpoint type_check (Gamma : context) (t : term) : option type :=
       B <- type_check Gamma t1 ;;
       return <[[ A + B ]]>
   | <[ case t of | inl y1 => t1 | inr y2 => t2 ]> =>
-      A <- type_check Gamma t1 ;;
+      A <- type_check Gamma t ;;
       match A with
       | <[[ A1 + A2 ]]> =>
           B <- type_check (y1 |-> A1 ; Gamma) t1 ;; 
@@ -1001,3 +1013,74 @@ Fixpoint type_check (Gamma : context) (t : term) : option type :=
       A <- type_check Gamma t1 ;;
       type_check (y |-> A ; Gamma) t2
   end.
+
+Lemma ty_eqb_eq :
+  forall t1 t2, ty_eqb t1 t2 = true -> t1 = t2.
+Proof.
+  induction t1; intros []; simpl; intros H; try congruence.
+  - apply andb_prop in H. destruct H.
+    erewrite IHt1_1; eauto.
+    erewrite IHt1_2; eauto.
+  - apply andb_prop in H. destruct H.
+    erewrite IHt1_1; eauto.
+    erewrite IHt1_2; eauto.
+  - apply andb_prop in H. destruct H.
+    erewrite IHt1_1; eauto.
+    erewrite IHt1_2; eauto.
+Qed.    
+
+Lemma ty_eqb_refl :
+  forall t, ty_eqb t t = true.
+Proof.
+  induction t; simpl; auto.
+  - rewrite IHt1; eauto.
+  - rewrite IHt1; eauto.
+  - rewrite IHt1; eauto.
+Qed.    
+
+Ltac simpl_tc :=
+  match reverse goal with
+  | [H: ty_eqb ?t1 ?t2 = true |- _] => apply ty_eqb_eq in H; subst
+  | [H: Some _ = Some _ |- _] => inv H
+  | [_ : match ?t with _ => _ end = _ |- _] =>
+      destruct t eqn:?; try congruence
+  | [_: context[ty_eqb ?t1 ?t2] |- _] =>
+      destruct (ty_eqb t1 t2) eqn:?; subst; try congruence
+  end.
+
+
+Theorem type_checking_sound :
+  forall Gamma t A,
+    type_check Gamma t = Some A ->
+    Gamma ⊢ t : A.
+Proof.
+  intros Gamma t. revert Gamma.
+  induction t; intros Gamma A Htc; simpl in *;
+    try now (repeat simpl_tc; eauto).
+Qed.
+
+Theorem type_checking_complete :
+  forall Gamma t A,
+    Gamma ⊢ t : A ->
+    type_check Gamma t = Some A.
+Proof.
+  intros Gamma t A Htyp; induction Htyp; simpl; eauto;
+  try rewrite IHHtyp; try rewrite IHHtyp1; try rewrite IHHtyp2;
+    try rewrite ty_eqb_refl; try reflexivity.
+
+  - rewrite H. reflexivity.
+  - rewrite H. destruct bop0; simpl in *; try congruence.
+  - destruct b; eauto.
+
+    edestruct is_nat_op_lemma as [f Hf]; eauto. rewrite Hf.
+  
+  rewrite IHHtyp1; reflexivity.
+  
+  intros Gamma t. revert Gamma.
+  induction t; intros Gamma A Htc; simpl in *;
+    try now (repeat simpl_tc; eauto).
+Qed.
+
+
+
+
