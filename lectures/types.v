@@ -18,8 +18,12 @@ Inductive type : Type :=
 
 (** Binary Operators *)
 Inductive bop :=
+(* arithmetic operatos *)
 | Plus | Minus | Mult
-| And | Or | Lt | Eq.
+(* boolan operators *)
+| And | Or
+(* comparison operators *)
+| Lt | Eq.
 
 (** Unary Operators *)
 Inductive uop :=
@@ -140,6 +144,7 @@ Coercion T_Bool : bool >-> term.
 Open Scope ML_scope.
 
 (** We define some commonly used variables. *)
+
 Definition x : string := "x".
 Definition y : string := "y".
 Definition z : string := "z".
@@ -219,6 +224,12 @@ where "'[' x ':=' s ']' t" := (subst x s t) (in custom ML).
 Reserved Notation "t '-->' t'" (at level 40).
 
 
+Definition is_nat_op (op : bop) : bool :=
+  match op with
+  | Plus | Minus | Mult => true
+  | _ => false
+  end.
+
 Definition nat_op (op : bop) : option (nat -> nat -> nat) :=
   match op with
   | Plus => Some add
@@ -227,11 +238,23 @@ Definition nat_op (op : bop) : option (nat -> nat -> nat) :=
   | _ => None
   end.
 
+Definition is_bool_op (op : bop) : bool :=
+  match op with
+  | And | Or => true
+  | _ => false
+  end.
+
 Definition bool_op (op : bop) : option (bool -> bool -> bool) :=
   match op with
   | And => Some andb
   | Or => Some orb
   | _ => None
+  end.
+
+Definition is_cmp_op (op : bop) : bool :=
+  match op with
+  | Eq | Lt => true
+  | _ => false
   end.
 
 Definition cmp_op (op : bop) : option (nat -> nat -> bool) :=
@@ -374,23 +397,23 @@ Inductive has_type : context -> term -> type -> Prop :=
   (* numbers *)
   | Ty_Nat : forall Gamma (n : nat),
       Gamma |- n : Nat
-  | Ty_BopNat : forall Gamma bop t1 t2 f,
+  | Ty_BopNat : forall Gamma bop t1 t2,
       Gamma |- t1 : Nat ->
       Gamma |- t2 : Nat ->
-      nat_op bop = Some f ->  (* TODO nicer*)
+      is_nat_op bop = true ->
       Gamma |- { T_BOp bop t1 t2 } : Nat
-  | Ty_BopCmp : forall Gamma bop t1 t2 f,
+  | Ty_BopCmp : forall Gamma bop t1 t2,
       Gamma |- t1 : Nat ->
       Gamma |- t2 : Nat ->
-      cmp_op bop = Some f ->  (* TODO nicer*)
+      is_cmp_op bop = true ->
       Gamma |- { T_BOp bop t1 t2 } : Bool
   (* bools *)
   | Ty_Bool : forall Gamma (b : bool),
       Gamma |- b : Bool
-  | Ty_BopBool : forall Gamma bop t1 t2 f,
+  | Ty_BopBool : forall Gamma bop t1 t2,
       Gamma |- t1 : Bool ->
       Gamma |- t2 : Bool ->
-      bool_op bop = Some f ->  (* TODO nicer*)
+      is_bool_op bop = true ->
       Gamma |- { T_BOp bop t1 t2 } : Bool
   | Ty_If : forall Gamma t1 t2 t3 A,
       Gamma |- t1 : Bool ->
@@ -490,6 +513,18 @@ Proof.
   inv Hval; inv Htyp; eauto.
 Qed.
 
+Lemma is_nat_op_lemma :
+  forall bop, is_nat_op bop = true -> exists f, nat_op bop = Some f. 
+Proof. intros []; simpl; try discriminate; eauto. Qed.
+
+Lemma is_bool_op_lemma :
+  forall bop, is_bool_op bop = true -> exists f, bool_op bop = Some f. 
+Proof. intros []; simpl; try discriminate; eauto. Qed.
+
+Lemma is_cmp_op_lemma :
+  forall bop, is_cmp_op bop = true -> exists f, cmp_op bop = Some f. 
+Proof. intros []; simpl; try discriminate; eauto. Qed.
+
 (** Theorem: Suppose empty |-- t \in T.  Then either
       1. t is a value, or
       2. t --> t' for some t'.
@@ -549,7 +584,7 @@ Proof with eauto.
     edestruct (canonical_forms_nat t1); eauto; subst.
     edestruct (canonical_forms_nat t2); eauto; subst.
 
-    eauto. 
+    edestruct is_nat_op_lemma; eauto.
 
   - (* T_Bop cmp *)
     destruct IHHt1 as [ | [t1' Hstp]];
@@ -560,7 +595,7 @@ Proof with eauto.
     edestruct (canonical_forms_nat t1); eauto; subst.
     edestruct (canonical_forms_nat t2); eauto; subst.
 
-    eauto.
+    edestruct is_cmp_op_lemma; eauto.
 
   - (* Ty_Bool *)
     eauto.
@@ -570,7 +605,9 @@ Proof with eauto.
       subst; [ reflexivity | | now eauto ]. 
     destruct IHHt2 as [ | [t2' Hstp]];
       subst; [ reflexivity | | now eauto ]. 
-    
+
+    edestruct is_bool_op_lemma; eauto.
+
     edestruct (canonical_forms_bool t1); eauto; subst;
     edestruct (canonical_forms_bool t2); eauto; subst; eauto.
 
@@ -657,7 +694,7 @@ Proof.
     + apply Hxy.
 Qed.
 
-
+Require Import Coq.Logic.FunctionalExtensionality. 
 
 Lemma weakening :
   forall Gamma Gamma' t A,
@@ -680,28 +717,35 @@ Proof.
   discriminate.
 Qed.
 
-Lemma update_shadow : forall (A : Type) (m : partial_map A) x v1 v2,
+Lemma update_shadow :
+  forall (A : Type) (m : partial_map A) x v1 v2,
   (x |-> v2 ; x |-> v1 ; m) = (x |-> v2 ; m).
 Proof.
   intros A m x v1 v2. unfold update.
-Admitted.
+  apply functional_extensionality. intros y.
+  destruct (eqb_spec x y); subst; eauto.
+Qed.
 
 Lemma update_same : forall (A : Type) (m : partial_map A) x v,
   m x = Some v ->
   (x |-> v ; m) = m.
 Proof.
-  (* intros A m x v H. unfold update. rewrite <- H. *)
-  (* apply t_update_same. *)
-Admitted.
+  intros A m x v H. unfold update. rewrite <- H.
+  apply functional_extensionality. intros y.
+  destruct (eqb_spec x y); subst; eauto.
+Qed.
 
 Theorem update_permute : forall (A : Type) (m : partial_map A)
                                 x1 x2 v1 v2,
   x2 <> x1 ->
   (x1 |-> v1 ; x2 |-> v2 ; m) = (x2 |-> v2 ; x1 |-> v1 ; m).
 Proof.
-  (* intros A m x1 x2 v1 v2. unfold update. *)
-  (* apply t_update_permute. *)
-Admitted.
+  intros A m x1 x2 v1 v2 Hneq. unfold update.
+  apply functional_extensionality. intros y.
+  destruct (eqb_spec x1 y); subst; eauto.
+  destruct (eqb_spec x2 y); subst; eauto.
+  congruence. 
+Qed.
 
 Lemma substitution_preserves_typing :
   forall Gamma x v t A B,
@@ -877,10 +921,10 @@ Fixpoint ty_eqb (A B: type) : bool :=
 
 Fixpoint type_check (Gamma : context) (t : term) : option type :=
   match t with
-  (*  Pure STLC*)
+  (*  Pure STLC *)
   | T_Var x => Gamma x
-  | <[ fun x : A -> t' ]> =>
-      B <- type_check (x |-> A ; Gamma) t' ;;
+  | <[ fun x : A -> t1 ]> =>
+      B <- type_check (x |-> A ; Gamma) t1 ;;
       return <[[ A -> B ]]>
   | <[ t1 t2 ]> =>
       A <- type_check Gamma t1 ;;
@@ -890,6 +934,9 @@ Fixpoint type_check (Gamma : context) (t : term) : option type :=
           if ty_eqb A1 B then return A2 else fail
       | _ => fail
       end
+  (* Numbers *)
+  | T_Nat n => return <[[ Nat ]]>
+  (* Booleans *)
   | <[ true ]> => return <[[ Bool ]]>
   | <[ false ]> => return <[[ Bool ]]>
   | <[ if b then t1 else t2 ]> =>
@@ -900,5 +947,52 @@ Fixpoint type_check (Gamma : context) (t : term) : option type :=
       | <[[ Bool ]]> => if ty_eqb B C then return B else fail
       | _ => fail
       end
-  | _ => fail
+  (* Binary operators *)
+  | T_BOp bop t1 t2 =>
+      A <- type_check Gamma t1 ;;
+      B <- type_check Gamma t2 ;;
+      if ty_eqb A B then 
+        if is_nat_op bop then
+          if ty_eqb A Nat then return Nat else fail
+        else if is_cmp_op bop then
+          if ty_eqb A Nat then return Bool else fail
+        else if is_bool_op bop then
+          if ty_eqb A Bool then return Bool else fail
+        else fail
+      else fail
+  (* Unary operators *)
+  | T_UOp b t1 =>
+      A <- type_check Gamma t1 ;;
+      if ty_eqb A Bool then return Bool else fail
+  (* Pairs *)
+  | <[ (t1, t2)]> =>
+      A <- type_check Gamma t1 ;;
+      B <- type_check Gamma t2 ;;
+      return <[[ A * B ]]>
+  | <[ t1.1 ]> =>
+      A <- type_check Gamma t1 ;;
+      match A with
+      | <[[ A1 * A2 ]]> => return A1
+      | _ => fail
+      end
+  | <[ t1.2 ]> =>
+      A <- type_check Gamma t1 ;;
+      match A with
+      | <[[ A1 * A2 ]]> => return A2
+      | _ => fail
+      end
+  (* Sums *)
+  | <[ inl B t1 ]> =>
+      A <- type_check Gamma t1 ;;
+      return <[[ A + B ]]>
+  | <[ inr A t1 ]> =>
+      B <- type_check Gamma t1 ;;
+      return <[[ A + B ]]>
+  | <[ case t of | inl y1 => t1 | inr y2 => t2 ]> =>
+      A <- type_check Gamma t1 ;;
+      match A with
+      | <[[ A1 + A2 ]]> => return A2
+      | _ => fail
+  
+  | _ => fail 
   end.
