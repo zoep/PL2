@@ -8,7 +8,7 @@ Require Import Coq.Strings.String Coq.Init.Nat Lia.
 
     The extensions we consider are:
 
-    - Type of booleans 
+    - Type of booleans
     - Type of natural numbers
     - Unit type
     - Sum type
@@ -28,7 +28,7 @@ Require Import Coq.Strings.String Coq.Init.Nat Lia.
 
 - Values: [true] and [false]
 
-- Elimination form: Conditional expressions of the form [if b then e1 else e2] 
+- Elimination form: Conditional expressions of the form [if b then e1 else e2]
 
 - Static semantics:
 
@@ -43,7 +43,7 @@ Require Import Coq.Strings.String Coq.Init.Nat Lia.
         Γ ⊢ false : Bool
 
 
-       Γ ⊢ b : Bool   Γ ⊢ a1 : A   Γ ⊢ a2 : A  
+       Γ ⊢ b : Bool   Γ ⊢ a1 : A   Γ ⊢ a2 : A
       -----------------------------------------(Ty_if)
            Γ  ⊢ if b then e1 else e2 : A
 
@@ -102,35 +102,35 @@ Require Import Coq.Strings.String Coq.Init.Nat Lia.
 
     - Less-than (<), equal (=)
 
-    - Negation (~)  
+    - Negation (~)
 
 
 - Static semantics:
 
 <<
              Γ ⊢ e1 : Nat      Γ ⊢ e2 : Nat
-      -----------------------------------------(Ty_Bop_nat)   if ⊕ ∈ {+, -, *} 
+      -----------------------------------------(Ty_Bop_nat)   if ⊕ ∈ {+, -, *}
                   Γ ⊢ e1 ⊕ e2 : Nat
 
 
              Γ ⊢ e1 : Bool     Γ ⊢ e2 : Bool
-      -----------------------------------------(Ty_Bop_bool)  if ⊕ ∈ {&&, ||} 
+      -----------------------------------------(Ty_Bop_bool)  if ⊕ ∈ {&&, ||}
                   Γ ⊢ e1 ⊕ e2 : Bool
 
 
              Γ ⊢ e1 : Nat      Γ ⊢ e2 : Nat
-      -----------------------------------------(Ty_Bop_cmp)   if ⊕ ∈ {<, =} 
+      -----------------------------------------(Ty_Bop_cmp)   if ⊕ ∈ {<, =}
                   Γ ⊢ e1 ⊕ e2 : Bool
 
 
                    Γ ⊢ e : Bool
-      -----------------------------------------(Ty_Uop)   if ⊕ ∈ {<, =} 
+      -----------------------------------------(Ty_Uop)   if ⊕ ∈ {<, =}
                   Γ ⊢ ~ e : Bool
 >>
 
 - Dynamic semantics:
 
-  Let ⊕ be a boolean operator, we denote its interpretation as [⊕]. 
+  Let ⊕ be a boolean operator, we denote its interpretation as [⊕].
 
 <<
       ---------------------------(step_bop_nat)    if ⊕ ∈ {+, -, *}
@@ -146,13 +146,13 @@ Require Import Coq.Strings.String Coq.Init.Nat Lia.
 
 
               e1 --> e1'
-      ---------------------------(step_bop_l) 
+      ---------------------------(step_bop_l)
         e1 ⊕ e2  --> e1' ⊕ e2
 
 
               value v1
               e1 --> e2'
-      ---------------------------(step_bop_r) 
+      ---------------------------(step_bop_r)
         v1 ⊕ e2'  --> v1 ⊕ e2'
 
 
@@ -184,7 +184,7 @@ Require Import Coq.Strings.String Coq.Init.Nat Lia.
 
 - Values: [unit]
 
-- Elimination form: None. 
+- Elimination form: None.
 
 - Static semantics:
 
@@ -218,17 +218,17 @@ Require Import Coq.Strings.String Coq.Init.Nat Lia.
 <<
 
                Γ ⊢ e1 : A      Γ ⊢ e2 : B
-      -----------------------------------------(Ty_Pair) 
+      -----------------------------------------(Ty_Pair)
                 Γ ⊢ (e1, e2) : A * B
 
 
                   Γ ⊢ e : A * B
-      -----------------------------------------(Ty_Fst) 
+      -----------------------------------------(Ty_Fst)
                    Γ ⊢ e.1 : A
 
 
                   Γ ⊢ e : A * B
-      -----------------------------------------(Ty_Sbd) 
+      -----------------------------------------(Ty_Sbd)
                    Γ ⊢ e.2 : B
 
 >>
@@ -269,7 +269,7 @@ Require Import Coq.Strings.String Coq.Init.Nat Lia.
   coproduct or variant.
 
 - Constructors: [inl a] or [inr b], where [a] and [b] are terms of the
-  respective type. 
+  respective type.
 
 - Values: [inl a] or [inr b], when [a] and [b] are values.
 
@@ -338,7 +338,7 @@ Require Import Coq.Strings.String Coq.Init.Nat Lia.
 
 - Dynamic semantics:.
 <<
-                        value v1 
+                        value v1
       --------------------------------------------(step_let_value)
         let x := v1 in e2 --> e2[x := v1]
 
@@ -388,7 +388,7 @@ Inductive term : Type :=
 | T_Lambda : string -> type -> term -> term
 | T_Var : string -> term
 (* Let *)
-| T_Let : string -> term -> term -> term                      
+| T_Let : string -> term -> term -> term
 (* Booleans *)
 | T_Bool : bool -> term
 (* If *)
@@ -564,7 +564,7 @@ Fixpoint subst (x : string) (t' : term) (t : term) : term :=
   | T_Nat _ => t
   | T_Bool _ => t
   | T_BOp bop t1 t2 => T_BOp bop <[ [x:=t'] t1 ]>  <[ [x:=t'] t2 ]>
-  | T_UOp uop t1 => T_UOp uop <[ [x:=t'] t1 ]> 
+  | T_UOp uop t1 => T_UOp uop <[ [x:=t'] t1 ]>
   | <[ if t1 then t2 else t3 ]> =>
       <[ if [x := t'] t1 then [x := t'] t2 else [x := t'] t3 ]>
   (* pairs *)
@@ -581,7 +581,7 @@ Fixpoint subst (x : string) (t' : term) (t : term) : term :=
       let t2' := if String.eqb x y2 then t2 else <[ [x:=t'] t2 ]> in
       <[ case ([x:=t'] t) of
          | inl y1 => t1'
-         | inr y2 => t2' ]>        
+         | inr y2 => t2' ]>
   | <[ let y := t1 in t2 ]> =>
       let t2' := if String.eqb x y then t2 else <[ [x:=t'] t2 ]> in
       <[ let y := [x:=t'] t1 in t2' ]>
@@ -664,21 +664,21 @@ Inductive step : term -> term -> Prop :=
 (* Binary Operators *)
 | Step_BOpNat :
   forall bop (n1 n2 : nat) bop_f,
-    nat_op bop = Some bop_f -> 
+    nat_op bop = Some bop_f ->
     (T_BOp bop n1 n2) --> T_Nat (bop_f n1 n2)
 | Step_BOpBool :
   forall bop (b1 b2 : bool) bop_f,
-    bool_op bop = Some bop_f -> 
+    bool_op bop = Some bop_f ->
     (T_BOp bop b1 b2) --> T_Bool (bop_f b1 b2)
 | Step_BOpCmp :
   forall bop (n1 n2 : nat) bop_f,
-    cmp_op bop = Some bop_f -> 
+    cmp_op bop = Some bop_f ->
     (T_BOp bop n1 n2) --> T_Bool (bop_f n1 n2)
 | Step_Bop1 : forall bop t1 t1' t2,
     t1 --> t1' ->
-    (T_BOp bop t1 t2) --> (T_BOp bop t1' t2)  
+    (T_BOp bop t1 t2) --> (T_BOp bop t1' t2)
 | Step_Bop2 : forall bop v1 t2 t2',
-    value v1 ->    
+    value v1 ->
     t2 --> t2' ->
     (T_BOp bop v1 t2) --> (T_BOp bop v1 t2')
 (* Unary Operators *)
@@ -695,16 +695,16 @@ Inductive step : term -> term -> Prop :=
     value v1 ->
     t2 --> t2' ->
     <[ (v1, t2) ]> --> <[ (v1, t2') ]>
-| Step_FstPair : forall v1 v2, 
+| Step_FstPair : forall v1 v2,
     value v1 -> value v2 ->
     <[ (v1, v2).1 ]> --> <[ v1 ]>
-| Step_Fst : forall t t', 
+| Step_Fst : forall t t',
     t --> t' ->
     <[ t.1 ]> --> <[ t'.1 ]>
-| Step_SndPair : forall v1 v2, 
+| Step_SndPair : forall v1 v2,
     value v1 -> value v2 ->
     <[ (v1, v2).2 ]> --> <[ v2 ]>
-| Step_Snd : forall t t', 
+| Step_Snd : forall t t',
     t --> t' ->
     <[ t.2 ]> --> <[ t'.2 ]>
 (* sums *)
@@ -900,15 +900,15 @@ Qed.
 (** Helper lemmas for binary operators *)
 
 Lemma is_nat_op_lemma :
-  forall bop, is_nat_op bop = true -> exists f, nat_op bop = Some f. 
+  forall bop, is_nat_op bop = true -> exists f, nat_op bop = Some f.
 Proof. intros []; simpl; try discriminate; eauto. Qed.
 
 Lemma is_bool_op_lemma :
-  forall bop, is_bool_op bop = true -> exists f, bool_op bop = Some f. 
+  forall bop, is_bool_op bop = true -> exists f, bool_op bop = Some f.
 Proof. intros []; simpl; try discriminate; eauto. Qed.
 
 Lemma is_cmp_op_lemma :
-  forall bop, is_cmp_op bop = true -> exists f, cmp_op bop = Some f. 
+  forall bop, is_cmp_op bop = true -> exists f, cmp_op bop = Some f.
 Proof. intros []; simpl; try discriminate; eauto. Qed.
 
 (** *** Progress *)
@@ -937,7 +937,7 @@ Proof with eauto.
   - (* Ty_Abs *)
     (* If the [Ty_Abs] rule was the last used, then
        [t = fun x0 : T2 -> t1], which is a value. *)
-    now left. 
+    now left.
   - (* Ty_App *)
     (* If the last rule applied was Ty_App, then [t = t1 t2],
        and we know from the form of the rule that
@@ -967,7 +967,7 @@ Proof with eauto.
       destruct H as [t1' Hstp]. exists <[t1' t2]>; auto.
   - (* Ty_let *)
     destruct IHHt1 as [ | [t1' Hstp]];
-      subst; [ reflexivity | now eauto | now eauto ]. 
+      subst; [ reflexivity | now eauto | now eauto ].
   - (* Ty_Bool *)
     eauto.
 
@@ -979,9 +979,9 @@ Proof with eauto.
 
   - (* Ty_Bop bool *)
     destruct IHHt1 as [ | [t1' Hstp]];
-      subst; [ reflexivity | | now eauto ]. 
+      subst; [ reflexivity | | now eauto ].
     destruct IHHt2 as [ | [t2' Hstp]];
-      subst; [ reflexivity | | now eauto ]. 
+      subst; [ reflexivity | | now eauto ].
 
     edestruct is_bool_op_lemma; eauto.
 
@@ -991,16 +991,16 @@ Proof with eauto.
   - (* T_Uop bool *)
     destruct uop0.
     destruct IHHt as [ | [t1' Hstp]];
-      subst; [ reflexivity | | now eauto]. 
-     
+      subst; [ reflexivity | | now eauto].
+
     edestruct (canonical_forms_bool t1); eauto; subst; eauto.
 
   - (* Ty_Nat *)
     left; auto.
   - destruct IHHt1 as [ | [t1' Hstp]];
-      subst; [ reflexivity | | now eauto ]. 
+      subst; [ reflexivity | | now eauto ].
     destruct IHHt2 as [ | [t2' Hstp]];
-      subst; [ reflexivity | | now eauto ]. 
+      subst; [ reflexivity | | now eauto ].
 
     edestruct (canonical_forms_nat t1); eauto; subst.
     edestruct (canonical_forms_nat t2); eauto; subst.
@@ -1009,9 +1009,9 @@ Proof with eauto.
 
   - (* Ty_Bop cmp *)
     destruct IHHt1 as [ | [t1' Hstp]];
-      subst; [ reflexivity | | now eauto ]. 
+      subst; [ reflexivity | | now eauto ].
     destruct IHHt2 as [ | [t2' Hstp]];
-      subst; [ reflexivity | | now eauto ]. 
+      subst; [ reflexivity | | now eauto ].
 
     edestruct (canonical_forms_nat t1); eauto; subst.
     edestruct (canonical_forms_nat t2); eauto; subst.
@@ -1020,12 +1020,12 @@ Proof with eauto.
 
   - (* Ty_Pair *)
     destruct IHHt1 as [ | [t1' Hstp]];
-      subst; [ reflexivity | | now eauto ]. 
+      subst; [ reflexivity | | now eauto ].
     destruct IHHt2 as [ | [t2' Hstp]];
-      subst; [ reflexivity | | now eauto ]. 
+      subst; [ reflexivity | | now eauto ].
 
     eauto.
-    
+
   - (* Ty_fst *)
     destruct IHHt as [ | [t' Hstp]];
       subst; [ reflexivity | | now eauto ].
@@ -1040,7 +1040,7 @@ Proof with eauto.
 
       - (* Ty_Inl *)
     destruct IHHt as [ | [t1' Hstp]];
-      subst; [ reflexivity | now eauto | now eauto ]. 
+      subst; [ reflexivity | now eauto | now eauto ].
 
   - (* Ty_Inr *)
     destruct IHHt as [ | [t1' Hstp]];
@@ -1137,8 +1137,8 @@ Qed.
     [(x |-> B ; Gamma) ⊢ t : A]
 
     then we can substitute any closed term of type [B] for [x], and
-    the resulting term will still have type [A]. That is, 
- 
+    the resulting term will still have type [A]. That is,
+
     if [empty ⊢ v : B] then [Gamma ⊢ [x:=v]t : A].
 *)
 
@@ -1160,7 +1160,7 @@ Qed.
    be more cumbersome and tedious. By using this axiom, we streamline
    the process while maintaining the rigor of our reasoning. *)
 
-Require Import Coq.Logic.FunctionalExtensionality. 
+Require Import Coq.Logic.FunctionalExtensionality.
 
 Check functional_extensionality.
 
@@ -1192,7 +1192,7 @@ Proof.
   apply functional_extensionality. intros y.
   destruct (eqb_spec x1 y); subst; eauto.
   destruct (eqb_spec x2 y); subst; eauto.
-  congruence. 
+  congruence.
 Qed.
 
 (** Substitution preserves typing lemma. *)
@@ -1204,7 +1204,7 @@ Lemma substitution_preserves_typing :
     Gamma ⊢ [x:=v]t : A.
 Proof.
   intros Gamma x v t A B Ht Hv.
-  revert Gamma A Ht Hv. 
+  revert Gamma A Ht Hv.
   induction t; intros Gamma A Ht1 Ht2; inv Ht1; simpl; eauto.
   - (* T_Abs *)
     destruct (eqb_spec x s); subst; apply Ty_Abs.
@@ -1217,7 +1217,7 @@ Proof.
   - (* T_Var *)
     destruct (eqb_spec x s); subst.
     + (* x = s *)
-      rewrite update_eq in H1. inv H1. 
+      rewrite update_eq in H1. inv H1.
       apply weakening_empty. assumption.
     + (* x <> y *)
       apply Ty_Var. rewrite update_neq in H1; auto.
@@ -1226,9 +1226,9 @@ Proof.
     eapply Ty_Let.
     + eapply IHt1; eauto.
     + destruct (eqb_spec x s); subst.
-      * (* x = s *)        
+      * (* x = s *)
         rewrite update_shadow in H5. assumption.
-      * (* x <> s *)        
+      * (* x <> s *)
         eapply IHt2; auto.
         rewrite update_permute; eauto.
   - (* T_Case *)
@@ -1267,7 +1267,7 @@ Proof.
     inv Hstep.
   - (* Ty_Abs *)
     inv Hstep.
-  - (* Ty_App *)     
+  - (* Ty_App *)
     inv Hstep; eauto.
 
     inv Htyp1. eapply substitution_preserves_typing; eauto.
@@ -1284,7 +1284,7 @@ Proof.
 
   - (* Ty_Bop *)
     inv Hstep; eauto.
-    
+
     now destruct bop0; simpl in *; try congruence. (* TODO nicer *)
 
   - (* Ty_UOp *)
@@ -1310,28 +1310,28 @@ Proof.
 
   - (* Ty_Fst *)
     inv Hstep; eauto.
-    
-    inv Htyp; eauto. 
+
+    inv Htyp; eauto.
 
   - (* Ty_Snd *)
     inv Hstep; eauto.
-    
-    inv Htyp; eauto. 
+
+    inv Htyp; eauto.
 
   - (* Ty_inl *)
     inv Hstep; eauto.
-    
+
   - (* Ty_inr *)
     inv Hstep; eauto.
-    
+
   - (* Ty_case *)
     inv Hstep; eauto.
     + inv Htyp1.
       eapply substitution_preserves_typing; eauto.
-    + inv Htyp1. 
+    + inv Htyp1.
       eapply substitution_preserves_typing; eauto.
 
-Qed. 
+Qed.
 
 
 (** ** Type Checking *)
@@ -1414,12 +1414,12 @@ Fixpoint type_check (Gamma : context) (t : term) : option type :=
       | _ => fail
       end
   (* Numbers *)
-  | T_Nat n => return <[[ Nat ]]>    
+  | T_Nat n => return <[[ Nat ]]>
   (* Binary operators *)
   | T_BOp bop t1 t2 =>
       A <- type_check Gamma t1 ;;
       B <- type_check Gamma t2 ;;
-      if ty_eqb A B then 
+      if ty_eqb A B then
         if is_nat_op bop then
           if ty_eqb A Nat then return Nat else fail
         else if is_cmp_op bop then
@@ -1460,7 +1460,7 @@ Fixpoint type_check (Gamma : context) (t : term) : option type :=
       A <- type_check Gamma t ;;
       match A with
       | <[[ A1 + A2 ]]> =>
-          B <- type_check (y1 |-> A1 ; Gamma) t1 ;; 
+          B <- type_check (y1 |-> A1 ; Gamma) t1 ;;
           C <- type_check (y2 |-> A2 ; Gamma) t2 ;;
           if ty_eqb B C then return B else fail
       | _ => fail
@@ -1484,7 +1484,7 @@ Proof.
   - apply andb_prop in H. destruct H.
     erewrite IHt1_1; eauto.
     erewrite IHt1_2; eauto.
-Qed.    
+Qed.
 
 Lemma ty_eqb_refl :
   forall t, ty_eqb t t = true.
@@ -1493,7 +1493,7 @@ Proof.
   - rewrite IHt1; eauto.
   - rewrite IHt1; eauto.
   - rewrite IHt1; eauto.
-Qed.    
+Qed.
 
 
 Ltac simpl_tc :=
@@ -1527,8 +1527,8 @@ Proof.
   try rewrite IHHtyp; try rewrite IHHtyp1; try rewrite IHHtyp2;
     try rewrite IHHtyp3;
     try rewrite ty_eqb_refl; try reflexivity.
-  
+
   - destruct bop0; simpl in *; try congruence.
   - destruct bop0; simpl in *; try congruence.
-  - destruct bop0; simpl in *; try congruence.    
+  - destruct bop0; simpl in *; try congruence.
 Qed.
