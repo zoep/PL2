@@ -4,3 +4,4 @@ logic.v
 imp.v
 hoare.v
 lambda.v
+types.v
