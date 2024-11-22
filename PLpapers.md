@@ -1,12 +1,14 @@
+- [Ken Thomson. Reflections on Trusting Trust. Turing Award Lecture](https://www.cs.cmu.edu/~rdriley/487/papers/Thompson_1984_ReflectionsonTrustingTrust.pdf)
 
-- [Verify the Safety of the Rust Standard Library, AWS Open Source Blog](AWS Open Source Blog)
+- [Phillip Wadler. Propositions as Types](https://dl.acm.org/doi/pdf/10.1145/2699407)
 
-- [Verus lang](https://github.com/verus-lang/verus)
+- [Andrew Appel. SSA is Functional Programming](https://www.cs.princeton.edu/~appel/papers/ssafun.pdf)
 
-- [Compiler, Language and Runtime Teams](https://mgaudet.github.io/CompilerJobs/)
+- [Phillip Wadler. Theorems for free!](https://dl.acm.org/doi/pdf/10.1145/99370.99404)
 
-- [A List of companies that use formal verification methods in software engineering](https://github.com/ligurio/practical-fm)
+   - https://homepages.inf.ed.ac.uk/wadler/papers/propositions-as-types/propositions-as-types.pdf 
 
-- https://rishimehta.xyz/2024/11/17/alphaproofs-greatest-hits.html
+- [Xavier Leroy. A formally verified compiler back-end. Journal of Automated Reasoning.](https://xavierleroy.org/publi/compcert-backend.pdf) 
 
-- [Stanford PL course](https://stanford-cs242.github.io/f17/)
+- [C. A. R. Hoare. An Axiomatic Basis for Computer Programming.](https://www.cs.cmu.edu/~crary/819-f09/Hoare69.pdf)
+
