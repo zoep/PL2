@@ -1,4 +1,4 @@
-- [Verify the Safety of the Rust Standard Library, AWS Open Source Blog](https://aws.amazon.com/blogs/opensource/verify-the-safety-of-the-rust-standard-library/)
+- [Verify the Safety of the Rust Standard Library, AWS Open Source Blog.](https://aws.amazon.com/blogs/opensource/verify-the-safety-of-the-rust-standard-library/)
 
 - [Verus lang](https://github.com/verus-lang/verus)
 

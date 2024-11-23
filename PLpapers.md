@@ -1,8 +1,8 @@
-- [Ken Thomson. Reflections on Trusting Trust. Turing Award Lecture](https://www.cs.cmu.edu/~rdriley/487/papers/Thompson_1984_ReflectionsonTrustingTrust.pdf)
+- [Ken Thomson. Reflections on Trusting Trust. Turing Award Lecture.](https://www.cs.cmu.edu/~rdriley/487/papers/Thompson_1984_ReflectionsonTrustingTrust.pdf)
 
-- [Phillip Wadler. Propositions as Types](https://dl.acm.org/doi/pdf/10.1145/2699407)
+- [Phillip Wadler. Propositions as Types.](https://dl.acm.org/doi/pdf/10.1145/2699407)
 
-- [Andrew Appel. SSA is Functional Programming](https://www.cs.princeton.edu/~appel/papers/ssafun.pdf)
+- [Andrew Appel. SSA is Functional Programming.](https://www.cs.princeton.edu/~appel/papers/ssafun.pdf)
 
 - [Phillip Wadler. Theorems for free!](https://dl.acm.org/doi/pdf/10.1145/99370.99404)
 
