@@ -6,7 +6,9 @@
 
 - [A List of companies that use formal verification methods in software engineering](https://github.com/ligurio/practical-fm)
 
-- https://rishimehta.xyz/2024/11/17/alphaproofs-greatest-hits.html
+- [A Guide to Undefined Behavior in C and C++, Part 1](https://blog.regehr.org/archives/213)
+
+- [AlphaProof's Greatest Hits](https://rishimehta.xyz/2024/11/17/alphaproofs-greatest-hits.html)
 
 - [Stanford PL course](https://stanford-cs242.github.io/f17/)
 
