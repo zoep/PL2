@@ -28,8 +28,8 @@ Require Import Coq.Strings.String Coq.Init.Nat Lia.
     - Function Applications: Function application is written as "e1
       e2", where "e1" is applied to "e2".
 
-    - Variables: Variables are typically denoted using elements of an
-      countably infinite set. Here we will use strings.
+    - Variables: Variables are typically denoted using elements of a
+      countably infinite set. Here we will be using strings.
 
     For example, consider the identity function applied to itself,
     written as: "(λx. x) (λx. x)".
@@ -42,9 +42,9 @@ Require Import Coq.Strings.String Coq.Init.Nat Lia.
   with var ∈ {x, y, z, ... }
 
   Here we formalize the call-by-value and call-by-name semantics of
-  lambda calculus, and we provide an proved-correct interpreter.
+  lambda calculus, and we provide a proved-correct interpreter.
   Lastly, we build the AST of an untyped (for now) MiniML and we build
-  and interpreter for it. *)
+  an interpreter for it. *)
 
 (** ** Pure Lambda Calculus: Syntax **)
 
