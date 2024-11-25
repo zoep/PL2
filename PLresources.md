@@ -21,3 +21,6 @@
 - [Formal Verification at AWS](https://www.amazon.science/tag/formal-verification?p=1)
 
 - [Safety Risks in C](https://courses.cs.washington.edu/courses/cse341/04wi/lectures/26-unsafe-languages.html)
+
+- [The Programming Languages Zoo](https://plzoo.andrej.com/language/miniml_error.html)
+  
