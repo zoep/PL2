@@ -22,5 +22,5 @@
 
 - [Safety Risks in C](https://courses.cs.washington.edu/courses/cse341/04wi/lectures/26-unsafe-languages.html)
 
-- [The Programming Languages Zoo](https://plzoo.andrej.com/language/miniml_error.html)
+- [The Programming Languages Zoo](https://plzoo.andrej.com)
   
