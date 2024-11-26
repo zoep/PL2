@@ -278,7 +278,7 @@ proofs <--> programs
 Some examples of propositions with their corresponding _proof term_. 
 <<
    Proposition                            |    Program 
---------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------
                                           |
    A  -> A                                |    λ (x : A).  x
                                           |
@@ -469,40 +469,121 @@ Definition contra : forall (A B : Prop), (A -> B) -> (~ B -> ~ A) :=
 
 (** ** Types that depend on types: Type operators *)
 
-(** There are systems, the simplest of which is called λω, that
-    introduce types that depend on other types. On its own, this system
-    is not particularly useful, but together with System F they give rise
-    to higher-order propositional logic
+(** In STLC, [->] is a type constructor: a "function" that takes as
+    inputs two types a returns another type.
 
-    together with system λω give raise to polymorphic type
-    constructors, such as lists, that are commonly found in
-    programming languages. *)
+    System λω, extends this STLC by introducing _type operators_,
+    which are type-level functions. These allow abstraction and
+    application to occur at the level of types. For example:
 
+    - [λΑ. Α -> Α]: type-level function that maps a type A to the type
+      of functions from A to A.
+
+
+    - [λΑ.λB. (Α -> B) -> B]: A type operator that takes two types A
+      and B and produces the type [(A -> B) -> B].
+
+    By convention, we use the same notation for type-level and
+    term-level abstractions and applications.
+
+    In this system, the same type can be write in more than one ways,
+    for example [Bool -> Bool] and [(λΑ. Α -> Α) Bool]. The system
+    ensures that if [Γ |- t : T] and [T] is equivalent to [T'], then
+    [Γ |- t : T']. *)
+
+(** *** Kinds *)
+
+(** To ensure well-typedness of types, System λω introduces the
+    concept of kinds: types for types and type operators.
+
+    - [*]: is the kind of "proper" types
+    - [* -> *]: is the kind of type operators
+    - [* -> * -> *]: two-argument type operator (curried)
+    - [(* -> *) -> *]: the kind of functions from type operators to proper types 
+
+     Examples of Kinds:
+
+     - Bool : *
+
+     - [λA. A -> A] : * -> *
+
+     - [λA.λB. (A -> B) -> B] : * -> * -> *
+
+     - [λT.λB. T B] : (* -> *) -> *   (Higher-order kind)
+*)
+
+(** Such system on its own is rather strange as seen as a logic, but
+    when combined with System F, it corresponds to higher-order
+    predicate logic. *)
+
+(** *** Further Reading  *)
+
+(** A more detailed formalism of the system can be found in Types and
+    Programming languages, Chapter 29.
+
+    The following course notes also provide a nice summary.
+    https://www.cs.cornell.edu/courses/cs4110/2021fa/lectures/lecture31.pdf
+*)
+
+(** *** Examples *)
+
+Definition ty_op1 (A B : Type) := A -> B.
+
+Check ty_op1.
+
+Definition ty_op2 (A B : Type) := (A -> B) -> list A -> list B.
+
+Require Import List.
+
+Definition map' : ty_op2 nat bool := @map nat bool.
 
 (** ** Types that depend on terms: Dependent types *)
 
-(* first order predicate logic *)
+(** Another extension is to allow types to depend on terms. This
+    extension allows for very expressive types that can express
+    program specifications. 
+
+    Type-checking dependently typed programs needs 
+    
+  *)
 
 (** ** Putting Everything Together: Calculus of Constructions *)
 
-(*
-
-   Types that depend on terms?
-
-   vector n  : a list of n elements
+(** Calculus of Construction, the underlying system of Coq, combines
+    all of this extensions together. Logically this corresponds to
+    higher-order predicate logic. *) 
 
 
-   Dependent types correspong to predicates!
 
-   Simply-typed lambda caluclus + dependent types ==> First-order predicate logic
+(** ** More Examples *)
 
-   System F + dependent types  ==> Second-order predicate logic (quantification over predicates)
+Inductive vector (T : Type) : nat -> Type :=
+| Vnil : vector T 0
+| Vcons : forall n, T -> vector T n -> vector T (S n).
 
-*)
+Arguments Vnil {_}.
+Arguments Vcons {_}.
+
+Definition head {T} {n : nat} (v : vector T (S n)) : T :=
+  match v with
+  | Vcons _ x _ => x
+  end.
+
+Definition tail {T} {n : nat} (v : vector T n) : vector T (pred n) :=
+  match v with
+  | Vnil => Vnil
+  | Vcons _ _ l => l
+  end.
+
+Definition append {T} {n m : nat} (v1 : vector T n) (v2 : vector T m) : vector T (n + m).
+Proof.
+  induction v1.
+  - exact v2.
+  - rewrite plus_Sn_m.
+    constructor. exact t. exact IHv1.
+Qed.
 
 
-(* induction is recursion! *)
-  
 Lemma induction_principle :
   forall (P : nat -> Prop), P 0 -> (forall n, P n -> P (1 + n)) -> (forall n, P n). 
 Proof.
@@ -515,51 +596,3 @@ Proof.
             end). 
                      
 Qed.
-
-(*   
-
-   Lambda calculus : terms depended on terms
-
-   Dependent types : types depend on terms
-
-   System F : terms depend on types and terms
-
-   Types that depend on other types (i.e, type constructors)
-
-   Example: 
-
-   type 'a list = | Nil | Cons of 'a * 'a list
-
-
-   Together with type abstractions corresponds to higher-order logic! (quantification over relation operators)
-
-
-   Coq : Calculus of Inductive Constructions (higher-order predicate logic)   
-
-*)
-
-Inductive trans_closure {A : Type} (Q : A -> A -> Prop) : A -> A -> Prop :=
-| Step : forall x y, Q x y -> trans_closure Q x y
-| Trans : forall x y z, trans_closure Q x y -> trans_closure Q y z -> trans_closure Q x z. 
-
-About trans_closure. 
-
-Definition xor (P Q : Prop) := P /\ ~ Q \/ ~ P /\ Q.
-
-Check xor.
-
-
-Require Import Coq.Setoids.Setoid.
-
-Lemma AC_lemma : (* third order formula *) 
-  forall (o : Prop -> Prop -> Prop),
-    (forall P Q, o P Q <-> o Q P) -> (* commutativity *)
-    (forall P Q R, o (o P Q) R <-> o P (o Q R)) -> (* associativity *) 
-    forall P Q R, o (o P Q) R <-> o (o R P) Q.
-Proof.
-  intros s Hc Ha P Q R.
-  rewrite (Hc (s P Q)). rewrite <- Ha.
-  reflexivity.
-Qed.
-
-
