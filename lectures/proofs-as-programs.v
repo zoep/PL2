@@ -542,18 +542,160 @@ Definition map' : ty_op2 nat bool := @map nat bool.
 (** Another extension is to allow types to depend on terms. This
     extension allows for very expressive types that can express
     program specifications. 
-
-    Type-checking dependently typed programs needs 
     
   *)
+
+(** ** First Order Dependent types *)
+
+(*
+Terms: 
+<<
+t := x                  (variables)
+   | λx : T. t          (abstractions)
+   | t t                (applications)
+>>
+
+Types:
+<<
+T  := X                 (type variable)
+    | forall x: T, T    (dependent function type)
+    | T t               (Type application)
+>>
+
+We also call these "type families" since they introduce types that
+are indexed by terms.
+
+Kinds:
+<<
+K := *                   (proper types)
+   | forall x: T, K      (type family)
+     
+>>
+
+Environments:
+<<
+Γ := {}
+   | Γ, x:T              (term variable binding)
+   | Γ, X::K             (type variable binding)
+>>
+
+Well-formed Kinds:
+
+<<
+-------------(WFStar)
+ Γ |- * WF
+
+
+   Γ |- S :: *    Γ, x:S |-  T :: *    
+--------------------------------------(KForall)
+    Γ |- forall x:S, T  WF
+
+>>
+
+Kinding:
+
+<<
+  Γ(X) = K    Γ |- K WF
+-----------------------------(KVar)
+        Γ |- T
+
+
+
+   Γ |- S :: *    Γ, x:S |-  T :: *    
+--------------------------------------(KForall)
+    Γ |- forall x:S, T :: *
+
+
+
+ Γ |- K : forall x:S, T    Γ |- t : S    
+------------------------------------------(KForall)
+        Γ |- K t : [x -> t2]K
+
+
+
+     Γ |- t : T       Γ |- T  ≡ T' 
+--------------------------------------(KConv)
+            Γ |- t : T'
+>>
+
+
+
+
+Typing:
+<<
+  Γ(x) = T    Γ |- T :: *
+-----------------------------(TVar)
+        Γ |- T
+
+
+ Γ |- S :: *    Γ, x:S |- t : T    
+--------------------------------------(TAbs)
+    Γ |- λx:S.t : forall x:S, T
+
+
+ Γ |- t1 : forall x:S, T    Γ |- t2 : S    
+------------------------------------------(TApp)
+        Γ |- t1 t2 : [x -> t2]T
+
+
+     Γ |- t : T       Γ |- T  ≡ T' 
+--------------------------------------(TConv)
+            Γ |- t : T'
+>>
+*)
+
+
+
+(** *** Further Reading *)
+
+
+(** A more detailed formalism of the system can be found in Advanced
+    Topics in Types and Programming languages, Chapter 2.
+*)
+
 
 (** ** Putting Everything Together: Calculus of Constructions *)
 
 (** Calculus of Construction, the underlying system of Coq, combines
     all of this extensions together. Logically this corresponds to
-    higher-order predicate logic. *) 
+    higher-order predicate logic.
+
+    In this calculus there is no syntactic distinction between types and
+    terms: both of them are terms of the same language.    
+
+ *) 
+(** ** Lambda Cube *)
+
+(** The lambda cube, also called the _Barendregt Cube_ visualizes
+    these extensions (terms that depend on types, types that depend on
+    types, types that depend on terms) on three dimensions, where each
+    dimension corresponds to each extensions.
 
 
+    - x-axis: types that can bind terms (dependent types).
+    - y-axis: terms that can bind types (polymorphism).
+    - z-axis: types that can bind types (type operators).
+
+    Different ways of combining such features result in different
+    calculi that correspond to each one of the 8 vertices of the cube.
+    Each of these cacluli correspond, through the Curry-Howard
+    correspondence to different formal systems of logic.  *)
+
+(**
+                               Calculus of Constructions
+      type operators +--------+
+                    /|       /|
+                   / |      / |
+     polymorphism +--------+  |
+                  |  |     |  |
+                  |  +-----|--+
+                  | /      | /
+                  |/       |/
+                  +--------+ dependent types
+                STLC
+
+(ASCII art from "Software foundations")
+**)
 
 (** ** More Examples *)
 
