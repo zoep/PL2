@@ -28,3 +28,4 @@
   
 - [OCaml/Rust Interoperability Library (by Meta)](https://github.com/facebook/ocamlrep)
 
+- [Haskell in Industry](https://wiki.haskell.org/Haskell_in_industry)
