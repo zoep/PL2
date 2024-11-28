@@ -83,7 +83,7 @@ Require Import Coq.Strings.String Coq.Init.Nat Lia.
 
 - Static semantics:
 <<
-      --------------------(Ty_true)
+      --------------------(Ty_nat)
             Γ ⊢ n : Nat
 >>
 
@@ -380,13 +380,13 @@ Inductive type : Type :=
 
 (** Binary Operators. *)
 
-(** To make a definitions less verbose we group all binary operators
-    under the same type [bop]. This will allows us to handle them
+(** To make definitions less verbose we group all binary operators
+    under the same type [bop]. This allows us to handle them
     uniformly when possible. *)
 Inductive bop :=
-(* arithmetic operatos *)
+(* arithmetic operators *)
 | Plus | Minus | Mult
-(* boolan operators *)
+(* boolean operators *)
 | And | Or
 (* comparison operators *)
 | Lt | Eq.
@@ -743,7 +743,7 @@ where "t '-->' t'" := (step t t').
 
 (** ** Typing *)
 
-(** To formalize typing we define a partial map data type to use use
+(** To formalize typing we define a partial map data type to use
     for typing environments. We represent environments as functions
     from strings (identifiers) to optional values. We define
     operations and notations. *)
@@ -1083,7 +1083,7 @@ Qed.
 
 (** In order to prove preservation, we first need to prove a weakening
     lemma. That is, if [Gamma ⊢ t : A], then [Gamma' ⊢ t : A], for any
-    [Gamma'] that contains all the binding of [Gamma], and possibly
+    [Gamma'] that contains all the bindings of [Gamma], and possibly
     more. *)
 
 (** We formalize a notion of submap. A map [m] is a submap of [m'], if
@@ -1387,7 +1387,7 @@ Fixpoint ty_eqb (A B: type) : bool :=
     if the term is not well-typed. *)
 
 (** To avoid boilerplate code when writing a function that manipulates
-    a lot of [option] types, we introduces a so called _monadic_
+    a lot of [option] types, we introduce a so called _monadic_
     notation for sequencing operations.
 
     The sequencing operation [x <- e1 ;; e2] evaluates [e1] and if it
