@@ -23,4 +23,9 @@
 - [Safety Risks in C](https://courses.cs.washington.edu/courses/cse341/04wi/lectures/26-unsafe-languages.html)
 
 - [The Programming Languages Zoo](https://plzoo.andrej.com)
+
+- [Infer: A Static Analyzer Writen in OCaml (by Meta)](https://github.com/facebook/infer)
   
+- [OCaml/Rust Interoperability Library (by Meta)](https://github.com/facebook/ocamlrep)
+
+- [Haskell in Industry](https://wiki.haskell.org/Haskell_in_industry)

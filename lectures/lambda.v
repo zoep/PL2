@@ -500,7 +500,7 @@ Module MiniML.
   (** Some variables *)
 
   Definition f : string := "f".
-  Definition foo : string := "for".
+  Definition foo : string := "foo".
   Definition bar : string := "bar".
   Definition fact : string := "fact".
   Definition n : string := "n".
