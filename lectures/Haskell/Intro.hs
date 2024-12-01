@@ -838,6 +838,8 @@ traceShowM :: (Monad m, Show a) => a -> m ()
 
 -}
 
+-- Examples 
+
 query2Dbg :: IO String
 query2Dbg = do
   putStr "What is your name? "
@@ -852,5 +854,3 @@ qsortDbg (p:xs) = trace "Pivot:" $ traceShow p $ lt ++ ([p]) ++ ge
   where 
     lt = qsortDbg [x | x <- xs, x < p]
     ge = qsortDbg [x | x <- xs, x >= p]
-
--- -- Examples of usage
