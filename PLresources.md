@@ -24,6 +24,8 @@
 
 - [The Programming Languages Zoo](https://plzoo.andrej.com)
 
+- [SIGPLAN Blog](https://blog.sigplan.org/blog/)
+
 - [Infer: A Static Analyzer Writen in OCaml (by Meta)](https://github.com/facebook/infer)
   
 - [OCaml/Rust Interoperability Library (by Meta)](https://github.com/facebook/ocamlrep)
