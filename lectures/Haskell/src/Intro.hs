@@ -118,39 +118,39 @@ Basic Types
 -- thought the type annotations are optional, they are strongly encouraged.
 
 -- The type Integer is the type of arbitrarily large integer numbers
-n :: Integer
-n = 42
+n1 :: Integer
+n1 = 42
 
 -- >>> n
 -- 42
 
 -- The type Int is the type of word-sized integers, which is machine dependent. 
-n' :: Int
-n' = 42
+n1' :: Int
+n1' = 42
 
 -- >>> n'
 -- 42
 
 -- Definitions don't have to be in order 
+n3 :: Int
+n3 = n2 + 21
+
 n2 :: Int
-n2 = n1 + 21
+n2 = 21
 
-n1 :: Int
-n1 = 21
-
--- >>> n2
+-- >>> n3
 -- 42
 
 -- Double precision floating point
-f :: Double 
-f = 123.456
+f1 :: Double 
+f1 = 123.456
 
---- >>> f
+--- >>> f1
 -- 123.456
 
 -- Booleans
-b :: Bool
-b = True && (False :: Bool) || (n2 == 42)
+b1 :: Bool
+b1 = True && (False :: Bool) || (n2 == 42)
 
 -- >>> b
 -- True
@@ -714,17 +714,19 @@ fibi1 :: [Integer]
 fibi1 = 1 : fibi2
 
 fibi2 :: [Integer]
-fibi2 = add fibi fibi1
-  where add (x:xs) (y:ys) = (x+y) : add xs ys
+fibi2 = addf fibi fibi1
+  where addf (x:xs) (y:ys) = (x+y) : addf xs ys
+        addf _ _           = error "unreachable"
 
 -- >>> take 10 fibi
 -- [0,1,1,2,3,5,8,13,21,34]
 
 consumer :: (Eq t, Num t, Show a) => [a] -> t -> [Char]
 consumer stream n =
-  if n == 1 then show head
-  else show head ++ ", " ++ consumer tail (n-1)
-    where head:tail = stream
+  if n == 1 then show x
+  else show x ++ ", " ++ consumer xs (n-1)
+    where 
+      x:xs = stream
 
 -- >>> consumer fibi 10
 -- "0, 1, 1, 2, 3, 5, 8, 13, 21, 34"
@@ -845,12 +847,12 @@ query2Dbg = do
   putStr "What is your name? "
   n <- getLine
   traceM "Read the line:"
-  traceM m
+  traceM n
   return n
 
-qsortDbg :: Ord a => [a] -> [a] -- What is Ord?
+qsortDbg :: (Ord a, Show a) => [a] -> [a] -- What is Ord?
 qsortDbg [] = []
-qsortDbg (p:xs) = trace "Pivot:" $ traceShow p $ lt ++ ([p]) ++ ge
+qsortDbg (p:xs) = trace "Pivot:" $ traceShow p $ lt ++ [p] ++ ge
   where 
     lt = qsortDbg [x | x <- xs, x < p]
     ge = qsortDbg [x | x <- xs, x >= p]
