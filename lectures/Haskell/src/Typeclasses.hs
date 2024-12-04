@@ -12,35 +12,38 @@ import Data.Foldable hiding (elem)
 Typeclasses
 -----------
 
+If we let Haskell infer the type of the following function, it will not be
+the one we wrote for it in the previous section, but something more general.
+
 -}
--- If we let Haskell infer the type of the following function, it will not be
--- the one we wrote for it in the previous section, but something more general.
   
 add :: Num a => a -> a -> a
 add = (+)
 
--- The above type tells us that add works for any type, as long as this type
--- implements the [Num] type class. 
+{- 
+The above type tells us that add works for any type, as long as this type
+implements the [Num] type class. 
 
--- What is a type class??
+What is a type class?
 
--- A type class is a set of operations, you can think of it as a record, that
--- can be implemented by various types. It defines an interface that can be
--- implemented by various types in an ad-hoc way. 
+A type class is a set of operations (functions and constants), can must be
+implemented by any type that is an _instance_ of the type class. Type class
+defines a common interface 
 
--- Then when writing polymorphic functions, one can put constraints on
--- polymorhic types that they should implement a particular type class.
+Then when writing polymorphic functions, one can put constraints on
+polymorphic types that they should implement a particular type class. This is
+called a type class constraint. Then the function can access all the
+operations of the type class.
 
--- Haskell implements overloading, which is the ability to define an operation
--- for more than one types, using type classes. 
+Haskell implements overloading, which is the ability to define an operation
+for more than one types, using type classes. 
 
--- The Num typeclass defines operations line _, -, * for numeric types. Every
--- type that implements the typeclass, i.e., provides an instance of the type
--- class, should define this operations.
+The Num typeclass defines operations like +, -, * for numeric types. Every
+type that implements the typeclass, i.e., provides an instance of the type
+class, should define this operations.
 
--- Another useful class is Eq, that defined equality and inequality.
-
-{- Its definition is the following:
+Another useful class is Eq, that defines equality and inequality.
+Its definition in Haskell library is the following:
 
 
 class Eq a where
@@ -48,23 +51,28 @@ class Eq a where
     (/=)        :: a -> a -> Bool
 
     x /= y      = not (x == y) -- default implementation
--}
 
--- Most build-in datatype in Haskell provide instances for Eq But when we are
--- defining our own types, we may want them to provide instances of such
--- classes.
+
+The definition of inequality has a default has a default implementation that 
+will be used when if the instance does not redefine the operation.
+
+Most build-in datatypes in Haskell provide instances for Eq But when we are
+defining our own types, we may want them to provide instances of such
+classes.
+
+-}
 
 data Tree a = Leaf | Node a (Tree a) (Tree a)
 
+-- The type class instance for Tree a, has a type class constraint that the
+-- type a must implement Eq
 
--- Type class instance for Tree a
--- Eq a is a type class contraint that the abstract type a must implement Eq
 instance Eq a => Eq (Tree a) where
     (==) :: Eq a => Tree a -> Tree a -> Bool
     Leaf          == Leaf             = True
     Node a1 t1 t2 == Node a1' t1' t2' = a1 == a1' && t1 == t1' && t2 == t2'
-    _ == _ = False 
-    
+    _             ==                  _ = False 
+
 tree1 :: Tree Int
 tree1 = Node 42 (Node 17 Leaf Leaf) Leaf
 
@@ -98,17 +106,17 @@ tree2' = Node' 17 (Node' 11 Leaf' Leaf') Leaf'
 --- >>> tree1' == tree1'
 -- True
 
--- The Show typeclass provides one function show :: a -> String that converts
+-- The Show type class provides one function show :: a -> String that converts
 -- its input to a string. 
 
 -- >>> show tree1'
 -- "Node' 42 (Node' 17 Leaf' Leaf') Leaf'"
 
--- However, these derived instances might not always be the desired ones.
+-- These derived instances might not always be the desired ones.
 
 -- For example, consider the following simple AST that contains information
 -- about the position of the node in the source code. When we compare
--- expressions, we would like to ignore this
+-- expressions, we would like to ignore this.
 
 -- The source code position
 type Posn = (Int,Int) -- a type synonym
@@ -144,12 +152,14 @@ qsort (p:xs) =
   [p] ++ qsort [x | x <- xs, x >= p]
 
 
-{- To summarize we've see four very standard type classes in Haskell
+{- 
 
-- Ord used for totally ordered data types
-- Show allow data types to be printed as strings
-- Eq used for data types supporting equality
-- Num functionality common to all kinds of numbers
+To summarize we've see four very standard type classes in Haskell:
+
+- Ord  : provides total orderings on data types
+- Show : allows data types to be printed as strings
+- Eq   : provides (in)equality operations
+- Num  : provides functionality common to all kinds of numbers
 
 Next, we will move to another very common Haskell typeclass: Monads.
 -}
