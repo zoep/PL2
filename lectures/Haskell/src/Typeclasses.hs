@@ -1,12 +1,12 @@
 {-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE LambdaCase #-}
 
 module Typeclasses where
 
 import Prelude hiding (fail, elem)
 import qualified Data.Map as M
-import Data.Foldable hiding (elem)
+import Control.Monad hiding (fail)
 
+import Debug.Trace
 {- 
 
 Typeclasses
@@ -346,23 +346,58 @@ newtype Reader env a = Reader { runReader :: env -> a }
 instance Functor (Reader env) where
   fmap f r = Reader (f . runReader r)
 
-instance Applicative (Reader env) where
-  pure x                   = Reader (\_ -> x)
-  Reader fe <*> Reader ae  = Reader (\e -> fe e (ae e))
+instance Applicative (Reader e) where
+  pure x = Reader (\_ -> x)
+  rf <*> rx = Reader (\r -> (runReader rf r) (runReader rx r))
 
-instance Monad (Reader env) where
-  (>>=) :: Reader env a -> (a -> Reader env b) -> Reader env b
-  x >>= f  = Reader $ \e -> let x' = runReader x e in runReader (f x') e
+-- instance Applicative (Reader env) where
+--   pure x                   = Reader (\_ -> x)
+--   Reader fe <*> Reader ae  = Reader (\e -> fe e (ae e))
+
+-- instance Monad (Reader env) where
+--   (>>=) :: Reader env a -> (a -> Reader env b) -> Reader env b
+--   x >>= f  = Reader $ \e -> let x' = runReader x e in runReader (f x') e
+
+instance Monad (Reader e) where
+  return = pure
+
+  mr >>= f =
+    let
+      step1 r = runReader mr r        -- unwrap inner reader
+      step2 r = f (step1 r)           -- apply function to that value
+      step3 r = runReader (step2 r) r -- unwrap outer reader
+    in
+      Reader (\r -> step3 r)          -- package up resulting reader value
 
 ask :: Reader env env
 ask = Reader (\e -> e)
 
 
--- TODO example
+-- For example, we can write the substitution function in a reader monad, to
+-- avoid explicitly passing the variable and expression to be substituted.
 
+substR :: Exp -> Reader (String, Exp) Exp 
+substR t@(Var _ y) = do
+   (x, t') <- ask
+   if x == y then return t' else return t
+substR t@(Abs p y t1) = do 
+  (x, _) <- ask
+  if x == y then return t
+  else liftM (Abs p y) (substR t1)
+substR (App p t1 t2)  = liftM2 (App p) (substR t1) (substR t2)
+substR t@(Num _ _)    = return t
+substR (Add p t1 t2)  = liftM2 (Add p) (substR t1) (substR t2)
+
+
+subst' :: String -> Exp -> Exp -> Exp
+subst' x t' t = runReader (substR t) (x,t')
+
+-- >>> subst' "x" (Abs psn "z" (Var psn "z")) (App psn (Var psn "x") (Add psn (Num psn 1) (Num psn 2)))
+-- App (0,0) (Abs (0,0) "z" (Var (0,0) "z")) (Add (0,0) (Num (0,0) 1) (Num (0,0) 2))
+  
 {- 
 
-The Reader Monad 
+The State Monad 
 ----------------
 
 The reader monad encapsulates a computation that reads from a context. 
@@ -394,14 +429,14 @@ put :: state -> State state ()
 put s = State (\_ -> (s,()))
 
 
--- Example: Fibonacci with state 
+-- Example: Fibonacci as a stateful function
 
 type FibState = State (Integer, Integer)
 
-
+fibS :: Integer -> State (Integer, Integer) ()
 fibS 0 = pure ()
 fibS n = do 
-  fibn <- fibS (n-1)
+  fibS (n-1)
   (curr, prev) <- get
   put (curr + prev, curr)
   pure ()
@@ -417,7 +452,7 @@ getFibN = fst . fst . flip runState (0,1) . fibS
 getFibN' :: Integer -> Integer
 getFibN' n = fib 
   where
-    ((fib, _), _) = runState (fibS n) (0,1) 
+    ((fib, _), _) = runState (fibS n) (0,1)
 
 -- >>> getFibN' 9
 -- 34
