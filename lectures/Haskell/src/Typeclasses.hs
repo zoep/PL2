@@ -288,62 +288,11 @@ eval' (Add p t1 t2) = do
     _ -> fail
 
 
--- >>> eval' exp1
--- Just (Num (0,0) 3)
 
--- The Reader Monad
-
--- data Val = Clo Env String Exp
---          | VNum Int
-
--- type Env = M.Map String Val
-
--- data Reader env a = Rd (env -> a)
-
--- instance Monad (Reader env) where 
-
---    return      :: a -> Reader env a
---    return  a = Rd (\_ -> a)
-
---    (>>=)       :: Reader env a -> (a -> Reader env b) -> Reader env b
---    (Rd m) >>= f   =  Rd (\env -> let x = m env in 
---                                  let Rd r = f x in r env)
-
-
-
-
-elem :: (Eq a, Foldable t) => a -> t a -> Bool 
-elem x = foldr (\y b -> x == y || b) False    
-
--- >>> elem 1 [42]
--- False
-
-
--- test1 :: Functor f => (a -> b) -> f a -> f b
--- test1 = fmap 
-
--- class Eq a where
---   (==) :: a -> a -> Bool
-
--- eval' :: Exp -> Reader Env Exp
--- eval' (Var _ _) = fail
--- eval' (Abs p x t) = return (Abs p x t)  
--- eval' (App _ t1 t2) = do
---   env <- read ;; 
---   v <- eval' t1;
---   case v of
---     Abs _ x t -> do
---       v2 <- eval' t2;
---       eval (subst x v2 t)
---     _ -> fail
--- eval' (Num p n) = return (Num p n)
--- eval' (Add p t1 t2) = do 
---   v1 <- eval' t1;
---   v2 <- eval' t2;
---   case (v1, v2) of 
---     (Num _ n1, Num _ n2) -> return $ Num p (n1 + n2)
---     _ -> fail
-
+{-
+ WIP 
+=====
+-}
 
 -- Generic Monad Functions 
 
@@ -392,3 +341,49 @@ get = State (\s -> (s,s))
 
 put :: state -> State state ()
 put s = State (\_ -> (s,()))
+
+-- >>> eval' exp1
+-- Just (Num (0,0) 3)
+
+-- The Reader Monad
+
+-- data Val = Clo Env String Exp
+--          | VNum Int
+
+-- type Env = M.Map String Val
+
+-- data Reader env a = Rd (env -> a)
+
+-- instance Monad (Reader env) where 
+
+--    return      :: a -> Reader env a
+--    return  a = Rd (\_ -> a)
+
+--    (>>=)       :: Reader env a -> (a -> Reader env b) -> Reader env b
+--    (Rd m) >>= f   =  Rd (\env -> let x = m env in 
+--                                  let Rd r = f x in r env)
+
+-- test1 :: Functor f => (a -> b) -> f a -> f b
+-- test1 = fmap 
+
+-- class Eq a where
+--   (==) :: a -> a -> Bool
+
+-- eval' :: Exp -> Reader Env Exp
+-- eval' (Var _ _) = fail
+-- eval' (Abs p x t) = return (Abs p x t)  
+-- eval' (App _ t1 t2) = do
+--   env <- read ;; 
+--   v <- eval' t1;
+--   case v of
+--     Abs _ x t -> do
+--       v2 <- eval' t2;
+--       eval (subst x v2 t)
+--     _ -> fail
+-- eval' (Num p n) = return (Num p n)
+-- eval' (Add p t1 t2) = do 
+--   v1 <- eval' t1;
+--   v2 <- eval' t2;
+--   case (v1, v2) of 
+--     (Num _ n1, Num _ n2) -> return $ Num p (n1 + n2)
+--     _ -> fail

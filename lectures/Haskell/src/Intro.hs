@@ -1,7 +1,9 @@
 {-# LANGUAGE BangPatterns #-}
 module Intro where
 
-import Data.List ( foldl', tails ) -- we can explicitly choose which functions to import from a module
+import Prelude hiding (elem)
+-- we can explicitly choose which functions to import from a module
+import Data.List (foldl', tails) 
 
 import Debug.Trace -- Useful for debugging
 
@@ -630,6 +632,13 @@ trues = True:trues
 
 -- >>> foldr (&&) True (False:trues)
 -- False
+
+elem :: (Eq a, Foldable t) => a -> t a -> Bool 
+elem x = foldr (\y b -> x == y || b) False    
+
+-- >>> elem 1 [1..]
+-- True
+
 
 -- One the other hand, foldl will have to reach the end of the list to compute
 -- the result. This will cause the computation to diverge
