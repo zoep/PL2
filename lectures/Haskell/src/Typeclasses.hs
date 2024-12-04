@@ -171,15 +171,19 @@ Monads
 
 Monads can be seen as a generic interface to various types of computations.
 
-Monads can be used to model stateful computation and ensure that all
-"side-effects" remain inside the monad (like the IO monad.). 
+This interface can be used to simulate an imperative programming style in purely 
+functional languages by hiding a lot of . This makes it easier to write code 
+that manipulates state, throws errors, models nondeterminism, etc.
 
+Monads can also be used to encapsulate truly impure code and keep it 
+separate from the pure language fragment (like the IO monad). 
 
-The interface that must be implemented by a monad is 
+The interface that must be implemented by a monad is the following. 
 
 class Monad (m :: Type -> Type) where    
+  -- encapsulate a pure computation in a monadic one
   return :: a -> m a
-  -- monadic bind
+  -- sequence two monadic compuations
   (>>=)  :: m a -> (a -> m b) -> m b
 
 Note, that the monad is not parametric on a type, but a type operator. As we
@@ -190,6 +194,9 @@ In addition to the interface, monads should satisfy the _monad laws_:
 return a >>= k = k a
 m >>= return = m 
 m >>= (\x -> k x >>= h)  =  (m >>= k) >>= h
+
+Note: As of 2017, Haskell require every Monad to also be an Applicative
+instance, and every Applicative to also have a Functor instance. to be 
 
 -}
 
@@ -208,7 +215,7 @@ instance Monad Maybe where
 
 -}
 
--- We also provide some "actions" that are specific to this monad
+-- There is also a "monadic action" specific to this monad
 fail :: Maybe a
 fail = Nothing
 
@@ -216,7 +223,8 @@ fail = Nothing
 -- functions that return optional types. 
 
 -- For example we can write an interpreter for lambda calculus, which is a
--- partial function, without having to match at the result type all the time.
+-- partial function, without having to explicitly match the result to get it out 
+-- of the Maybe type. We can simply use monadic bind to do this.
 
 subst :: String -> Exp -> Exp -> Exp 
 subst x t' t@(Var _ y)    = if x == y then t' else t
@@ -255,12 +263,13 @@ eval (Add p t1 t2) =
 -- >>> eval exp1
 -- Just (Num (0,0) 3)
 
--- This already feels all lot like sequencing computation. Haskell provides the
--- do notation to makes this sequencing feel even more natural. 
+{-- 
 
--- Do notation
+Do notation
+-----------
 
-{- 
+This already feels all lot like sequencing imperative code. Haskell provides a
+"do notation" to makes this sequencing feel even more natural. 
 
 A monadic bind operation 
 
@@ -268,16 +277,15 @@ m >>= \x -> m'
 
 in do notation becomes 
 
-x <- m;
+x <- m
 m'
 
 This notation, which resembles an imperative program, must be written inside a
-do block. The following examples domonstrates this.  
-
+do block. The following example demonstrates this.  
 -}
 
 
--- 
+-- eval with do notation
 
 eval' :: Exp -> Maybe Exp
 eval' (Var _ _) = fail
@@ -300,17 +308,38 @@ eval' (Add p t1 t2) = do
 
 
 {-
- WIP 
-=====
+
+Generic Monad Functions 
+------------------------
+
+There are several monadic combinators that let us manipulate and sequence monadic computation. 
+Some examples are: 
+
+-- Map each element of a structure to a monadic action, evaluate these actions from left to 
+-- right, and collect the results. 
+mapM :: (Traversable t, Monad m) => (a -> m b) -> t a -> m (t b)
+
+-- Evaluate each monadic action in the structure from left to right, and collect the results. 
+sequence :: (Traversable t, Monad m) => t (m a) -> m (t a)
+
+-- Lift a pure function to a monadic one 
+liftM :: Monad m => (a1 -> r) -> m a1 -> m r
+
+-- Lift a pure function with two arguments to a monadic one 
+liftM2 :: Monad m => (a1 -> a2 -> r) -> m a1 -> m a2 -> m r
+
+-}   
+
+{- 
+
+The Reader Monad 
+----------------
+
+The reader monad encapsulates a computation that reads from a context. 
+When writing a program inside a reader monad we don't have to explicitly pass
+the context to each call, the context is treated as a global, read-only state.
+
 -}
-
--- Generic Monad Functions 
-
--- mapM :: (a -> m b) -> t a -> m (t b)
--- sequence :: (Traversable t, Monad m) => t (m a) -> m (t a)
--- liftM :: Monad m => (a1 -> r) -> m a1 -> m r
--- liftM2 :: Monad m => (a1 -> a2 -> r) -> m a1 -> m a2 -> m r
-  
 
 newtype Reader env a = Reader { runReader :: env -> a }
 
@@ -328,8 +357,20 @@ instance Monad (Reader env) where
 ask :: Reader env env
 ask = Reader (\e -> e)
 
--- >>> elem 1 [42,2]
--- False
+
+-- TODO example
+
+{- 
+
+The Reader Monad 
+----------------
+
+The reader monad encapsulates a computation that reads from a context. 
+When writing a program inside a reader monad we don't have to explicitly pass
+the context to each call, the context is treated as a global, read-only state.
+
+-}
+
 
 newtype State state a = State { runState :: state -> (state, a) }
 
@@ -352,48 +393,76 @@ get = State (\s -> (s,s))
 put :: state -> State state ()
 put s = State (\_ -> (s,()))
 
--- >>> eval' exp1
--- Just (Num (0,0) 3)
 
--- The Reader Monad
+-- Example: Fibonacci with state 
 
--- data Val = Clo Env String Exp
---          | VNum Int
+type FibState = State (Integer, Integer)
 
--- type Env = M.Map String Val
 
--- data Reader env a = Rd (env -> a)
+fibS 0 = pure ()
+fibS n = do 
+  fibn <- fibS (n-1)
+  (curr, prev) <- get
+  put (curr + prev, curr)
+  pure ()
 
--- instance Monad (Reader env) where 
 
---    return      :: a -> Reader env a
---    return  a = Rd (\_ -> a)
+getFibN :: Integer -> Integer
+getFibN = fst . fst . flip runState (0,1) . fibS
 
---    (>>=)       :: Reader env a -> (a -> Reader env b) -> Reader env b
---    (Rd m) >>= f   =  Rd (\env -> let x = m env in 
---                                  let Rd r = f x in r env)
+-- >>> getFibN 8
+-- 21
 
--- test1 :: Functor f => (a -> b) -> f a -> f b
--- test1 = fmap 
+-- An (arguably) clearer version of the above would be:
+getFibN' :: Integer -> Integer
+getFibN' n = fib 
+  where
+    ((fib, _), _) = runState (fibS n) (0,1) 
 
--- class Eq a where
---   (==) :: a -> a -> Bool
+-- >>> getFibN' 9
+-- 34
 
--- eval' :: Exp -> Reader Env Exp
--- eval' (Var _ _) = fail
--- eval' (Abs p x t) = return (Abs p x t)  
--- eval' (App _ t1 t2) = do
---   env <- read ;; 
---   v <- eval' t1;
+-- We can also write this as a "for loop"
+
+fibNFor :: Integer -> Integer
+fibNFor n = snd . flip runState (0,1) $ do
+  
+  forM_ [0..(n-1)] $ \_ -> do
+    (curr,prev) <- get
+    put (curr+prev,curr)
+  
+  (curr,_) <- get
+  return curr
+
+-- >>> fibNFor 9
+-- 34
+
+
+{- Monad Transformers -}
+
+-- WIP 
+
+{- For example, we can write an environment-based interpreter without passing the context around. -}
+
+-- evalEnv :: Exp -> State Env Exp
+-- evalEnv (Var _ _) = f
+--   env <- get ;; 
+--   case M.lookup 
+-- evalEnv (Abs p x t) = return (Abs p x t)  
+-- evalEnv (App _ t1 t2) = do
+--   env <- get ;; 
+--   v <- evalEnv t1;
 --   case v of
 --     Abs _ x t -> do
---       v2 <- eval' t2;
---       eval (subst x v2 t)
+--       v2 <- evalEnv t2;
+--       put $ M.insert x v2 env
+--       evalEnv t
 --     _ -> fail
--- eval' (Num p n) = return (Num p n)
--- eval' (Add p t1 t2) = do 
---   v1 <- eval' t1;
---   v2 <- eval' t2;
+-- evalEnv (Num p n) = return (Num p n)
+-- evalEnv (Add p t1 t2) = do 
+--   v1 <- evalEnv t1;
+--   v2 <- evalEnv t2;
 --   case (v1, v2) of 
 --     (Num _ n1, Num _ n2) -> return $ Num p (n1 + n2)
 --     _ -> fail
+
