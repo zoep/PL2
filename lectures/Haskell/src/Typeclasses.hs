@@ -346,28 +346,13 @@ newtype Reader env a = Reader { runReader :: env -> a }
 instance Functor (Reader env) where
   fmap f r = Reader (f . runReader r)
 
-instance Applicative (Reader e) where
-  pure x = Reader (\_ -> x)
-  rf <*> rx = Reader (\r -> (runReader rf r) (runReader rx r))
+instance Applicative (Reader env) where
+  pure x                   = Reader (\_ -> x)
+  Reader fe <*> Reader ae  = Reader (\e -> fe e (ae e))
 
--- instance Applicative (Reader env) where
---   pure x                   = Reader (\_ -> x)
---   Reader fe <*> Reader ae  = Reader (\e -> fe e (ae e))
-
--- instance Monad (Reader env) where
---   (>>=) :: Reader env a -> (a -> Reader env b) -> Reader env b
---   x >>= f  = Reader $ \e -> let x' = runReader x e in runReader (f x') e
-
-instance Monad (Reader e) where
-  return = pure
-
-  mr >>= f =
-    let
-      step1 r = runReader mr r        -- unwrap inner reader
-      step2 r = f (step1 r)           -- apply function to that value
-      step3 r = runReader (step2 r) r -- unwrap outer reader
-    in
-      Reader (\r -> step3 r)          -- package up resulting reader value
+instance Monad (Reader env) where
+  (>>=) :: Reader env a -> (a -> Reader env b) -> Reader env b
+  x >>= f  = Reader $ \e -> let x' = runReader x e in runReader (f x') e
 
 ask :: Reader env env
 ask = Reader (\e -> e)
