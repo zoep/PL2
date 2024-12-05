@@ -2,6 +2,8 @@
 
 - [Verus lang](https://github.com/verus-lang/verus)
 
+- [Hax: Translating Rust into Coq and F*](https://hacspec.org)
+
 - [Compiler, Language and Runtime Teams](https://mgaudet.github.io/CompilerJobs/)
 
 - [A List of companies that use formal verification methods in software engineering](https://github.com/ligurio/practical-fm)
