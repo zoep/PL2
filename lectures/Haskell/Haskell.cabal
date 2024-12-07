@@ -18,13 +18,14 @@ common warnings
 library
     import:           warnings
     exposed-modules:
+        Main
         Intro
         Typeclasses
         QuickCheck
     -- other-modules:
     -- other-extensions:
     build-depends:
-        base         ^>=4.19.0.0,
+        base          >=4.19.0.0,
         containers    >= 0.4.0.0,
         QuickCheck    >= 2.14.3,
         mtl           >= 2.3.1,
