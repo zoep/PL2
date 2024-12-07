@@ -1,12 +1,14 @@
 module QuickCheck where
 
+import Prelude hiding (map)
 import Test.QuickCheck
 import Control.Monad
-import Data.List hiding (insert)
-import qualified Data.Map as M
 import Control.Monad.State hiding (when)
+import Data.List hiding (insert,map)
+import qualified Data.Map as M
 import System.Random (Random)
 import Data.Maybe (isJust)
+import Debug.Trace
 
 {- Property Based Testing
    ======================
@@ -45,6 +47,13 @@ Let's start by defining some basic properties for QC to test.
 
 -}
 
+
+revLength :: [Integer] -> Bool
+revLength l = length l == length (reverse l)
+
+revInvolutive :: [Integer] -> Bool
+revInvolutive xs = reverse (reverse xs) == xs
+
 revSingleton :: Integer -> Bool
 revSingleton a = reverse [a] == [a]
 
@@ -52,10 +61,8 @@ revAppend :: [Integer] -> [Integer] -> Bool
 revAppend xs ys = reverse (xs ++ ys) == reverse ys ++ reverse xs
 
 revAppendWrong :: [Integer] -> [Integer] -> Bool
-revAppendWrong xs ys = reverse (xs ++ ys) == reverse xs ++ reverse xs
+revAppendWrong xs ys = reverse (xs ++ ys) == reverse xs ++ reverse ys
 
-revInvolutive :: [Integer] -> Bool
-revInvolutive xs = reverse (reverse xs) == xs
 
 {- We can then open the REPL and try the following
 
@@ -126,7 +133,7 @@ Let's now try to write more convoluted properties that test an insertion sort im
 
 insert :: Integer -> [Integer] -> [Integer]
 insert v []= [v]
-insert v (x:xs) | v > x = x : insert v xs
+insert v (x:xs) | x < v = x : insert v xs
 insert v (x:xs) = v : x : xs
 
 insertionSort :: [Integer] -> [Integer]
@@ -326,7 +333,7 @@ Monad type class which allows us to combine generators to build more complex one
 return :: a -> Gen a
 
 - Generates an a and passes it to the second generator to generate a b
-(>>=)  :: Gen a -> (a -> Gen a) -> Gen b
+(>>=)  :: Gen a -> (a -> Gen b) -> Gen b
 
 -}
 
@@ -358,7 +365,7 @@ For example we can write a naive generator for lists of type a.
 
 -}
 
-genList :: Arbitrary a => Gen [a]
+genList :: Gen [Integer]
 genList = listOf arbitrary
 
 {- We used the combinator
@@ -412,7 +419,7 @@ Here's their type and documentation.
 
 -- Generates a random element in the given inclusive range. For integral and enumerated types,
 -- the specialized variants of choose below run much quicker.
-choose :: Random a => (a, a) -> Gen a
+choose :: (Random a, Ord a) => (a, a) -> Gen a
 
 -- Generates a random element over the natural range of a.
 chooseAny :: Random a => Gen a
@@ -487,16 +494,18 @@ We will also collect information about the "sortedness" and the length of test d
 
 -}
 
+testGen :: Property
+testGen =
+  forAll genSorted isSorted
+
 insertPreservesSorted'' :: Integer -> Property
 insertPreservesSorted'' x =
-    forAll genSorted (\l -> collect (isSorted l) $ collect (length l) $ isSorted (insert x l))
-
+    forAll genSorted (\l -> collect (length l) $ isSorted (insert x l))
 
 {-
 
 ghci> quickCheck insertPreservesSorted''
 +++ OK, passed 100 tests:
-100% True
  1% 0
  1% 1
  1% 10
@@ -517,6 +526,8 @@ test coverage than the previous property.
 {- Case study: Red-black Trees
    ---------------------------
 
+Inspired from: https://inria.hal.science/hal-01162898/document
+
 TODO add more comments
 
 Red-black invariant
@@ -530,6 +541,7 @@ any other leaf, which means that the heigh of any tree of N nodes is at most
 2logN.
 
 By convention the root of the tree is black.
+
 -}
 
 data Color = Red | Black
@@ -616,7 +628,7 @@ genRBTreeHeight Black  h = do
     Red -> liftM3 (Node Red) arbitrary (genRBTreeHeight Red h) (genRBTreeHeight Red h)
 
 genRBTree :: Arbitrary a => Gen (Tree a)
--- do not generates trees with red-black height more than 10 (i.e, at most 1048576 nodes)
+-- do not generate trees with black height greater than 10 (i.e, at most 1048576 nodes)
 genRBTree = scale (min 10) $ sized (genRBTreeHeight Red)
 
 genMakesSense :: Property
@@ -626,7 +638,6 @@ genMakesSense =
 insertPreservesRedBlack :: Integer -> Property
 insertPreservesRedBlack n =
   forAll genRBTree (\t -> collect (isRedBlack t) $ isRedBlack (insertRB n t))
-
 
 
 {-
@@ -640,12 +651,171 @@ ghci> quickCheck insertPreservesRedBlack
    ---------------------------
 
 
+The code indludes: 
+
+- Definitions of abstract syntax for simply-typed lambda calculus with numbers and addition
+- Typechecker for STLC
+- Random generator for types
+- Random generator for well-typed terms of a given type
+- Random generator for well-typed terms of a random type
+- Property checker for fuzzing the typechecker
+
+-}
+
+-- STLC with Integers and Addition
+
+data Typ = TInt | TArrow Typ Typ
+  deriving (Eq,Show,Ord)
+
+data Exp = Var String
+         | App Exp Exp
+         | Abs String Typ Exp
+         | Num Integer
+         | Add Exp Exp
+   deriving (Eq, Show)
+
+-- Simple typechecker that returns the type of a type-annotated term
+getType :: M.Map String Typ -> Exp -> Maybe Typ
+getType env (Var x) = M.lookup x env
+getType env (App e1 e2) =  do
+  t1 <- getType env e1
+  case t1 of
+    TArrow t1' t2' -> do
+      t2 <- getType env e2
+      if t2 == t1' then return t2' else Nothing
+    _ -> Nothing
+getType env (Abs x t e) = do
+  t' <- getType (M.insert x t env) e
+  return $ TArrow t t'
+getType _ (Num _) = return TInt
+getType env (Add e1 e2) = do
+  t1 <- getType env e1
+  t2 <- getType env e2
+  if t1 == TInt && t2 == TInt then return TInt else Nothing
+
+
+-- Type generator. Generates types up to a given size, where size is the number of arrows.
+genTypeSize :: Int -> Gen Typ
+genTypeSize n | n <= 0 = return TInt
+genTypeSize n =
+  frequency [ (1, return TInt)
+            , (3, genArrow) ]
+  where
+    genArrow = do
+      t1 <- genTypeSize (n-1)
+      t2 <- genTypeSize (n-1)
+      return $ TArrow t1 t2
+
+
+genType :: Gen Typ
+genType = arbitrary >>= genTypeSize
+
+-- Generates random terms of a given type and up to a given size. The
+-- environment has the available bound variables with their types. We define the
+-- size of a term to be the maximum number of binary nodes (addition and
+-- applications) on a path from the root to a leaf.
+genTermSize :: M.Map Typ [String]  -- a map from types to variables with the corresponding types
+            -> Int                 -- counter for generating fresh names (*)
+            -> Typ                 -- the type of the generated terms
+            -> Int                 -- The size of the term. We define it to be the size of the application nodes.
+            -> Gen Exp
+genTermSize map next t sz =
+  case t of
+    -- generate a tern of type TInt
+    TInt ->
+      frequency $ [ (3, genNat) ]
+                  ++ if sz == 0 then [] else [ (2, genAdd) , (1, genApp) ]
+                  ++ zip [1..] genVar
+    -- generate a tern of type TArrow
+    TArrow t1 t2 ->
+      frequency $ [ (2, genAbs t1 t2) ]
+                  ++ if sz == 0 then [] else [(1, genApp)]
+                  ++ zip [1..] genVar
+
+  where
+    -- generate an integer
+    genNat = liftM Num arbitrary
+    -- generate an addition
+    genAdd = liftM2 Add (genTermSize map next TInt sz) (genTermSize map next TInt sz)
+    -- Generate an already bound variable of the given type
+    genVar = case M.lookup t map of
+      Just xs -> [elements (fmap Var xs)]
+      Nothing -> []
+    -- A term of type t can alway be an application of a term of type (t -> t2) to a term of type t
+    genApp = do
+      -- generate a random type for the input up to the given size
+      t1 <- genTypeSize sz
+      -- generate a term with type t1 -> t
+      e1 <- genTermSize map next (TArrow t1 t) (sz - 1)
+      -- generate a term with type t1
+      e2 <- genTermSize map next t1 (sz - 1)
+      return $ App e1 e2
+    -- Generate a lambda abstraction of type t1 -> t2
+    genAbs t1 t2 = do
+      let name = "x_" ++ show next
+      let map' = addVar name t1 map
+      e <- genTermSize map' (next+1) t2 sz
+      return $ Abs name t1 e
+    -- add a variable x with type t to the map
+    addVar x typ env = M.insertWith (++) typ [x] env
+
+-- Generate a well-type term
+genTerm :: Gen Exp
+genTerm = do
+  size <- arbitrary
+  t <- genType
+  genTermSize M.empty 1 t size
+
+-- Generate a well-type term of a certain type
+genTermOfType :: Typ -> Gen Exp
+genTermOfType t = genTermSize M.empty 1 t 3
+
+-- Generate a well-type term with its type
+genTermType :: Gen (Exp,Typ)
+genTermType = do
+  -- size <- arbitrary
+  t <- scale (min 5) $ sized genTypeSize
+  e <- scale (min 5) $ sized $ genTermSize M.empty 1 t
+  return (e,t)
+
+
+{-
+
+Let's play around with generating terms. You can type the following in the REPL
+and see what comes out.
+
+ghci> sample $ genTypeSize 3
+
+ghci> sample $ genType
+
+ghci> sample $ genTermOfType TInt
+
+ghci> sample $ genTermOfType (TArrow TInt TInt)
+
+ghci> sample $ genTermOfType (TArrow TInt (TArrow TInt TInt))
+
+ghci> genTermType
+
 -}
 
 
+-- We can now fuzz the typechecker with the well-typed term generator (or, put
+-- it differently, test that the generator returns a well typed term according
+-- to the typechecker).
+
+
+typechecksProp :: Property
+typechecksProp = forAll genTermType (\(e,t) -> getType M.empty e == Just t)
+
+{-
+
+ghci> quickCheck $ forAll genTermType (\(e,t) -> getType M.empty e == Just t)
++++ OK, passed 100 tests.
+
+-}
+
 {- References
    ----------
-
 
 [1]: Koen Claessen and John Hughes. 2000. QuickCheck: a lightweight tool for
      random testing of Haskell programs.  ICFP '00. ttps://dl.acm.org/doi/10.1145/351240.351266
