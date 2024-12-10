@@ -26,7 +26,7 @@ parserRoundTrip =
       Right e' -> e === e')
 
 -- TODO 3
--- 1. In file Gen.hs add a generator that generates well typed programs. Aim to
+-- 1. In the file Gen.hs add a generator that generates well typed programs. Aim to
 --    cover as many language features as possible.
 --
 -- 2. Write a QuickCheck property to test that the typechecker produces the

@@ -196,7 +196,7 @@ The following commands should be executed in the root MiniML directory.
 
   `cabal run MiniML -- --<option> <file>`
 
-  where `<option>` is one of the following:
+  where `--<option>` is one of the following:
 
   - `--pretty-print`: Formats and prints the MiniML source code.
   - `--type-check`: Type-checks the MiniML program and reports its type.
