@@ -2,7 +2,7 @@
 
 ## Syntax
 
-MiniML is a simply typed lambda calculus extended extended integers, booleans,
+MiniML is a simply typed lambda calculus extended with integers, booleans,
 unit, product types, sum types, and references. Its concrete syntax and a brief
 description of each language construct is given below.
 
@@ -37,9 +37,9 @@ description of each language construct is given below.
     - `inl(t) e`: Constructs a value of the left type.
     - `inr(t) e`: Constructs a value of the right type.
   - Elimination form: `case e of | inl x -> e1 | inr y -> e2`.
-  - Notes: Constructors os sum types are annotated with the type of the other
+  - Notes: Constructors of sum types are annotated with the type of the other
     component of the sum type, to enable type checking. For example, `inl(int)
-    true` has type `int + true` and `inr((int,int)) 42` has type `int * int + true`.
+    true` has type `bool + int` and `inr((int,int)) 42` has type `int * int + int`.
 
 - **References**:
   - Type: `ref t`
@@ -134,7 +134,7 @@ The exercise involves completing the following components (Total points: 100).
 
 1. Extend the type checker to handle recursive functions and references.
    (TODO 1, file `src/MiniML/Typechecking.hs`, 20 points)
-2. Write an environment-base interpreter that supports all MiniML operations and
+2. Write an environment-based interpreter that supports all MiniML operations and
    accurately implements the semantics of MiniML.
    (TODO 2, file `src/MiniML/Typechecking.hs`, 30 points)
 3. Test your definitions using QuickCheck.
