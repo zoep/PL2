@@ -16,6 +16,7 @@ system. Its key features include purity, laziness, and an expressive type system
 that supports polymorphism and powerful abstractions such as type classes and
 higher-kinded polymorphism.
 
+
 Purity
 ------
 Haskell is a pure functional language, which means that expressions in Haskell
@@ -27,33 +28,27 @@ For example in the expression let x = f z in x + x, x can be substituted with
 its definition to obtain (f z) + (f z) without changing the program's behavior.
 
 
-Haskell is a pure functional language. This means that expressions have no side
-effects (like )
-
-Pure languages are easier to reason about as "equals can be substituted with
-equals".
-
 Laziness
 --------
 Haskell employs lazy evaluation, which means expressions are evaluated only when
-their results are needed. Arguments to functions are ton evaluated when the
+their results are needed. Arguments to functions are not evaluated when the
 function is called but when their value is required. This is also known as
 non-strict evaluation. Once evaluated, the values of expressions are memoized so
 as to avoid duplicate computation.
 
 The benefit of lazy evaluation is that computations are only performed when
 absolutely necessary, avoiding redundant work. Also, lazy evaluation enables
-working with infinite data structures (like streams),  by computing only the
+working with infinite data structures (like streams), by computing only the
 required portion of the structure on demand.
 
 However, reasoning about performance become much harder as computation is
-nonlocal. Also, Suspended computations (known as thunks) may accumulate in
+nonlocal. Also, suspended computations (known as thunks) may accumulate in
 memory if not carefully managed, leading to unexpected memory consumption.
 
 
 Type system
 -----------
-Haskell has a strong, static type system. It's basis is Hindley-Milner type
+Haskell has a strong, static type system. Its basis is the Hindley-Milner type
 system, with a few extensions.  
 
 Type classes: A way to define an interface (set of functions/constraints) that
@@ -77,7 +72,7 @@ GHC has extensions for both rank-2 polymorphism (Rank2Types) and arbitrary rank
 polymorphism (RankNTypes). 
 
 With rank-2 polymorphic types, type inference remains decidable, but rank-N type
-type reconstruction becomes undecidable, and some explicit type annotations are
+reconstruction becomes undecidable, and some explicit type annotations are
 required in their presence.
 
 Reference: https://wiki.haskell.org/Rank-N_types
@@ -117,20 +112,20 @@ Basic Types
 -}
 
 -- A Haskell module is a list of definitions like the following ones. Even
--- thought the type annotations are optional, they are strongly encouraged.
+-- though the type annotations are optional, they are strongly encouraged.
 
 -- The type Integer is the type of arbitrarily large integer numbers
 n1 :: Integer
 n1 = 42
 
--- >>> n
+-- >>> n1
 -- 42
 
 -- The type Int is the type of word-sized integers, which is machine dependent. 
 n1' :: Int
 n1' = 42
 
--- >>> n'
+-- >>> n1'
 -- 42
 
 -- Definitions don't have to be in order 
@@ -154,8 +149,8 @@ f1 = 123.456
 b1 :: Bool
 b1 = True && (False :: Bool) || (n2 == 42)
 
--- >>> b
--- True
+-- >>> b1
+-- False
 
 -- Strings
 hello :: String 
@@ -168,7 +163,7 @@ hello' :: [Char]
 hello' = hello
 
 -- >>> hello'
--- "Hello world!"
+-- "Hello world!!"
 
 -- Unit type
 unit :: ()
@@ -274,7 +269,7 @@ compf' :: (b -> c1) -> (c1 -> c2) -> (a -> b) -> a -> c2
 compf' f = (. (f .)) . (.) -- what?
 
 
--- The goal of Haskell programming is to be write code in the fewest lines
+-- The goal of Haskell programming is to write code in the fewest lines
 -- possible (bonus points for one-liners), using the most compact notation
 -- imaginable, and ensuring that no one-—including your future self-—can ever
 -- understand the code. Of course, that’s not the real goal, but it sure can be
@@ -290,7 +285,7 @@ fib 1 = 1
 fib x = fib (x-1) + fib (x-2)
 
 -- >>> fib 5
--- 1
+-- 5
 
 -- We can also define this function using case analysis ...
 fib' :: Integer -> Integer
@@ -333,7 +328,7 @@ test2 x y =
       _ -> False
 
 -- >>> test2 3 1
--- /Users/zoo/Repos/PL2/lectures/Haskell/src/Intro.hs:(239,3)-(243,16): Non-exhaustive patterns in case
+-- /Users/kritonios/Desktop/pl2/PL2/lectures/Haskell/src/Intro.hs:(324,3)-(328,16): Non-exhaustive patterns in case
 
 -- Note, that both of these functions are partial, i.e., they are not defined for
 -- all the values of their domain.
@@ -359,7 +354,7 @@ and' False _ = False
 and' True y = y
 
 
--- To check that and uses indeed short-circuit evaluation we can use two 
+-- To check that `and'` uses indeed short-circuit evaluation we can use two 
 -- special Haskell combinators: undefined and error, that always fail when 
 -- they are evaluated. 
 
@@ -393,13 +388,13 @@ fst' (x, _) = x
 -- >>> fst' ((\x -> x) ((42, 11), (undefined, error "unreachable")))
 -- (42,11)
 
--- In Haskell, an expression that whose value has not been explicitly needed yet
+-- In Haskell, an expression whose value has not been explicitly needed yet
 -- is represented by a thunk. A thunk is a heap-allocated data structure that
 -- represents a suspended computation. Once evaluated, the thunk's value is
 -- memoized, so subsequent uses don’t recompute it. 
 
 -- The evaluation of a thunk is _forced_ when the value of the expression is
--- needed. This commonly happens when the expression in pattern-matched against
+-- needed. This commonly happens when the expression is pattern-matched against
 -- a constructor and the outmost constructor of the expression needs to be
 -- known. Then the thunk is evaluated to what is called _weak-head normal form_:
 -- an expression whose outermost is not a redex. 
@@ -412,8 +407,8 @@ fst' (x, _) = x
 -- For example (1+2, 3+4) is in WHNF, but (fst ((1,2),3)) is
 -- not.
 
--- The point of WHNF is that the  arguments of constructed values will not be
--- evaluated unless their value is also forced. When only the outemost
+-- The point of WHNF is that the arguments of constructed values will not be
+-- evaluated unless their value is also forced. When only the outermost
 -- constructor is needed for computation then the arguments of the constructor
 -- will remain thunks.
 
@@ -439,7 +434,7 @@ fst' (x, _) = x
 
 -- Once the evaluation of the outermost constructor of the thunk is forced,
 -- which usually happens through pattern matching, the outermost constructor of
--- the thunk will be evaluated.  (unless they have evaluated by some earlier use). We say the
+-- the thunk will be evaluated.  (unless they have been evaluated by some earlier use). We say the
 -- expression is evaluated in _weak head normal form_.
 
 
@@ -545,7 +540,7 @@ sum3 = foldl' (+) 0
 
 -- foldl' is a version of foldl that applies the operator in a strict way. This
 -- forces the reduction of operands to WHNF and avoids creating intermediate
--- thunks. We wll see how this can be useful.
+-- thunks. We will see how this can be useful.
 
 -- >>> sum1 [1..10]
 -- 55
@@ -562,7 +557,7 @@ sum3 = foldl' (+) 0
 -- this summation. 
 
 -- In Haskell it is possible to do this with a list because lists are
--- constructed lazily. The list [1..n] will be generated as needed. Any lists
+-- constructed lazily. The list [1..n] will be generated as needed. Any list
 -- elements that are no longer needed, are garbage collected. Therefore, it is
 -- possible to have only a constant portion of the list expanded in the heap of
 -- the program at each point. 
@@ -607,13 +602,13 @@ sum3 = foldl' (+) 0
 
 {-
 
-  foldl (+) 0 [1..10]
-= foldl (+) 1 [2..10]
-= foldl (+) 3 [3..10]
-= foldl (+) 6 [4..10]
-= foldl (+) 10 [5..10]
+  foldl' (+) 0 [1..10]
+= foldl' (+) 1 [2..10]
+= foldl' (+) 3 [3..10]
+= foldl' (+) 6 [4..10]
+= foldl' (+) 10 [5..10]
 ... 
-= foldl (+) 55 []
+= foldl' (+) 55 []
 = 55
 
 -} 
@@ -641,9 +636,9 @@ elem x = foldr (\y b -> x == y || b) False
 
 
 -- One the other hand, foldl will have to reach the end of the list to compute
--- the result. This will cause the computation to diverge
+-- the result. This will cause the computation to diverge.
 
--- >>> foldl (&&) True  (False:trues)
+-- >>> foldl (&&) True (False:trues)
 
 
 -- This fibonacci function uses constant space. Notice that next is strict on its arguments
@@ -764,7 +759,7 @@ Examples of IO types:
 - IO (): An IO computations that produces unit
 
 IO computations can be sequenced inside a so-called "do block". Examples of its
-syntax are bellow. 
+syntax are below. 
 
 Note: The IO type and its syntax are instances of a more general pattern called
 monads. We will learn more about monads in the next lecture.

@@ -21,13 +21,13 @@ add :: Num a => a -> a -> a
 add = (+)
 
 {-
-The above type tells us that add works for any type, as long as this type
+The above type tells us that add works for any type `a`, as long as this type
 implements the [Num] type class.
 
 What is a type class?
 
-A type class is a set of operations (functions and constants), can must be
-implemented by any type that is an _instance_ of the type class. Type class
+A type class is a set of operations (functions and constants), that must be
+implemented by any type that is an _instance_ of the type class. A type class
 defines a common interface
 
 Then when writing polymorphic functions, one can put constraints on
@@ -39,8 +39,8 @@ Haskell implements overloading, which is the ability to define an operation
 for more than one types, using type classes.
 
 The Num type class defines operations like +, -, * for numeric types. Every
-type that implements the type class, i.e., provides an instance of the type
-class, should define this operations.
+type that implements the type class, i.e. Int, provides an instance of the type
+class, which should define this operations.
 
 Another useful class is Eq, that defines equality and inequality.
 Its definition in Haskell library is the following:
@@ -53,11 +53,11 @@ class Eq a where
     x /= y      = not (x == y) -- default implementation
 
 
-The definition of inequality has a default has a default implementation that
-will be used when if the instance does not redefine the operation.
+The definition of inequality has a default implementation that
+will be used if the instance does not redefine the operation.
 
-Most build-in datatypes in Haskell provide instances for Eq But when we are
-defining our own types, we may want them to provide instances of such
+Most built-in datatypes in Haskell provide instances for Eq but when we are
+defining our own types, we may want to provide instances of such
 classes.
 
 -}
@@ -71,7 +71,7 @@ instance Eq a => Eq (Tree a) where
     (==) :: Eq a => Tree a -> Tree a -> Bool
     Leaf          == Leaf             = True
     Node a1 t1 t2 == Node a1' t1' t2' = a1 == a1' && t1 == t1' && t2 == t2'
-    _             ==                  _ = False
+    _             == _                = False
 
 tree1 :: Tree Int
 tree1 = Node 42 (Node 17 Leaf Leaf) Leaf
@@ -154,7 +154,7 @@ qsort (p:xs) =
 
 {-
 
-To summarize we've see four very standard type classes in Haskell:
+To summarize, we've seen four very standard type classes in Haskell:
 
 - Ord  : provides total orderings on data types
 - Show : allows data types to be printed as strings
@@ -278,7 +278,7 @@ m >>= \x -> m'
 
 in do notation becomes
 
-x <- m
+x <- m;
 m'
 
 This notation, which resembles an imperative program, must be written inside a
