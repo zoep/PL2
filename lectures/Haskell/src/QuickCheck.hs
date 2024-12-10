@@ -532,7 +532,7 @@ TODO add more comments
 
 Red-black invariant
 
-- No path has two red nodes in a raw.
+- No path has two red nodes in a row.
 - Every path from the root to a leaf has the same number of black nodes. This is
   called the black height of the tree.
 
@@ -737,7 +737,7 @@ genTermSize map next t sz =
     genNat = liftM Num arbitrary
     -- generate an addition
     genAdd = liftM2 Add (genTermSize map next TInt sz) (genTermSize map next TInt sz)
-    -- Generate an already bound variable of the given type
+    -- generate an already bound variable of the given type
     genVar = case M.lookup t map of
       Just xs -> [elements (fmap Var xs)]
       Nothing -> []
