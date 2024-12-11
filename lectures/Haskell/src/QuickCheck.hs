@@ -144,9 +144,9 @@ insertionSort (x:xs) = insert x (insertionSort xs)
 -- [3,4,4,5,7]
 
 -- We will define and test the properties that our implementation needs to
--- satisfy. One obvious one is the the output of insertionSort must be sorted.
+-- satisfy. One obvious one is that the output of insertionSort must be sorted.
 
--- We define an isSorted predicate that we use to test the implementation if insertionSort
+-- We define an isSorted predicate that we use to test the implementation of insertionSort
 
 isSorted :: [Integer] -> Bool
 isSorted [] = True
@@ -247,7 +247,7 @@ Let's see what happens.
 ghci> quickCheck $ insertPreservesSorted
 *** Gave up! Passed only 63 tests; 1000 discarded tests.
 
-QuickCheck reports that 63 tests passed but the rest was discarded. We can try
+QuickCheck reports that 63 tests passed but the rest were discarded. We can try
 to increase the number of tests that QC runs, using the combinator withMaxSuccess.
 
 -- Configures how many times a property will be tested.
@@ -280,10 +280,10 @@ things worse, most of the 55173 tests that are sorted will be very small, as the
 probability of generating a sorted list decreases significantly as the list size
 increases.
 
-QuickChick lets us peek at the distribution of various properties of test cases
+QuickCheck lets us peek at the distribution of various properties of test cases
 by providing a combinator called collect.
 
--- Collect will gather all values that are being passed to itm and will print out a histogram of the distribution of the values.
+-- Collect will gather all values that are being passed to it and will print out a histogram of the distribution of the values.
 collect :: (Show a, Testable prop) => a -> prop -> Property collect
 
 By using collect, we can group test cases based on a specific property (e.g.,
@@ -323,7 +323,7 @@ generates sorted lists.
 {- Generators
    ----------
 
-QuickCheck provides a library of generator combinators that lets us write our
+QuickCheck provides a library of generator combinators that let us write our
 own fine tuned generators.
 
 Generators of a type a in QuickCheck have type Gen a. Gen is an instance of the
@@ -349,17 +349,17 @@ It has two methods:
 -- A generator for values of the given type.
 arbitrary :: Gen a
 
--- Produces a (possibly) empty list of all the possible immediate shrinks of the given value.
+-- Produces a (possibly empty) list of all the possible immediate shrinks of the given value.
 shrink :: a -> [a]
 
 What does the second method do?
 
-Once a counterexample is found, QC can try to shrink the counterexample in order return a simpler
+Once a counterexample is found, QC can try to shrink the counterexample in order to return a simpler
 and more readable counterexample to the reader. It does so using the shrink function.
 
 The default implementation returns the empty list, so will not try to shrink the value.
 
-The Arbitrary type class is useful to write general functions over all type that have random generators.
+The Arbitrary type class is useful to write general functions over all types that have random generators.
 
 For example we can write a naive generator for lists of type a.
 
@@ -537,7 +537,7 @@ Red-black invariant
   called the black height of the tree.
 
 This invariant guarantees that every leaf is at least at most twice as deep as
-any other leaf, which means that the heigh of any tree of N nodes is at most
+any other leaf, which means that the height of any tree of N nodes is at most
 2logN.
 
 By convention the root of the tree is black.
@@ -582,7 +582,7 @@ insertRB x t = makeBlack $ insert' x t
 
 -- Testing functions
 
--- Returns a black height, is the tree is back balanced
+-- Returns a black height, if the tree is back balanced
 blackHeight :: Tree a -> Maybe Integer
 blackHeight Leaf = return 0
 blackHeight (Node c _ t1 t2) = do
@@ -824,4 +824,3 @@ ghci> quickCheck $ forAll genTermType (\(e,t) -> getType M.empty e == Just t)
 
 [3]: https://cseweb.ucsd.edu//classes/wi11/cse230/lectures/quickcheck.lhs
  -}
-
