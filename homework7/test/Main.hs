@@ -15,7 +15,7 @@ main = defaultMain $ testGroup "act"
   , testProperty "Type soundness" typeSoundness
   , testProperty "Placeholder" someProperty ]
 
--- A property that for a randomly MiniML as pretty-printing it and parsing it
+-- For any program in abstact syntax, pretty-printing it and parsing it
 -- produces the original program (i.e., `parse . lex . showExp == id`)
 parserRoundTrip :: Property
 parserRoundTrip =
