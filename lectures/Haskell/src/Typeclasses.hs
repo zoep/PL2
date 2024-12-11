@@ -40,7 +40,7 @@ for more than one types, using type classes.
 
 The Num type class defines operations like +, -, * for numeric types. Every
 type that implements the type class (i.e. provides an instance of the type
-class, which should define this operations.
+class) should define these operations.
 
 Another useful class is Eq, that defines equality and inequality.
 Its definition in Haskell library is the following:
