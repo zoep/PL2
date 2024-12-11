@@ -39,7 +39,7 @@ Haskell implements overloading, which is the ability to define an operation
 for more than one types, using type classes.
 
 The Num type class defines operations like +, -, * for numeric types. Every
-type that implements the type class, i.e. Int, provides an instance of the type
+type that implements the type class (i.e. provides an instance of the type
 class, which should define this operations.
 
 Another useful class is Eq, that defines equality and inequality.
