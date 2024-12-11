@@ -136,7 +136,7 @@ The exercise involves completing the following components (Total points: 100).
    (TODO 1, file `src/MiniML/Typechecking.hs`, 20 points)
 2. Write an environment-based interpreter that supports all MiniML operations and
    accurately implements the semantics of MiniML.
-   (TODO 2, file `src/MiniML/Typechecking.hs`, 30 points)
+   (TODO 2, file `src/MiniML/Eval.hs`, 30 points)
 3. Test your definitions using QuickCheck.
    - Write a well-typed term generator.
    - Use the generator to test that well-typed expressions produced by the
