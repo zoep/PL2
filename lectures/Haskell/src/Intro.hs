@@ -328,7 +328,7 @@ test2 x y =
       _ -> False
 
 -- >>> test2 3 1
--- /Users/kritonios/Desktop/pl2/PL2/lectures/Haskell/src/Intro.hs:(324,3)-(328,16): Non-exhaustive patterns in case
+-- /Users/zoo/Repos/PL2/lectures/Haskell/src/Intro.hs:(239,3)-(243,16): Non-exhaustive patterns in case
 
 -- Note, that both of these functions are partial, i.e., they are not defined for
 -- all the values of their domain.
