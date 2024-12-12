@@ -736,7 +736,7 @@ genTermSize map next t sz =
     -- generate an integer
     genNat = liftM Num arbitrary
     -- generate an addition
-    genAdd = liftM2 Add (genTermSize map next TInt sz) (genTermSize map next TInt sz)
+    genAdd = liftM2 Add (genTermSize map next TInt (sz - 1)) (genTermSize map next TInt (sz - 1))
     -- generate an already bound variable of the given type
     genVar = case M.lookup t map of
       Just xs -> [elements (fmap Var xs)]
