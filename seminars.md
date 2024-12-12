@@ -2,7 +2,7 @@
 
 Many of these programs offer financial support (registration, travel, accommodation) for participants. It’s always best to check the event’s website or contact the organizers for the most up-to-date information.
 
-## Programming Languages (PL) and Verification
+## Programming Languages and Verification
 
 ### [Oregon Programming Languages Summer School (OPLSS)](https://www.cs.uoregon.edu/research/summerschool/summer24/)
 - Foundations of programming languages, type theory, semantics, and related areas.  
@@ -23,10 +23,10 @@ Many of these programs offer financial support (registration, travel, accommodat
 - Utrecht University, The Netherlands  
 - Advanced concepts in functional programming (especially Haskell), type systems, and design patterns.  
 
-### [The SAT/SMT/AR Summer School](https://sat-smt-ar-school.gitlab.io/)
+### [The SAT/SMT/AR Summer School](https://sat-smt-ar-school.gitlab.io/www/2024/)
 - SAT, SMT, automated reasoning techniques, and applications.
 
 ## Broader Computer Science Foundations & Pre-Doctoral Prep
 
 ### [Cornell, Maryland, Max Planck Pre-doctoral Research School in Computer Science (CMMRS)](https://cmmrs.mpi-sws.org)
-- Broad CS research fundamentals; ideal for students considering PhD 
+- Broad CS research fundamentals; ideal for students considering PhD.
