@@ -5,8 +5,10 @@ module Typeclasses where
 import Prelude hiding (fail, elem)
 import qualified Data.Map as M
 import Control.Monad hiding (fail)
+import Control.Monad.Trans
 
 import Debug.Trace
+import Text.Printf (vFmt)
 {-
 
 Type Classes
@@ -196,7 +198,7 @@ m >>= return = m
 m >>= (\x -> k x >>= h)  =  (m >>= k) >>= h
 
 Note: As of 2017, Haskell require every Monad to also be an Applicative
-instance, and every Applicative to also have a Functor instance. So in 
+instance, and every Applicative to also have a Functor instance. So in
 the code below, we also provide these instances.
 
 -}
@@ -329,7 +331,7 @@ liftM :: Monad m => (a1 -> r) -> m a1 -> m r
 -- Lift a pure function with two arguments to a monadic one
 liftM2 :: Monad m => (a1 -> a2 -> r) -> m a1 -> m a2 -> m r
 
-You can find more monadic combinators here: https://hackage.haskell.org/package/base/docs/Control-Monad.html 
+You can find more monadic combinators here: https://hackage.haskell.org/package/base/docs/Control-Monad.html
 -}
 
 {-
@@ -337,9 +339,11 @@ You can find more monadic combinators here: https://hackage.haskell.org/package/
 The Reader Monad
 ----------------
 
-The reader monad encapsulates a computation that reads from a context.
-When writing a program inside a reader monad we don't have to explicitly pass
-the context to each call, the context is treated as a global, read-only state.
+The Reader monad (also called the Environment monad) encapsulates a computation
+that reads values from a shared environment. Essentially a Reader monad, is a
+function from the environment to the result type. The computation can ask for
+the value of the environment and execute subcomputations in a modified
+environment.
 
 -}
 
@@ -358,8 +362,14 @@ instance Monad (Reader env) where
   (>>=) :: Reader env a -> (a -> Reader env b) -> Reader env b
   x >>= f  = Reader $ \e -> let x' = runReader x e in runReader (f x') e
 
+-- Return the value of the environment
 ask :: Reader env env
 ask = Reader (\e -> e)
+
+-- Execute the computation provided as a second argument in a modified
+-- environment
+local :: (env -> env) -> Reader env a -> Reader env a
+local f (Reader m) = Reader (m . f)
 
 
 -- For example, we can write the substitution function in a reader monad, to
@@ -381,17 +391,54 @@ substR (Add p t1 t2)  = liftM2 (Add p) (substR t1) (substR t2)
 subst' :: String -> Exp -> Exp -> Exp
 subst' x t' t = runReader (substR t) (x,t')
 
+-- We can also write an environment based evaluator as a computation in a Reader
+-- monad.
+
+type Env = M.Map String Value
+
+-- The type of values
+data Value = VClo Env String Exp | VNum Int
+
+evalEnv :: Exp -> Reader Env Value
+evalEnv (Var _ x) = do
+  env <- ask
+  case M.lookup x env of
+    Just v -> return v
+    _ -> error "Unbound variable"
+evalEnv (Abs _ x t) = do
+  env <- ask
+  return (VClo env x t)
+evalEnv (App _ t1 t2) = do
+  v <- evalEnv t1;
+  case v of
+    VClo cenv x t -> do
+      v2 <- evalEnv t2;
+       -- evaluate t in the closure environment update with the argument value
+      local (\_ -> M.insert x v2 cenv) (evalEnv t)
+    _ -> error "Value must be a closure"
+evalEnv (Num _ n) = return $ VNum n
+evalEnv (Add _ t1 t2) = do
+  v1 <- evalEnv t1;
+  v2 <- evalEnv t2;
+  case (v1, v2) of
+    (VNum n1, VNum n2) -> return $ VNum (n1 + n2)
+    _ -> error "Values must be numbers"
+
+
 -- >>> subst' "x" (Abs psn "z" (Var psn "z")) (App psn (Var psn "x") (Add psn (Num psn 1) (Num psn 2)))
 -- App (0,0) (Abs (0,0) "z" (Var (0,0) "z")) (Add (0,0) (Num (0,0) 1) (Num (0,0) 2))
+
+
 
 {-
 
 The State Monad
 ----------------
 
-The reader monad encapsulates a computation that reads from a context.
-When writing a program inside a reader monad we don't have to explicitly pass
-the context to each call, the context is treated as a global, read-only state.
+The State monad encapsulates computations that read and write from a shared
+state. Essentially a state monad is a computation that is written in state
+passing style, i.e., state -> (state, a) for some result type a, and hides th
+explicit state threading under the monadic operations.
 
 -}
 
@@ -472,29 +519,133 @@ fibNFor n = snd . flip runState (0,1) $ do
 
 {- Monad Transformers -}
 
--- WIP
+-- Often it is useful to combine two monads together. For example, in the
+-- environment based interpreter we might want to use a Maybe monad inside the
+-- state in order to do error handling.
 
-{- For example, we can write an environment-based interpreter without passing the context around. -}
+-- One option is to build a new type, encapsulating a computation with type
+-- `state -> (state, Maybe a)` and make it and instance of Monad.
 
--- evalEnv :: Exp -> State Env Exp
--- evalEnv (Var _ _) = f
---   env <- get ;;
---   case M.lookup
--- evalEnv (Abs p x t) = return (Abs p x t)
--- evalEnv (App _ t1 t2) = do
---   env <- get ;;
---   v <- evalEnv t1;
---   case v of
---     Abs _ x t -> do
---       v2 <- evalEnv t2;
---       put $ M.insert x v2 env
---       evalEnv t
---     _ -> fail
--- evalEnv (Num p n) = return (Num p n)
--- evalEnv (Add p t1 t2) = do
---   v1 <- evalEnv t1;
---   v2 <- evalEnv t2;
---   case (v1, v2) of
---     (Num _ n1, Num _ n2) -> return $ Num p (n1 + n2)
---     _ -> fail
+-- One other option, is to make monad definitions parametric an another
+-- underlying monad, and make them add functionality on top of it. These
+-- constructions are called monad transformers.
 
+-- The simple non-transformer versions can be then be obtain by using the Id
+-- (identity) monad as the base monad.
+
+
+-- State transformers
+
+newtype StateT s m a = StateT { runStateT :: s -> m (s, a) }
+
+instance Monad m => Monad (StateT state m) where
+  return :: a -> StateT state m a
+  return x = StateT (\s -> return (s,x))
+
+  (>>=) :: StateT state m a -> (a -> StateT state m b) -> StateT state m b
+  x >>= f = StateT $ \s -> do
+    (s', x') <- runStateT x s
+    runStateT (f x') s'
+
+instance (Monad m) => Applicative (StateT s m) where
+  pure = return
+  (<*>) :: Monad m => StateT s m (a -> b) -> StateT s m a -> StateT s m b
+  (<*>) = ap
+
+instance (Monad m) => Functor (StateT s m) where
+  fmap = liftM
+
+
+instance MonadTrans (StateT s) where
+  lift :: (Monad m) => m a -> StateT s m a
+  lift ma = StateT $ \s -> do
+    r <- ma
+    return (s, r)
+
+
+-- Reader transformers
+
+newtype ReaderT env m a = ReaderT { runReaderT :: env -> m a }
+
+instance Monad m => Monad (ReaderT env m) where
+  return :: Monad m => a -> ReaderT env m a
+  return x = ReaderT $ \_ -> return x
+  (>>=) :: Monad m => ReaderT env m a -> (a -> ReaderT env m b) -> ReaderT env m b
+  (ReaderT r) >>= f = ReaderT $ \env -> do
+    x <- r env
+    runReaderT (f x) env
+
+instance Functor m => Functor (ReaderT env m) where
+  fmap :: Functor m => (a -> b) -> ReaderT env m a -> ReaderT env m b
+  fmap f (ReaderT r) = ReaderT $ \env -> fmap f (r env)
+
+instance Applicative m => Applicative (ReaderT env m) where
+  pure :: Applicative m => a -> ReaderT env m a
+  pure x = ReaderT $ \_ -> pure x
+  (<*>) :: Applicative m => ReaderT env m (a -> b) -> ReaderT env m a -> ReaderT env m b
+  (ReaderT rf) <*> (ReaderT rx) = ReaderT $ \env -> rf env <*> rx env
+
+
+instance MonadTrans (ReaderT env) where
+  lift :: Monad m => m a -> ReaderT env m a
+  lift ma = ReaderT $ \_ -> ma
+
+
+askT :: Monad m => ReaderT env m env
+askT = ReaderT return
+
+localT :: (env -> env) -> ReaderT env m a -> ReaderT env m a
+localT f (ReaderT g) = ReaderT $ \env -> g (f env)
+
+newtype MaybeT m a = MaybeT { runMaybeT :: m (Maybe a) }
+
+instance Functor m => Functor (MaybeT m) where
+    fmap f (MaybeT mma) = MaybeT (fmap (fmap f) mma)
+
+instance Monad m => Applicative (MaybeT m) where
+    pure x = MaybeT (pure (Just x))
+    (MaybeT mmf) <*> (MaybeT mmx) = MaybeT $ do
+        mf <- mmf
+        mx <- mmx
+        return (mf <*> mx)
+
+instance Monad m => Monad (MaybeT m) where
+    return x =  MaybeT (return (Just x))
+    (MaybeT mmx) >>= f = MaybeT $ do
+        mx <- mmx
+        case mx of
+            Nothing -> return Nothing
+            Just x  -> runMaybeT (f x)
+
+instance MonadTrans MaybeT where
+    lift ma = MaybeT (Just <$> ma)
+
+
+-- Example: environment-based evaluator written with monad transformers
+
+type Eval = ReaderT Env Maybe
+
+evalEnv' :: Exp -> Eval Value
+evalEnv' (Var _ x) = do
+  env <- askT
+  case M.lookup x env of
+    Just v -> return v
+    _ ->lift fail
+evalEnv' (Abs _ x t) = do
+  env <- askT
+  return (VClo env x t)
+evalEnv' (App _ t1 t2) = do
+  v <- evalEnv' t1;
+  case v of
+    VClo cenv x t -> do
+      v2 <- evalEnv' t2;
+       -- evaluate t in the closure environment update with the argument value
+      localT (\_ -> M.insert x v2 cenv) (evalEnv' t)
+    _ -> lift fail
+evalEnv' (Num _ n) = return $ VNum n
+evalEnv' (Add _ t1 t2) = do
+  v1 <- evalEnv' t1;
+  v2 <- evalEnv' t2;
+  case (v1, v2) of
+    (VNum n1, VNum n2) -> return $ VNum (n1 + n2)
+    _ -> lift fail
