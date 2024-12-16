@@ -6,9 +6,8 @@ import Prelude hiding (fail, elem)
 import qualified Data.Map as M
 import Control.Monad hiding (fail)
 import Control.Monad.Trans
-
 import Debug.Trace
-import Text.Printf (vFmt)
+
 {-
 
 Type Classes
@@ -562,15 +561,20 @@ instance MonadTrans (StateT s) where
     r <- ma
     return (s, r)
 
+getT :: Monad m => StateT state m state
+getT = StateT (\s -> return (s,s))
+
+putT ::  Monad m => state -> StateT state m ()
+putT s = StateT (\_ -> return (s,()))
 
 -- Reader transformers
 
 newtype ReaderT env m a = ReaderT { runReaderT :: env -> m a }
 
 instance Monad m => Monad (ReaderT env m) where
-  return :: Monad m => a -> ReaderT env m a
+  return :: a -> ReaderT env m a
   return x = ReaderT $ \_ -> return x
-  (>>=) :: Monad m => ReaderT env m a -> (a -> ReaderT env m b) -> ReaderT env m b
+  (>>=) :: ReaderT env m a -> (a -> ReaderT env m b) -> ReaderT env m b
   (ReaderT r) >>= f = ReaderT $ \env -> do
     x <- r env
     runReaderT (f x) env
@@ -597,6 +601,8 @@ askT = ReaderT return
 localT :: (env -> env) -> ReaderT env m a -> ReaderT env m a
 localT f (ReaderT g) = ReaderT $ \env -> g (f env)
 
+-- Maybe transformers
+
 newtype MaybeT m a = MaybeT { runMaybeT :: m (Maybe a) }
 
 instance Functor m => Functor (MaybeT m) where
@@ -610,7 +616,10 @@ instance Monad m => Applicative (MaybeT m) where
         return (mf <*> mx)
 
 instance Monad m => Monad (MaybeT m) where
-    return x =  MaybeT (return (Just x))
+    return :: a -> MaybeT m a
+    return = MaybeT . return . Just
+
+    (>>=) :: MaybeT m a -> (a -> MaybeT m b) -> MaybeT m b
     (MaybeT mmx) >>= f = MaybeT $ do
         mx <- mmx
         case mx of
@@ -618,7 +627,9 @@ instance Monad m => Monad (MaybeT m) where
             Just x  -> runMaybeT (f x)
 
 instance MonadTrans MaybeT where
+    lift :: Monad m => m a -> MaybeT m a
     lift ma = MaybeT (Just <$> ma)
+
 
 
 -- Example: environment-based evaluator written with monad transformers
@@ -630,7 +641,7 @@ evalEnv' (Var _ x) = do
   env <- askT
   case M.lookup x env of
     Just v -> return v
-    _ ->lift fail
+    _ -> lift fail
 evalEnv' (Abs _ x t) = do
   env <- askT
   return (VClo env x t)
