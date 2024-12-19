@@ -15,7 +15,9 @@ foreign import ccall "my_add" my_add :: CInt -> CInt -> Ptr CInt -> IO ()
 main = do
   x <- readLn 
   y <- readLn 
-  -- The memory is freed automatically after the continuation of alloca returns 
+  -- Allocate some memory outside of the area maintained by the Haskell storage
+  -- manager. The memory is freed automatically after the continuation of alloca
+  -- returns 
   alloca (\ptr -> do
     my_add x y ptr
     z <- peek ptr 
