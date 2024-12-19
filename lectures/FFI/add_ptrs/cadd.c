@@ -1,0 +1,1 @@
+void my_add(int x, int y, int *z) { *z =  x + y; }
