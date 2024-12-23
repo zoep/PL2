@@ -20,6 +20,6 @@ getTime = c_time nullPtr
 
 main = do
   t1 <- getTime 
-  _ <- c_sleep 5
+  _ <- c_sleep 3
   t2 <- getTime 
   print (tminus t2 t1)

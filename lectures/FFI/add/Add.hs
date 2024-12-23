@@ -2,7 +2,7 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 module Add where
 
-import Foreign.C -- Includes apping of C types to corresponding Haskell types
+import Foreign.C -- Includes mapping of C types to corresponding Haskell types
 
 -- import a C function with a Haskell signature. This specifies that the foreign
 -- code has a C calling convention. GHC will generate code to convert between
@@ -15,5 +15,6 @@ add' x y = fromIntegral $ my_add (fromIntegral x) (fromIntegral y)
 
 main = do
   x <- readLn 
-  y <- readLn 
-  print $ add' x y
+  y <- readLn
+  let f = my_add x 
+  print $ f y

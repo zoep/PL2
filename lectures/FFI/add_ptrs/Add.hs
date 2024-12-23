@@ -3,7 +3,7 @@
 module Add where
 
 import Foreign.C -- Includes mapping of C types to corresponding Haskell types
-import Foreign.Ptr (Ptr,nullPtr)
+import Foreign.Ptr
 import Foreign.Marshal.Alloc
 import Foreign.Storable
 
@@ -18,14 +18,16 @@ main = do
   -- Allocate some memory outside of the area maintained by the Haskell storage
   -- manager. The memory is freed automatically after the continuation of alloca
   -- returns 
-  alloca (\ptr -> do
-    my_add x y ptr
-    z <- peek ptr 
-    print z)
+--   alloca (\ptr -> do
+--     my_add x y ptr
+--     z <- peek ptr 
+--     print z)
 
   -- same with malloc
---   ptr <- malloc
---   my_add x y ptr
---   z <- peek ptr 
---   print z
---   free ptr
+  ptr <- malloc
+  my_add x y ptr
+  z <- peek ptr 
+  print z
+  free ptr
+  z' <- peek (plusPtr ptr 41)
+  print (z' :: CInt)

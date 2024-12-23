@@ -18,7 +18,7 @@
     (not (= from (_ bv42 64))))
 
 
-;; PATHCONDITIONS
+;; PATH CONDITIONS
 (assert (= pathcond1 true))
 (assert (= pathcond2 true))
 (assert (= pathcond3 false))
