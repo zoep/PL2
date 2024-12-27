@@ -83,9 +83,9 @@ withStore f m = do
 -- Return a fresh location and increase the location counter
 freshLoc :: Eval Loc
 freshLoc = do
-  (store, env, l) <- get
+  (env, store, l) <- get
   let l' = l + 1
-  put (store, env, l')
+  put (env, store, l')
   return l'
 
 -- Throw an error.
