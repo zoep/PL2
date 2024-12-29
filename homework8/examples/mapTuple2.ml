@@ -1,0 +1,1 @@
+let map = fun f -> fun x -> (f (fst x), f (snd x)) in map
