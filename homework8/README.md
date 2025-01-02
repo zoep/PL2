@@ -91,7 +91,7 @@ extended is a mostly straight forward way to handle all constructs of MiniML.
 
         Γ ⊢ e1 : t1 | C2       Γ ⊢ e2 : t2 | C2       Γ ⊢ e3 : t3 | C3
 -------------------------------------------------------------------------------CT-ITE
-   Γ ⊢ if e1 then e2 else e3 : bool | { t1 = bool, t1 = t2 } ∪ C1 ∪ C2 ∪ C3
+   Γ ⊢ if e1 then e2 else e3 : t2 | { t1 = bool, t2 = t3 } ∪ C1 ∪ C2 ∪ C3
 
 
          Γ ⊢ e : t | C
