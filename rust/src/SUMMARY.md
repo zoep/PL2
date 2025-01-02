@@ -3,7 +3,7 @@
 - [Getting Started](./getting_started.md)
 - [Basics](./basics.md)
 - [Ownership](./ownership.md)
-- [References](./references.md)
+- [References and Borrowing](./references.md)
 - [Lifetimes](./lifetimes.md)
 - [Structs and Enums](./moretypes.md)
 - [Polymorphism](./moretypes.md)

@@ -2,7 +2,12 @@
 
 ## Overview 
 
-Rust is strongly typed and statically typed.
+- strongly typed and statically typed.
+- systems language 
+- memory safe by virtue of typing
+- zero-cost abstractions
+
+
 
 - [Installation instructions](https://doc.rust-lang.org/book/ch01-01-installation.html#installation)
 - [The Rust Reference](https://doc.rust-lang.org/beta/reference/index.html)

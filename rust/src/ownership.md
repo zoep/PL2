@@ -169,12 +169,11 @@ fn main () {
     vec.push(2);
     vec.push(42);
 
-    let vec2 = vec; 
+    let mut vec2 = vec; 
     
     vec.push(21);
     
-    println!("The sum of the elements of the vector is {:?}", sum(vec2));
-
+    println!("The length of the vector is {:}", vec2.len());
 }
 ```
 
@@ -215,3 +214,18 @@ fn main () {
     println!("The sum of the elements of the vector is {:?}", sum2);
     
 }
+```
+
+Of course this is tedious and not idiomatic Rust. Rust allows us to do this
+using references that provide a way to borrow a value without transferring
+ownership.
+
+
+## Strings 
+
+Another common heap allocated type in Rust is strings.
+
+
+Rust has a type `str` that .... 
+
+a growable, mutable, owned, UTF-8 encoded string type
