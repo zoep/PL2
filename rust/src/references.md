@@ -17,13 +17,14 @@ retains responsibility for managing the value's lifecycle.
 
 ## Simple Examples
 
-Let's look at some simple examples of references. 
+Let's look at some simple examples of references. We will start with references
+to stack allocated values. 
 
 ```rust, editable
 fn main () {
     let mut x : u32 = 42;
     // get a reference to x 
-    let r : &mut u32 = &x;
+    let r : &u32 = &x;
 
     println!("Hello, it is {} again.", r);
 }
@@ -137,7 +138,7 @@ fn main () {
 } 
 ```
 
-In the above the lifetimes of `r1` and `r2` do not overlap. The following example is similar.
+In the above the lifetimes of `r1` and `r2` do not overlap. The following example is also similar.
 
 
 ```rust, editable
@@ -212,7 +213,7 @@ fn main() {
 ```
 
 Nothing too fancy here. In the next example, notice how the borrow checker will
-prevent borrows from outliving the scope of the owner
+prevent borrows that outlive the scope of the owner
 
 ```rust, editable
 fn main() {
@@ -264,11 +265,7 @@ fn sum (v : &Vec<u32>) -> u32 { // sum takes a reference to the vector.
         sum += v[i]
     }
     return sum;
-
-    // or just: 
-    // v.iter().sum()
 }
-
 
 fn main () {
     let mut vec = Vec::new(); // calling the constructor
@@ -284,5 +281,31 @@ fn main () {
     println!("The sum of the elements of the vector is {:?}", sum(&vec));
     
     // vec can be safely dropped here
+}
+```
+
+
+### More Examples
+
+The following example showcases passing a mutable reference to a vector as a parameter. 
+
+```rust, editable
+fn add_one(v : &mut Vec<u32>) {
+
+    // That's not idiomatic Rust. We will learn how to do this with iterators.
+  
+    for i in 0..v.len() { // 0 <= i < v.len() - 1.
+        v[i] += 1
+    }
+}
+
+
+fn main () {
+
+    let mut vec = vec![1,2,3];
+
+    add_one(&mut vec);
+    println!("The vector is {:?}", vec);
+    
 }
 ```

@@ -1,13 +1,13 @@
 # Ownership
 
-## Heap Allocated Types
+So far, we’ve only discussed stack-allocated types. In Rust, a tuple is one such
+stack-allocated type. In the following example, the tuple `t` is allocated on
+the stack frame of main and is deallocated once the function returns and its
+stack frame is popped. When stack-allocated objects are assigned to a variable
+or passed as arguments to functions, their values are copied.
 
-So far we have only seen stack allocated types. 
-
-For example, a tuple will, by default, be allocated on the stack.
-
-One can create a tuple, then pass it to a function to compute the sum of its
-components and then use it again in the rest of the program.
+One can create a tuple, pass it to a function to compute the sum of its
+components, and then continue using the original tuple afterward:
 
 ```rust, editable
 
@@ -26,39 +26,43 @@ fn main() {
 
 ```
 
-Nothing wrong with this, right? We do such things it all the time in all sorts of
-programming languages. 
+Nothing unusual about that; we do this all the time in various programming
+languages.
 
-Well, almost. 
+However, for heap-allocated objects, Rust introduces the concept of ownership to
+ensure memory safety without requiring a garbage collector.
 
-For heap allocated objects Rust has a concept called _ownership_.  Ownership
-ensures memory safety without requiring a garbage collector.
-
-A heap allocated object has _exactly one owner_ at each point in time. This
-means that a heap allocated value is attached to one variable, which is the
-value's _owner_.
-
-Ownership can be transferred by moving a value to another variable. This happens
-during assignment or when passing the value as a function argument. After the
-value is moved, the previous owner can no longer access it. Attempting to use
-the value after it has been moved results in a compile-time error. 
+Ownership dictates that a heap-allocated object has exactly one owner at any
+given time. In other words, there is exactly one variable that “owns” (or
+“holds”) a pointer to the heap-allocated data structure at any point during a
+program's execution.
+ 
+When a variable that has a type that is heap allocated gets reassigned or passed
+as an argument, then pointer to the heap allocated will be copied, but not the
+data itself. In such cases we say that the ownership of the value has been
+_moved_. Once the ownership is moved the the previous pointer (i.e., original
+owner of the value) becomes _invalidated_ and cannot be used anymore. 
 
 Since a value has only one owner, Rust knows exactly when the object is no
 longer in use (when it goes out of scope). At that point, the memory can be
 safely deallocated without the risk of dangling pointers or memory leaks.
 
-In programming language theory, the ownership system of Rust is called an
-_affine type system_, which is a special case of _substructural type systems_.
-Such systems constraint access to system resources types are called affine types
-and are _substructural type systems_.
+In programming language theory, Rust’s ownership model is referred to as an
+affine type system, a specialized form of substructural type systems. Such
+systems constrain how resources—like memory—are accessed. In particular, affine
+types limit each resource to a single “use” (or owner) at a time, which
+guarantees memory safety without requiring a garbage collector.
 
+## Heap Allocated Types
 
-## Vectors
+### Vectors
 
-As a first example of a heap allocated type we will look at vectors. Vectors are
-dynamic, growable arrays. Their size is not known at compile time and they can
-grow or shrink at any time. A vector is represented using the pointer to the
-vector, the length of the vector, and the capacity of the vector.
+As our first example of a heap-allocated type in Rust, let’s look at
+[vectors](https://doc.rust-lang.org/std/vec/struct.Vec.html#). Vectors are
+dynamic, growable arrays whose size is not known at compile time. Because they
+can grow or shrink at runtime, their contents live on the heap. Internally, a
+vector is represented by a pointer to its heap-allocated data, plus two
+additional fields to track its length and capacity.
 
 
 ```rust, editable
@@ -79,7 +83,7 @@ fn main () {
 ```
 
 
-Let's write a function that sums the elements of a vector. 
+Let's write a function to sum the elements of a vector. 
 
 ```rust, editable
 fn sum (v : Vec<u32>) -> u32 {
@@ -107,11 +111,14 @@ fn main () {
 }
 ```
 
-So far so good. 
+In the above code, ownership of vec is moved to the function parameter `v` in
+`sum`. After this move, the original `vec` in `main `is invalidated and can no
+longer be used. Rust’s ownership rules ensure that once `v` goes out of scope
+inside sum, the memory can be deallocated safely—-or dropped, in Rust
+terminology.
 
-What do you think it will happen if we try to use `vec` after the call to the
-`sum` function? 
 
+Consider the following example, where we attempt to use vec after calling sum:
 
 ```rust, editable
 fn sum (v : Vec<u32>) -> u32 {
@@ -140,26 +147,20 @@ fn main () {
 }
 ```
 
-Oops. The compiler complains that the value of `vec` has been moved. 
-
-
-This makes sense. Using `vec` after the call to `sum` would violate Rust
-ownership. When calling the sum function, ownership of the `vec` is moved to the
-parameter `v` on the function `sum`.  The original variable `vec` is
-invalidated, and any attempt to use it results in a compile-time error. Rust’s
-ownership model ensures that the vector is properly deallocated when it goes out
-of scope in the `sum` function.
-
-
+When you compile this, you’ll see an error indicating that `vec` has been moved
+and is no longer valid. This error occurs because Rust prevents any further
+usage of the vector after its ownership has been transferred to sum.
+ 
 When ownership is transferred, a _shallow copy_ of the data is performed. This
 means that only the pointer to the heap-allocated data is copied, not the actual
 data itself. In Rust, this process is referred to as a _move_.
 
-Instead, a deep copy would duplicate the entire data structure, including
-heap-allocated data. Rust does not automatically perform deep copies to ensure
-efficiency and avoid unintended performance overhead.
+In contrast, a deep copy would clone the entire data structure on the heap. Rust
+does not perform deep copies of heap allocated objects automatically, ensuring
+efficiency and avoiding unintentional performance overhead.
 
-A similar thing will happen if we assign `vec` to an other variable. 
+Likewise, if you assign `vec` to another variable, the same move semantics
+apply—ownership is transferred, and the original variable can no longer be used.
 
 ```rust, editable
 fn main () {
@@ -177,10 +178,13 @@ fn main () {
 }
 ```
 
-That is, the move semantics of Rust entirely prevent aliasing. 
+Rust’s move semantics effectively prevent aliasing, meaning that once a value
+has been moved, there is no longer any valid reference (or owner) left behind to
+access the original data. 
 
-In order to get around this, the sum function would have to pass the ownership
-of the vector back to its caller. 
+To work around this, the function receiving ownership could simply return it
+back to the caller. This way, once the function completes, the caller regains
+ownership of the value and can continue using it.
 
 
 ```rust, editable
@@ -216,15 +220,58 @@ fn main () {
 }
 ```
 
-Of course this is tedious and not idiomatic Rust. Rust allows us to do this
-using references that provide a way to borrow a value without transferring
-ownership.
+Returning ownership on every function call would be cumbersome and non-idiomatic
+in Rust. Instead, Rust provides references, which let you borrow a value without
+transferring ownership. This borrowing mechanism keeps the compiler’s guarantees
+about safety and ensures that you can still access the data without having to
+move or clone it every time a function needs to look at it.
+
+Note that in order for the function parameter to take ownership of a vector and
+mutate it, we must declare the function parameter as mutable.
+
+```rust, editable
+fn add_one(mut v : Vec<u32>) -> Vec<u32> {
+    
+    // That's not idiomatic Rust. We will learn how to do this with iterators.
+    
+    for i in 0..v.len() { // 0 <= i < v.len() - 1.        
+        v[i] += 1
+    }
+    return v;
+}
+
+
+fn main () {
+    let mut vec = vec![1,2,3];
+
+    let v = add_one(vec);
+    
+    println!("The vector is {:?}", v);
+    
+}
+```
+
+
+### Bounds checking 
+
+By default, Rust performs bounds checks on accesses to container types like
+vectors. This ensures you never access invalid memory and helps prevent
+out-of-bounds errors at runtime. In contrast, C/C++ forgo such checks to
+prioritize performance.
+
+Still, Rust offers [a few
+ways](https://nnethercote.github.io/perf-book/bounds-checks.html) to avoid or
+minimize bounds-checking overhead without resorting to unsafe code:
+
+- Use iterators rather than direct indexing. 
+- Add assertions that can help the compiler infer that certain bounds checks are
+unnecessary.
+
 
 
 ## Strings 
 
 Another common heap allocated type in Rust is strings.
-
 
 Rust has a type `str` that .... 
 

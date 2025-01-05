@@ -212,6 +212,23 @@ fn main() {
 }
 ```
 
+We can declare function parameters as mutable. 
+
+```rust,editable
+fn add1(mut t : (u32, u32)) -> u32 { 
+    t.0 += 1; 
+    return t.0;
+}
+
+fn main() {
+    let mut t = (1,2);
+    
+    println!("add1 result: {}", add1(t));
+    println!("The first component is {}", t.0);
+
+}
+```
+
 ## Control Flow
 
 We see some of Rust control flow constructs using a Fibonacci example. For more
