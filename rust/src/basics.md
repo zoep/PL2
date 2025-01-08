@@ -2,7 +2,7 @@
 
 ## Hello, Rust!
 
-Let's start with a typical "Hello, world!" program. 
+Let's start with a typical "Hello, world!" program.
 
 ```rust,editable
 fn main() {
@@ -10,12 +10,12 @@ fn main() {
 }
 ```
 
-First we declare a main function, which is the entry point in every Rust program. 
+First we declare a main function, which is the entry point in every Rust program.
 
 The `println!` macro is used to print text to the console. The exclamation mark (!) indicates that `println!` is a macro, not a function.
 
 
-We can compile and execute this program from the terminal using the Rust compiler. 
+We can compile and execute this program from the terminal using the Rust compiler.
 
 ```console
 $ echo "fn main() {\n    println!(\"Hello, Rust\"); \n}" > hello.rs
@@ -40,7 +40,7 @@ The variable answer has a _strong_, _static_ type `u64` (denoting an unsigned
 integer with 64 bits). Rust has type inference, so the type annotation could
 have been omitted.
 
-By default, variables are _immutable_ (yes, thanks FP again). 
+By default, variables are _immutable_ (yes, thanks FP again).
 
 Let's look at what happens when we try to change the value of `answer`.
 
@@ -55,7 +55,7 @@ fn main() {
 
 The compiler complains that `cannot assign twice to immutable variable`. To get around this, we must explicitly declare `answer` as a mutable variable.
 
-The following works fine. 
+The following works fine.
 
 ```rust,editable
 fn main() {
@@ -82,15 +82,15 @@ respectively, where N represents the bit width and can be one of 8, 16, 32, 64,
 or 128.
 
 For example, `u16` is an 16-bit unsigned integer, holding values from 0 to
-2^16-1 and `i64` is a 64-bit integer holding values from -2^63 to 2^63-1.  
+2^16-1 and `i64` is a 64-bit integer holding values from -2^63 to 2^63-1.
 
 The overflow behavior is different depending on compiler flags. When compiling
 in debug mode, Rust will trap overflows throwing an unrecoverable error
 (_panic_). Then compiling release mode, there are no runtime checks for
-overflows will wrap around. 
+overflows will wrap around.
 
 Additionally, Rust has the `isize` and `usize` types that depend on the machines
-architecture. 
+architecture.
 
 #### Floating Point Numbers
 
@@ -104,7 +104,7 @@ The type `bool` with values `true` and `false`.
 #### Chars
 
 Rust has a `char` type that represents unicode characters. They are written in
-single quotes. 
+single quotes.
 
 Snippet from the Rust book:
 
@@ -119,7 +119,7 @@ fn main() {
 
 ### Compound Types
 
-#### Tuples 
+#### Tuples
 
 ```rust,editable
 fn main() {
@@ -128,7 +128,7 @@ fn main() {
 
   println!("My tuple is {:?}", t);
 
-  // eliminating tuples: projection 
+  // eliminating tuples: projection
   println!("The first component is {}", t.0);
 
   // eliminating tuples: decomposition pattern
@@ -147,7 +147,7 @@ specifier calls.
 #### Arrays
 
 Arrays are similar to tuples, but all elements must have the same type. It's
-type is fixed and statically known. They are allocated on the stack. 
+type is fixed and statically known. They are allocated on the stack.
 
 ```rust,editable
 fn main() {
@@ -157,17 +157,17 @@ fn main() {
 }
 ```
 
-Play around to see what happens when you try to access the array out of bounds. 
+Play around to see what happens when you try to access the array out of bounds.
 
-When the compiler can statically determine that the array will be accessed out of bounds it will throw a compile time error. 
+When the compiler can statically determine that the array will be accessed out of bounds it will throw a compile time error.
 
-However, this is not a conservative static check. Eliminating all accesses that cannot be guaranteed to be in bounds would be too restrictive.  
+However, this is not a conservative static check. Eliminating all accesses that cannot be guaranteed to be in bounds would be too restrictive.
 
 The following program compiles fine and throws an error at runtime. You can also
 see an example of Rust function (yes, arrows again).
 
 ```rust,editable
-fn access(a : [u32;5], n : usize) -> u32{ 
+fn access(a : [u32;5], n : usize) -> u32{
   return a[n];
 }
 
@@ -182,29 +182,29 @@ Notice, that accessing an array out of bound throws is a _trapped_ error (unlike
 C and C++). The program will panic at runtime, throwing an unrecoverable error.
 This ensures that a program can never access invalid memory.
 
-## Functions 
+## Functions
 
-We just saw an example of a Rust function. In Rust functions can have zero or more parameters, and optionally a return type. 
+We just saw an example of a Rust function. In Rust functions can have zero or more parameters, and optionally a return type.
 
-Here are some examples of Rust functions. 
+Here are some examples of Rust functions.
 
 
 ```rust,editable
-fn fourtytwo() -> u32{ 
+fn fourtytwo() -> u32{
   return 42;
 }
 
-fn sayhi() { 
+fn sayhi() {
   println!("Hello!");
 }
 
-fn add(x: u32, y:u32) -> u32{ 
+fn add(x: u32, y:u32) -> u32{
   x+y
 }
 
 fn main() {
   println!("One more time {}", fourtytwo());
-  
+
   sayhi();
 
   println!("Add two numbers: {}", add(5,6));
@@ -212,17 +212,17 @@ fn main() {
 }
 ```
 
-We can declare function parameters as mutable. 
+We can declare function parameters as mutable.
 
 ```rust,editable
-fn add1(mut t : (u32, u32)) -> u32 { 
-    t.0 += 1; 
+fn add1(mut t : (u32, u32)) -> u32 {
+    t.0 += 1;
     return t.0;
 }
 
 fn main() {
     let mut t = (1,2);
-    
+
     println!("add1 result: {}", add1(t));
     println!("The first component is {}", t.0);
 
@@ -233,19 +233,19 @@ fn main() {
 
 We see some of Rust control flow constructs using a Fibonacci example. For more
 control flow constructs refer to [the Rust
-Book](https://doc.rust-lang.org/book/ch03-05-control-flow.html). 
+Book](https://doc.rust-lang.org/book/ch03-05-control-flow.html).
 
 
 ```rust,editable
 
-fn fib(n : u32) -> u32 { 
+fn fib(n : u32) -> u32 {
     if n == 0 { 0 }
     else if n == 1  { 1 }
     else { fib(n-1) + fib(n-2) }
 }
 
 
-fn fib_iter1(n : u32) -> u32 { 
+fn fib_iter1(n : u32) -> u32 {
     let mut i = n;
     let mut curr = 0;
     let mut next = 1;
@@ -259,7 +259,7 @@ fn fib_iter1(n : u32) -> u32 {
     }
 }
 
-fn fib_iter2(n : u32) -> u32 { 
+fn fib_iter2(n : u32) -> u32 {
     let mut i = n;
     let mut curr = 0;
     let mut next = 1;
@@ -274,7 +274,7 @@ fn fib_iter2(n : u32) -> u32 {
     return curr;
 }
 
-fn fib_iter3(n : u32) -> u32 { 
+fn fib_iter3(n : u32) -> u32 {
     let mut i = n;
     let mut curr = 0;
     let mut next = 1;

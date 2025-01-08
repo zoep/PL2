@@ -9,8 +9,8 @@ functionality that is common to all types.
 A very simple example of a polymorphic function is the identity function.
 
 ```rust,editable
-fn id<T>(x:T) -> T { 
-    x 
+fn id<T>(x:T) -> T {
+    x
 }
 
 fn main() {
@@ -23,11 +23,11 @@ represent any type. Then, it takes an argument of type `T` and returns a result
 of type `T`.
 
 Function can be generic over more than one types. This is illustrated in the
-following example. 
+following example.
 
 ```rust,editable
-fn make_tuple<T,R>(x:T, y:R) -> (T,R) { 
-    (x, y) 
+fn make_tuple<T,R>(x:T, y:R) -> (T,R) {
+    (x, y)
 }
 
 fn main() {
@@ -37,14 +37,14 @@ fn main() {
 
 ## Cons List
 
-Structs and enums can also be generic over various types. 
+Structs and enums can also be generic over various types.
 
 Here's is an illustrative example of a generic enum that represents a cons list.
-The example also illustrates macros in Rust. 
+The example also illustrates macros in Rust.
 
 ```rust, editable
 #[derive(Debug)]
-enum List<T> { 
+enum List<T> {
     Nil,
     Cons(T, Box<List<T>>)
 }
@@ -76,7 +76,7 @@ impl<T> List<T> {
     fn head(&self) -> Option<&T> {
         match self {
             Nil => None,
-            Cons(x,_) => Some(x)
+            Cons(x,_) =>   Some(x)
         }
     }
 
@@ -118,13 +118,13 @@ fn main() {
 For the most part, the code covers concepts we have already covered. However, it
 also introduces few Rust features that are worth more explanation:
 
-- **Macros**  
+- **Macros**
   We use the Rust [macro
   system](https://doc.rust-lang.org/reference/macros.html) to define notations
-  for empty, singleton and nil list. 
+  for empty, singleton and nil list.
 
 
-- **replace**  
+- **replace**
   We use the function
   [std::mem::replace](https://doc.rust-lang.org/std/mem/fn.replace.html) that
   moves the second argument (`List::Nil`) into the location provided by the
@@ -132,7 +132,7 @@ also introduces few Rust features that are worth more explanation:
   to take ownership of the list stored in `self`, while leaving an empty list
   (`Nil`) in its place.
 
-- **while let** syntax  
+- **while let** syntax
   This syntax combines pattern matching and while loops. The while loop will
   continue its execution for as long as the pattern (here `Cons(value, mut
   next)`) matches the value of the body.

@@ -8,7 +8,7 @@ types).
 
 ## Structs
 
-Here's a simple example of a struct. 
+Here's a simple example of a struct.
 
 ```rust, editable
 struct Point {
@@ -52,7 +52,7 @@ struct Point {
 struct TwoPoints(Point, Point);
 
 fn add(ps: TwoPoints) -> Point {
-    let TwoPoints(pA, pB) = ps; // tuple structs can be pattern matched 
+    let TwoPoints(pA, pB) = ps; // tuple structs can be pattern matched
 
     return (Point { x : pA.x + pB.x,
                     y : pA.y + pA.y,  // dot notation also works
@@ -64,7 +64,7 @@ fn main() {
     let pointB = Point { y: 5, .. pointA};  // this is called "update syntax"
 
     let both = TwoPoints(pointA, pointB);
-    
+
     let _unused = Unit;
 
     println!("The points are {:?}", both);
@@ -73,7 +73,7 @@ fn main() {
 }
 ```
 
-Structs are by default stack allocated. 
+Structs are by default stack allocated.
 
 ### Struct Methods
 
@@ -135,17 +135,17 @@ fn main() {
 
 Enums in Rust enable you to define types that represent one of several possible
 variants. Each variant can optionally carry associated data, which can be a
-single value, a tuple, or a struct.  
+single value, a tuple, or a struct.
 
 Enum types can be pattern matched to handle their different variants. They can
-also have associated methods in `impl` blocks just like structs. 
+also have associated methods in `impl` blocks just like structs.
 
 Here's an illustrative example.
 
 ```rust, editable
 enum Shape {
     Circle(f64),
-    Rectangle { width: f64, height: f64 }, 
+    Rectangle { width: f64, height: f64 },
     Triangle(f64, f64, f64)
 }
 
@@ -160,7 +160,7 @@ impl Shape {
             // Triangle
             Shape::Triangle(a, b, c) => {
                 // Heron's formula
-                let s = (a + b + c) / 2.0; 
+                let s = (a + b + c) / 2.0;
                 (s * (s - a) * (s - b) * (s - c)).sqrt()
             }
         }
@@ -181,7 +181,7 @@ fn main() {
 ## Recursive Types
 Rust allows definition of recursive structs that can refer to themselves Recursive types have some restrictions:
 
-- They must be under some struct or enum. 
+- They must be under some struct or enum.
 - They must be finite.
 
 ### The Problem with Infinite Size
@@ -190,7 +190,7 @@ If we attempt to define a recursive enum like this:
 ```rust, editable
 #[derive(Debug)]
 enum OpKind {
-    Add, 
+    Add,
     Sub,
     Mul,
     Div
@@ -199,7 +199,7 @@ enum OpKind {
 #[derive(Debug)]
 enum Exp {
     Lit(i64),
-    Op { op: OpKind, lhs: Exp, rhs: Exp }, 
+    Op { op: OpKind, lhs: Exp, rhs: Exp },
 }
 
 fn main() {
@@ -224,14 +224,14 @@ provides the `Box` type to heap-allocate values.
 
 A type `Box<T>` represents a type `T` that is allocated on the heap of the
 program. Technically, a box is pointer type that uniquely owns a heap location
-storing a value og type `T`. A Box type can be used just as the underlying type. 
+storing a value og type `T`. A Box type can be used just as the underlying type.
 
 A box can be created with its constructor `Box::new` that allocates memory on
 the heap and places the given value into it.
 
 ```rust, editable
 fn main() {
-    let b : Box<u32> = Box::new(1); 
+    let b : Box<u32> = Box::new(1);
     println!("The number is {}", b);
 }
 ```
@@ -243,7 +243,7 @@ Using box types, we can fix the above example.
 ```rust, editable
 #[derive(Debug)]
 enum Op {
-    Add, 
+    Add,
     Sub,
     Mul,
     Div
@@ -252,7 +252,7 @@ enum Op {
 #[derive(Debug)]
 enum Exp {
     Lit(i64),
-    Op { op: Op, lhs: Box<Exp>, rhs: Box<Exp> }, 
+    Op { op: Op, lhs: Box<Exp>, rhs: Box<Exp> },
 }
 
 impl Exp {
@@ -278,10 +278,10 @@ impl Exp {
 
 fn main() {
   // e = 10 + 2 * 6
-  let e = Exp::Op{ op:  Op::Add, 
-                   lhs: Box::new(Exp::Lit(10)), 
-                   rhs: Box::new(Exp::Op { op:  Op::Mul, 
-                                           lhs: Box::new(Exp::Lit(2)), 
+  let e = Exp::Op{ op:  Op::Add,
+                   lhs: Box::new(Exp::Lit(10)),
+                   rhs: Box::new(Exp::Op { op:  Op::Mul,
+                                           lhs: Box::new(Exp::Lit(2)),
                                            rhs: Box::new(Exp::Lit(6)) } ) };
 
   println!("The answer is {}", e.eval());

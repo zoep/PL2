@@ -18,7 +18,7 @@ fn addt(t : (u32,u32)) -> u32 {
 fn main() {
 
     let t = (3,4);
-    
+
     println!("The sum is: {}", addt(t));
 
     println!("The first component is: {}", t.0);
@@ -36,12 +36,12 @@ Ownership dictates that a heap-allocated object has exactly one owner at any
 given time. In other words, there is exactly one variable that “owns” (or
 “holds”) a pointer to the heap-allocated data structure at any point during a
 program's execution.
- 
+
 When a variable that has a type that is heap allocated gets reassigned or passed
 as an argument, then pointer to the heap allocated will be copied, but not the
 data itself. In such cases we say that the ownership of the value has been
 _moved_. Once the ownership is moved the the previous pointer (i.e., original
-owner of the value) becomes _invalidated_ and cannot be used anymore. 
+owner of the value) becomes _invalidated_ and cannot be used anymore.
 
 Since a value has only one owner, Rust knows exactly when the object is no
 longer in use (when it goes out of scope). At that point, the memory can be
@@ -69,7 +69,7 @@ additional fields to track its length and capacity.
 fn main () {
     let mut vec = Vec::new(); // calling the constructor
 
-    vec.push(1);    
+    vec.push(1);
     vec.push(2);
     vec.push(42);
 
@@ -83,19 +83,19 @@ fn main () {
 ```
 
 
-Let's write a function to sum the elements of a vector. 
+Let's write a function to sum the elements of a vector.
 
 ```rust, editable
 fn sum (v : Vec<u32>) -> u32 {
     let mut sum = 0;
-  
+
     for i in 0..v.len() { // 0 <= i < v.len() - 1.
         sum += v[i]
     }
 
     return sum;
 
-    // v is the owner of the vector value now. 
+    // v is the owner of the vector value now.
     // Once v goes out of scope the value can be dropped.
 }
 
@@ -103,7 +103,7 @@ fn sum (v : Vec<u32>) -> u32 {
 fn main () {
     let mut vec = Vec::new(); // calling the constructor
 
-    vec.push(1);    
+    vec.push(1);
     vec.push(2);
     vec.push(42);
 
@@ -123,13 +123,13 @@ Consider the following example, where we attempt to use vec after calling sum:
 ```rust, editable
 fn sum (v : Vec<u32>) -> u32 {
     let mut sum = 0;
-  
+
     for i in 0..v.len() { // 0 <= i < v.len() - 1.
         sum += v[i]
     }
     return sum;
 
-    // or just: 
+    // or just:
     // v.iter().sum()
 }
 
@@ -137,12 +137,12 @@ fn sum (v : Vec<u32>) -> u32 {
 fn main () {
     let mut vec = Vec::new(); // calling the constructor
 
-    vec.push(1);    
+    vec.push(1);
     vec.push(2);
     vec.push(42);
 
     println!("The sum of the elements of the vector is {:?}", sum(vec));
-    
+
     vec.push(21);
 }
 ```
@@ -150,7 +150,7 @@ fn main () {
 When you compile this, you’ll see an error indicating that `vec` has been moved
 and is no longer valid. This error occurs because Rust prevents any further
 usage of the vector after its ownership has been transferred to sum.
- 
+
 When ownership is transferred, a _shallow copy_ of the data is performed. This
 means that only the pointer to the heap-allocated data is copied, not the actual
 data itself. In Rust, this process is referred to as a _move_.
@@ -166,21 +166,21 @@ apply—ownership is transferred, and the original variable can no longer be use
 fn main () {
     let mut vec = Vec::new(); // calling the constructor
 
-    vec.push(1);    
+    vec.push(1);
     vec.push(2);
     vec.push(42);
 
-    let mut vec2 = vec; 
-    
+    let mut vec2 = vec;
+
     vec.push(21);
-    
+
     println!("The length of the vector is {:}", vec2.len());
 }
 ```
 
 Rust’s move semantics effectively prevent aliasing, meaning that once a value
 has been moved, there is no longer any valid reference (or owner) left behind to
-access the original data. 
+access the original data.
 
 To work around this, the function receiving ownership could simply return it
 back to the caller. This way, once the function completes, the caller regains
@@ -190,13 +190,13 @@ ownership of the value and can continue using it.
 ```rust, editable
 fn sum (v : Vec<u32>) -> (u32, Vec<u32>) {
     let mut sum = 0;
-  
+
     for i in 0..v.len() { // 0 <= i < v.len() - 1.
         sum += v[i]
     }
     return (sum,v);
 
-    // or just: 
+    // or just:
     // v.iter().sum()
 }
 
@@ -204,19 +204,19 @@ fn sum (v : Vec<u32>) -> (u32, Vec<u32>) {
 fn main () {
     let mut vec1 = Vec::new(); // calling the constructor
 
-    vec1.push(1);    
+    vec1.push(1);
     vec1.push(2);
     vec1.push(42);
 
     let (sum1, mut vec2) = sum(vec1); // vec2 must be made mutable for us to modify it
 
     println!("The sum of the elements of the vector is {:?}", sum1);
-    
+
     vec2.push(22);
 
     let (sum2, _) = sum(vec2);
     println!("The sum of the elements of the vector is {:?}", sum2);
-    
+
 }
 ```
 
@@ -231,10 +231,10 @@ mutate it, we must declare the function parameter as mutable.
 
 ```rust, editable
 fn add_one(mut v : Vec<u32>) -> Vec<u32> {
-    
+
     // That's not idiomatic Rust. We will learn how to do this with iterators.
-    
-    for i in 0..v.len() { // 0 <= i < v.len() - 1.        
+
+    for i in 0..v.len() { // 0 <= i < v.len() - 1.
         v[i] += 1
     }
     return v;
@@ -245,14 +245,14 @@ fn main () {
     let mut vec = vec![1,2,3];
 
     let v = add_one(vec);
-    
+
     println!("The vector is {:?}", v);
-    
+
 }
 ```
 
 
-### Bounds checking 
+### Bounds checking
 
 By default, Rust performs bounds checks on accesses to container types like
 vectors. This ensures you never access invalid memory and helps prevent
@@ -263,16 +263,16 @@ Still, Rust offers [a few
 ways](https://nnethercote.github.io/perf-book/bounds-checks.html) to avoid or
 minimize bounds-checking overhead without resorting to unsafe code:
 
-- Use iterators rather than direct indexing. 
+- Use iterators rather than direct indexing.
 - Add assertions that can help the compiler infer that certain bounds checks are
 unnecessary.
 
 
 
-## Strings 
+## Strings
 
 Another common heap allocated type in Rust is strings.
 
-Rust has a type `str` that .... 
+Rust has a type `str` that ....
 
 a growable, mutable, owned, UTF-8 encoded string type
