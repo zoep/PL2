@@ -1,0 +1,11 @@
+[book]
+authors = ["zoep"]
+language = "en"
+multilingual = false
+src = "src"
+title = "A Short Intro to Rust"
+
+[output.html.playground]
+editable = true
+line-numbers = true
+
