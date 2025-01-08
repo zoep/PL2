@@ -61,7 +61,12 @@ fn main () {
 }
 ```
 
-During the _lifetime_ of a mutable borrow, we cannot borrow the value in any other way (mutable or immutable). The following code snippets all fail to compile. 
+During the _lifetime_ of a mutable borrow, we cannot borrow the value in any
+other way (mutable or immutable). That is, a mutable borrow is the only way to
+access the memory it points at.
+ 
+
+The following code snippets all fail to compile. 
 
 ```rust, editable
 fn main () {
@@ -100,8 +105,9 @@ fn main () {
 }    
 ```
 
-With these restrictions, Rust can prevent data races at compile time. A data
-race occurs when two or more threads access the same memory concurrently in an
+With these restrictions, Rust prevent subtle memory errors like iterator
+invalidation. It also prevents data races at compile time. A data race occurs
+when two or more threads access the same memory concurrently in an
 unsynchronized manner, and at least one of those accesses is a write operation.
 
 Data races can lead to undefined behavior and are a common source of subtle,
