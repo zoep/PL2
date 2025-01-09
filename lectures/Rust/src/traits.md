@@ -517,6 +517,25 @@ deallocated. Some use cases of drop involve:
 - Managing an OS native resource (e.g., file handle, network sockets) with a
   Rust interface.
 
+
+Note that the destructor is run at the end of the scope 
+
+```rust, editable
+#[derive(Debug)]
+struct X<'a>(&'a i32);
+
+impl Drop for X<'_> {
+    fn drop(&mut self) {}
+}
+
+fn main() {
+    let mut data = vec![1, 2, 3];
+    let x = X(&data[0]);
+    println!("{:?}", x);
+    data.push(4);
+}
+```
+
 ### [`From`](https://doc.rust-lang.org/std/convert/trait.From.html) and [`Into`]()
 
 The `From` and `Into` traits in Rust are used for type conversions. Both traits

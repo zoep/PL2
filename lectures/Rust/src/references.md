@@ -315,3 +315,19 @@ fn main () {
 
 }
 ```
+
+
+
+```rust, editable
+fn main() {
+    let mut data = vec![1, 2, 3];
+    let mut x = &data[0];
+
+    println!("{}", x);
+    
+    data.push(4);
+
+    x = &data[3];
+    println!("{}", x);
+}
+```
