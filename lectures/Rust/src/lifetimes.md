@@ -12,11 +12,10 @@ the borrow end before the lifetime of the variable `z`.
 
 ```rust, editable
 fn main() {
-    let z : &Box<(u32,u32)>;
+    let z: &Box<(u32, u32)>;
 
     {
-
-       let y : Box<(u32,u32)> = Box::new((42, 44));
+        let y: Box<(u32, u32)> = Box::new((42, 44));
 
         z = &y;
     } // y's lifetime ends here. y is dropped.
@@ -34,17 +33,15 @@ fn first<T>(a: &T, b: &T) -> &T {
 }
 
 fn main() {
-    let x : Box<(u32,u32)> = Box::new((32, 34));
+    let x: Box<(u32, u32)> = Box::new((32, 34));
 
-    let z : &Box<(u32,u32)>;
+    let z: &Box<(u32, u32)>;
 
     {
-        let y : Box<(u32,u32)> = Box::new((42, 44));
+        let y: Box<(u32, u32)> = Box::new((42, 44));
 
-        z = first(&x,&y);
-
+        z = first(&x, &y);
     } // y's lifetime ends here. y is dropped.
-
 
     println!("{:?}", z)
 }
@@ -68,22 +65,20 @@ relationships between the lifetimes of the function's inputs and output
 
 
 ```rust, editable
-fn first<'a,'b,T>(x: &'a T, y: &'b T) -> &'a T {
+fn first<'a, 'b, T>(x: &'a T, y: &'b T) -> &'a T {
     x
 }
 
 fn main() {
-    let x : Box<(u32,u32)> = Box::new((32, 34));
+    let x: Box<(u32, u32)> = Box::new((32, 34));
 
-    let z : &Box<(u32,u32)>;
+    let z: &Box<(u32, u32)>;
 
     {
-        let y : Box<(u32,u32)> = Box::new((42, 44));
+        let y: Box<(u32, u32)> = Box::new((42, 44));
 
-        z = first(&x,&y);
-
+        z = first(&x, &y);
     } // y's lifetime ends here
-
 
     println!("{:?}", z)
 }
@@ -108,7 +103,7 @@ reference held in `z` after the return is valid at the time of printing it.
 The function `first` could have been also given the following type:
 
 ```rust, ignore
-fn first<'a,T>(x: &'a T, y: &'a T) -> &'a T {
+fn first<'a, T>(x: &'a T, y: &'a T) -> &'a T {
     x
 }
 ```
@@ -124,21 +119,24 @@ lifetime of the returned reference must be the smaller of the two lifetimes.
 As an exercise, try to fill in the lifetimes in the example below.
 
 ```rust, editable
-fn longer<T>(v1:&Vec<T>, v2: &Vec<T>) -> &Vec<T> {
-    if v1.len() >= v2.len() { v1 } else { v2 }
+fn longer<T>(v1: &Vec<T>, v2: &Vec<T>) -> &Vec<T> {
+    if v1.len() >= v2.len() {
+        v1
+    } else {
+        v2
+    }
 }
 
 fn main() {
-    let x : Vec<u32> = vec![1,2,3,4];
+    let x: Vec<u32> = vec![1, 2, 3, 4];
 
-    let z : &Vec<u32>;
+    let z: &Vec<u32>;
 
     {
-        let y : Vec<u32> = vec![1,2,3];
+        let y: Vec<u32> = vec![1, 2, 3];
 
-        z = longer(&x,&y);
+        z = longer(&x, &y);
         println!("{:?}", z)
-
     }
 
     // println!("{:?}", z)
@@ -193,7 +191,6 @@ fn main() {
         read_write: read_write,
     };
 
-
     println!("Sum of read-only part: {}", sum(&chunks));
 
     zero_out(&mut chunks);
@@ -205,24 +202,23 @@ fn main() {
 Here is an example where it is useful for struct fields to have distinct lifetimes.
 
 ```rust, editable
-struct Chunks<'a,'b, T> {
+struct Chunks<'a, 'b, T> {
     read: &'a [T],
     read_write: &'b mut [T],
 }
 
-fn zero_out<'a,'b>(chunks: &mut Chunks<'a,'b, u32>) {
+fn zero_out<'a, 'b>(chunks: &mut Chunks<'a, 'b, u32>) {
     for i in 0..chunks.read_write.len() {
         chunks.read_write[i] = 0;
     }
 }
-
 
 fn main() {
     let mut v1 = vec![1, 2, 3, 4, 5];
     let s;
 
     {
-        let v2 = vec![6,7,8];
+        let v2 = vec![6, 7, 8];
 
         let mut chunks = Chunks {
             read: &v2[1..3],
@@ -232,12 +228,10 @@ fn main() {
         zero_out(&mut chunks);
 
         s = chunks.read_write;
-
     }
 
-  println!("Slice: {:?}", s);
-  println!("After zero_out: {:?}", v1);
-
+    println!("Slice: {:?}", s);
+    println!("After zero_out: {:?}", v1);
 }
 ```
 
@@ -266,7 +260,8 @@ struct Example {
 impl Example {
     // The method get_value borrows self and returns a reference to its value.
     // The lifetime of &self is inferred to be the same as the returned reference.
-    fn get_value(&self) -> &i32 { // same as get_value<'a>(&'a self) -> &'a i32
+    fn get_value(&self) -> &i32 {
+        // same as get_value<'a>(&'a self) -> &'a i32
         &self.value
     }
 }
@@ -353,5 +348,4 @@ fn main() {
     // The slice can be used throughout the program
     println!("Static slice from leak: {:?}", data);
 }
-
 ```

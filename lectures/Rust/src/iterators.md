@@ -31,7 +31,10 @@ pub struct Counter {
 impl Counter {
     /// Creates a new Counter iterator.
     pub fn new(start: i32, end: i32) -> Self {
-        Counter { current: start, end }
+        Counter {
+            current: start,
+            end,
+        }
     }
 }
 
@@ -55,7 +58,7 @@ fn main() {
     let counter = Counter::new(1, 5);
 
     // the for ... in ... construct can be used to iterate over an iterator.
-    for value in counter { 
+    for value in counter {
         println!("{}", value);
     }
 }
@@ -78,7 +81,6 @@ the `IntoIterator` trait for a type. This has the following definition.
 
 ```rust, ignore
 pub trait IntoIterator {
-    
     type Item; // associated types for iterator item
 
     type IntoIter: Iterator<Item = Self::Item>; // associated iterator type
@@ -122,7 +124,7 @@ fn main() {
     let mut numbers = vec![1, 2, 3];
 
     // Using IntoIterator for &mut Vec<T>
-    let iter_mut = numbers.iter_mut(); // Equivalent to (&mut numbers).into_iter(); 
+    let iter_mut = numbers.iter_mut(); // Equivalent to (&mut numbers).into_iter();
     for num in iter_mut {
         *num += 1;
     }
@@ -134,7 +136,11 @@ fn main() {
 ### Owned Values
 ```rust, editable
 fn main() {
-    let names = vec!["alice".to_string(), "bob".to_string(), "charlie".to_string()];
+    let names = vec![
+        "alice".to_string(),
+        "bob".to_string(),
+        "charlie".to_string(),
+    ];
 
     // Create a new vector to hold the transformed values
     let mut uppercase_names = Vec::new();
@@ -165,12 +171,11 @@ fn main() {
 
     // Write some closures
     let closure_annotated = |x: i32, y: i32| -> i32 { x + y + outer_var };
-    let closure_inferred = |x, y| { x + y + outer_var };
+    let closure_inferred = |x, y| x + y + outer_var;
 
     // Call the closures
-    println!("closure_annotated: {}", closure_annotated(1,2));
-    println!("closure_inferred: {}", closure_inferred(3,4));
-
+    println!("closure_annotated: {}", closure_annotated(1, 2));
+    println!("closure_inferred: {}", closure_inferred(3, 4));
 }
 ```
 
@@ -178,12 +183,10 @@ Note that closures cannot be polymorphic. The following example fails.
 
 ```rust,editable
 fn main() {
-
-    let id = |x| { x };
+    let id = |x| x;
 
     println!("Call 1: {}", id("hello"));
     println!("Call 2: {}", id(3));
-
 }
 ```
 
@@ -244,8 +247,10 @@ Here's the above example, adapted so that it compiles.
 
 ```rust, editable 
 // `F` must be generic.
-fn apply<F>(f: F) 
-where F : Fn() -> () {
+fn apply<F>(f: F)
+where
+    F: Fn() -> (),
+{
     f();
 }
 
@@ -268,13 +273,14 @@ Here's an example from the standard library
 
 ```rust, editable 
 fn main() {
-  let a = vec![1, 2, 3];
+    let a = vec![1, 2, 3];
 
-  let doubled: Vec<i32> = a.iter()             // convert vec into an iterator
-                           .map(|&x| x * 2)   // call map
-                           .collect();        // reconstruct an iterator
-  
-  println!("{:?}", doubled)
+    let doubled: Vec<i32> = a
+        .iter() // convert vec into an iterator
+        .map(|&x| x * 2) // call map
+        .collect(); // reconstruct an iterator
+
+    println!("{:?}", doubled)
 }
 ```
 
@@ -288,8 +294,7 @@ fn main() {
     let numbers = vec![1, 2, 3, 4, 5, 6];
 
     // Use fold to calculate the sum of all elements
-    let sum = numbers.iter()
-                     .fold(0, |acc, &x| acc + x);
+    let sum = numbers.iter().fold(0, |acc, &x| acc + x);
 
     println!("Sum: {}", sum); // Output: Sum: 21
 }
@@ -301,9 +306,7 @@ fn main() {
     let numbers = vec![1, 2, 3, 4, 5, 6];
 
     // Filter out only even numbers and collect them into a new vector
-    let even_numbers: Vec<i32> = numbers.into_iter()
-                                        .filter(|&x| x % 2 == 0)
-                                        .collect();
+    let even_numbers: Vec<i32> = numbers.into_iter().filter(|&x| x % 2 == 0).collect();
 
     println!("Even numbers: {:?}", even_numbers); // Output: [2, 4, 6]
 }

@@ -78,15 +78,15 @@ impl User<Authenticated> {
 }
 
 fn main() {
-    let mut user = User::new("admin".to_string(),"password".to_string());
+    let mut user = User::new("admin".to_string(), "password".to_string());
     let mut secret;
 
-     match user.authenticate() {
+    match user.authenticate() {
         Ok(user) => secret = user.get_top_secret(),
         Err(_) => secret = "cannot read secret",
-     }
+    }
 
-     println!("{}", secret);
+    println!("{}", secret);
 }
 ```
 

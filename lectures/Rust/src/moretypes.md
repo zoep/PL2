@@ -17,8 +17,10 @@ struct Point {
 }
 
 fn add(a: Point, b: Point) -> Point {
-    Point { x : a.x + b.x,
-            y : a.y + b.y }
+    Point {
+        x: a.x + b.x,
+        y: a.y + b.y,
+    }
 }
 
 fn main() {
@@ -54,14 +56,16 @@ struct TwoPoints(Point, Point);
 fn add(ps: TwoPoints) -> Point {
     let TwoPoints(pA, pB) = ps; // tuple structs can be pattern matched
 
-    return (Point { x : pA.x + pB.x,
-                    y : pA.y + pA.y,  // dot notation also works
-                    z : pA.z + pB.z });
+    return (Point {
+        x: pA.x + pB.x,
+        y: pA.y + pA.y, // dot notation also works
+        z: pA.z + pB.z,
+    });
 }
 
 fn main() {
     let pointA = Point { x: 0, y: 0, z: 0 };
-    let pointB = Point { y: 5, .. pointA};  // this is called "update syntax"
+    let pointB = Point { y: 5, ..pointA }; // this is called "update syntax"
 
     let both = TwoPoints(pointA, pointB);
 
@@ -69,7 +73,6 @@ fn main() {
 
     println!("The points are {:?}", both);
     println!("Its sum is {:?}", add(both));
-
 }
 ```
 
@@ -100,22 +103,24 @@ impl Point {
     // distance from origin
     fn dist0(&self) -> f64 {
         // converts to f64 and calculares the square root
-        ((self.x^2 + self.y^2) as f64).sqrt()
+        ((self.x ^ 2 + self.y ^ 2) as f64).sqrt()
     }
 
     // distance from any point
-    fn dist(&self, p : Point) -> f64 {
+    fn dist(&self, p: Point) -> f64 {
         // converts to f64 and calculares the square root
-        (((self.x - p.x)^2 + (self.y - p.y)^2) as f64).sqrt()
+        (((self.x - p.x) ^ 2 + (self.y - p.y) ^ 2) as f64).sqrt()
     }
 
     // add two points
-    fn add (&self, p : Point) -> Point {
-      Point { x : self.x + self.x,
-              y : self.y + self.y }
+    fn add(&self, p: Point) -> Point {
+        Point {
+            x: self.x + self.x,
+            y: self.y + self.y,
+        }
     }
 
-    fn moveUp (&mut self) {
+    fn moveUp(&mut self) {
         self.y += 1
     }
 }
@@ -146,12 +151,11 @@ Here's an illustrative example.
 enum Shape {
     Circle(f64),
     Rectangle { width: f64, height: f64 },
-    Triangle(f64, f64, f64)
+    Triangle(f64, f64, f64),
 }
 
 impl Shape {
     fn area(&self) -> f64 {
-
         match self {
             // Circle
             Shape::Circle(radius) => std::f64::consts::PI * radius.powi(2),
@@ -169,7 +173,10 @@ impl Shape {
 
 fn main() {
     let circle = Shape::Circle(3.0);
-    let rectangle = Shape::Rectangle { width: 4.0, height: 5.0 };
+    let rectangle = Shape::Rectangle {
+        width: 4.0,
+        height: 5.0,
+    };
     let triangle = Shape::Triangle(3.0, 4.0, 5.0);
 
     println!("Area of the circle: {}", circle.area());
@@ -193,7 +200,7 @@ enum OpKind {
     Add,
     Sub,
     Mul,
-    Div
+    Div,
 }
 
 #[derive(Debug)]
@@ -203,8 +210,8 @@ enum Exp {
 }
 
 fn main() {
-  let e = Lit(42);
-  println!("{}", e);
+    let e = Lit(42);
+    println!("{}", e);
 }
 ```
 
@@ -231,7 +238,7 @@ the heap and places the given value into it.
 
 ```rust, editable
 fn main() {
-    let b : Box<u32> = Box::new(1);
+    let b: Box<u32> = Box::new(1);
     println!("The number is {}", b);
 }
 ```
@@ -246,44 +253,51 @@ enum Op {
     Add,
     Sub,
     Mul,
-    Div
+    Div,
 }
 
 #[derive(Debug)]
 enum Exp {
     Lit(i64),
-    Op { op: Op, lhs: Box<Exp>, rhs: Box<Exp> },
+    Op {
+        op: Op,
+        lhs: Box<Exp>,
+        rhs: Box<Exp>,
+    },
 }
 
 impl Exp {
-
     fn eval(&self) -> i64 {
         match self {
             // Literals
             Exp::Lit(n) => *n, // TODO why is this &i64
             // Binary Operators
-            Exp::Op {op, lhs, rhs} => {
-              let e1 = lhs.eval();
-              let e2 = rhs.eval();
-              match op {
-                Op::Add => e1 + e2,
-                Op::Sub => e1 - e2,
-                Op::Mul => e1 * e2,
-                Op::Div => e1 / e2
-              }
+            Exp::Op { op, lhs, rhs } => {
+                let e1 = lhs.eval();
+                let e2 = rhs.eval();
+                match op {
+                    Op::Add => e1 + e2,
+                    Op::Sub => e1 - e2,
+                    Op::Mul => e1 * e2,
+                    Op::Div => e1 / e2,
+                }
             }
         }
     }
 }
 
 fn main() {
-  // e = 10 + 2 * 6
-  let e = Exp::Op{ op:  Op::Add,
-                   lhs: Box::new(Exp::Lit(10)),
-                   rhs: Box::new(Exp::Op { op:  Op::Mul,
-                                           lhs: Box::new(Exp::Lit(2)),
-                                           rhs: Box::new(Exp::Lit(6)) } ) };
+    // e = 10 + 2 * 6
+    let e = Exp::Op {
+        op: Op::Add,
+        lhs: Box::new(Exp::Lit(10)),
+        rhs: Box::new(Exp::Op {
+            op: Op::Mul,
+            lhs: Box::new(Exp::Lit(2)),
+            rhs: Box::new(Exp::Lit(6)),
+        }),
+    };
 
-  println!("The answer is {}", e.eval());
+    println!("The answer is {}", e.eval());
 }
 ```

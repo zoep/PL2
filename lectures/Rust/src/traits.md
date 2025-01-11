@@ -162,9 +162,11 @@ fn compare_areas<T: Shape, U: Shape>(shape1: &T, shape2: &U) -> String {
 }
 
 fn main() {
-
     let circle = Circle { radius: 5.0 };
-    let rectangle = Rectangle { width: 4.0, height: 6.0 };
+    let rectangle = Rectangle {
+        width: 4.0,
+        height: 6.0,
+    };
 
     println!("Comparison: {}", compare_areas(&circle, &rectangle));
 }
@@ -217,7 +219,6 @@ fn main() {
     // Display output
     println!("{}", p);
 }
-
 ```
 
 ###  `Debug`
@@ -262,7 +263,6 @@ fn main() {
 
     // Debug output, pretty printed
     println!("{:#?}", triangle);
-
 }
 ```
 
@@ -304,7 +304,6 @@ fn main() {
 
     // Debug output, pretty printed
     println!("{:#?}", triangle);
-
 }
 ```
 
@@ -333,10 +332,10 @@ clone even is `T` is not).
 #[derive(Debug, Clone)]
 enum List<T> {
     Nil,
-    Cons(T, Box<List<T>>)
+    Cons(T, Box<List<T>>),
 }
 
-use List::{Cons,Nil}; // To be able to use Cons and Nil without qualifying them.
+use List::{Cons, Nil}; // To be able to use Cons and Nil without qualifying them.
 
 // Define some macros for lists
 macro_rules! list {
@@ -358,21 +357,22 @@ macro_rules! list {
 
 fn main() {
     // Create a cons list: 1 -> 2 -> 3 -> Nil
-    let mut list1 = list![1,2,3];
+    let mut list1 = list![1, 2, 3];
 
     // Perform a deep copy of the list
     let list2 = list1.clone();
 
-    list1 = { match list1 {
-                Nil => Nil,
-                Cons(_, rest) => Cons(42, rest) }
-            };
+    list1 = {
+        match list1 {
+            Nil => Nil,
+            Cons(_, rest) => Cons(42, rest),
+        }
+    };
 
     // Print both lists to verify they are independent
     println!("Original list: {:?}", list1);
     println!("Cloned list: {:?}", list2);
 }
-
 ```
 
 A manual implementation for `Clone` in the above would be:
@@ -398,7 +398,7 @@ ownership rules.
 
 ```rust, editable
 fn main() {
-    let mut x = (1,3);
+    let mut x = (1, 3);
     let x1 = x.1;
 
     x.1 = 42;
@@ -431,7 +431,7 @@ handled automatically by the compiler whenever a value is assigned or passed.
 In fact, the `Copy` trait itself does not define any methods. Its definition is:
 
 ```rust, ignore
-pub trait Copy: Clone { }
+pub trait Copy: Clone {}
 ```
 
 This means that any type implementing `Copy` must also implement the `Clone`
@@ -454,25 +454,28 @@ Notice the difference in the following snippets. The second fails to compile.
 
 ```rust, editable
 #[derive(Debug)]
-struct AStruct<'a,T,R> {
-    x : T,
-    y : &'a R
+struct AStruct<'a, T, R> {
+    x: T,
+    y: &'a R,
 }
 
-impl<'a,T,R> Clone for AStruct<'a,T,R>
-where T : Clone {
+impl<'a, T, R> Clone for AStruct<'a, T, R>
+where
+    T: Clone,
+{
     fn clone(&self) -> Self {
-        AStruct { x : self.x.clone()
-                , y : self.y.clone() }
+        AStruct {
+            x: self.x.clone(),
+            y: self.y.clone(),
+        }
     }
 }
 
-impl<'a,T,R> Copy for AStruct<'a,T,R>
-where T : Copy { }
+impl<'a, T, R> Copy for AStruct<'a, T, R> where T: Copy {}
 
 fn main() {
-    let v = vec![1,2,3];
-    let mut s : AStruct<u32,Vec<u32>> = AStruct { x : 42 , y : &v };
+    let v = vec![1, 2, 3];
+    let mut s: AStruct<u32, Vec<u32>> = AStruct { x: 42, y: &v };
 
     let mut z = s; // copy s
 
@@ -485,14 +488,14 @@ fn main() {
 
 ```rust, editable
 #[derive(Debug, Clone, Copy)]
-struct AStruct<'a,T,R> {
-    x : T,
-    y : &'a R
+struct AStruct<'a, T, R> {
+    x: T,
+    y: &'a R,
 }
 
 fn main() {
-    let v = vec![1,2,3];
-    let s : AStruct<u32,Vec<u32>> = AStruct { x : 42 , y : &v };
+    let v = vec![1, 2, 3];
+    let s: AStruct<u32, Vec<u32>> = AStruct { x: 42, y: &v };
 
     let mut z = s; // copy s
 
