@@ -31,8 +31,11 @@ Variables in Rust are declared with the `let` keyword (thanks FP).
 
 ```rust,editable
 fn main() {
-    let answer : u64 = 42;
-    println!("The answer to life the universe and everything is {}.", answer);
+    let answer: u64 = 42;
+    println!(
+        "The answer to life the universe and everything is {}.",
+        answer
+    );
 }
 ```
 
@@ -47,9 +50,15 @@ Let's look at what happens when we try to change the value of `answer`.
 ```rust,editable
 fn main() {
     let answer = 42;
-    println!("The answer to life the universe and everything is {}.", answer);
+    println!(
+        "The answer to life the universe and everything is {}.",
+        answer
+    );
     answer = 41;
-    println!("I changed my mind. The answer to life the universe and everything is {}.", answer);
+    println!(
+        "I changed my mind. The answer to life the universe and everything is {}.",
+        answer
+    );
 }
 ```
 
@@ -60,10 +69,15 @@ The following works fine.
 ```rust,editable
 fn main() {
     let mut answer = 42;
-    println!("The answer to life the universe and everything is {}.", answer);
+    println!(
+        "The answer to life the universe and everything is {}.",
+        answer
+    );
     answer = 41;
-    println!("I changed my mind. The answer to life the universe and everything is {}.", answer);
-
+    println!(
+        "I changed my mind. The answer to life the universe and everything is {}.",
+        answer
+    );
 }
 ```
 
@@ -111,7 +125,7 @@ Snippet from the Rust book:
 ```rust, editable
 fn main() {
     let c = 'z';
-    let z : char = 'ℤ'; // with explicit type annotation
+    let z: char = 'ℤ'; // with explicit type annotation
     let heart_eyed_cat = '😻';
 }
 ```
@@ -123,18 +137,18 @@ fn main() {
 
 ```rust,editable
 fn main() {
-  // constructing tuples
-  let t : (u64, f32, char) = (42, 10.0, 'z');
+    // constructing tuples
+    let t: (u64, f32, char) = (42, 10.0, 'z');
 
-  println!("My tuple is {:?}", t);
+    println!("My tuple is {:?}", t);
 
-  // eliminating tuples: projection
-  println!("The first component is {}", t.0);
+    // eliminating tuples: projection
+    println!("The first component is {}", t.0);
 
-  // eliminating tuples: decomposition pattern
-  let (x, y, z) = t;
+    // eliminating tuples: decomposition pattern
+    let (x, y, z) = t;
 
-  println!("The first component is {}", x);
+    println!("The first component is {}", x);
 }
 ```
 
@@ -151,9 +165,9 @@ type is fixed and statically known. They are allocated on the stack.
 
 ```rust,editable
 fn main() {
-  let a : [u32;5]= [1,2,3,4,5];
+    let a: [u32; 5] = [1, 2, 3, 4, 5];
 
-  println!("The 2nd element is {}", a[1]);
+    println!("The 2nd element is {}", a[1]);
 }
 ```
 
@@ -167,14 +181,14 @@ The following program compiles fine and throws an error at runtime. You can also
 see an example of Rust function (yes, arrows again).
 
 ```rust,editable
-fn access(a : [u32;5], n : usize) -> u32{
-  return a[n];
+fn access(a: [u32; 5], n: usize) -> u32 {
+    return a[n];
 }
 
 fn main() {
-  let a : [u32;5]= [1,2,3,4,5];
+    let a: [u32; 5] = [1, 2, 3, 4, 5];
 
-  println!("The 2nd element is {}", access(a, 7));
+    println!("The 2nd element is {}", access(a, 7));
 }
 ```
 
@@ -190,42 +204,40 @@ Here are some examples of Rust functions.
 
 
 ```rust,editable
-fn fourtytwo() -> u32{
-  return 42;
+fn fourtytwo() -> u32 {
+    return 42;
 }
 
 fn sayhi() {
-  println!("Hello!");
+    println!("Hello!");
 }
 
-fn add(x: u32, y:u32) -> u32{
-  x+y
+fn add(x: u32, y: u32) -> u32 {
+    x + y
 }
 
 fn main() {
-  println!("One more time {}", fourtytwo());
+    println!("One more time {}", fourtytwo());
 
-  sayhi();
+    sayhi();
 
-  println!("Add two numbers: {}", add(5,6));
-
+    println!("Add two numbers: {}", add(5, 6));
 }
 ```
 
 We can declare function parameters as mutable.
 
 ```rust,editable
-fn add1(mut t : (u32, u32)) -> u32 {
+fn add1(mut t: (u32, u32)) -> u32 {
     t.0 += 1;
     return t.0;
 }
 
 fn main() {
-    let mut t = (1,2);
+    let mut t = (1, 2);
 
     println!("add1 result: {}", add1(t));
     println!("The first component is {}", t.0);
-
 }
 ```
 
@@ -237,66 +249,67 @@ Book](https://doc.rust-lang.org/book/ch03-05-control-flow.html).
 
 
 ```rust,editable
-
-fn fib(n : u32) -> u32 {
-    if n == 0 { 0 }
-    else if n == 1  { 1 }
-    else { fib(n-1) + fib(n-2) }
+fn fib(n: u32) -> u32 {
+    if n == 0 {
+        0
+    } else if n == 1 {
+        1
+    } else {
+        fib(n - 1) + fib(n - 2)
+    }
 }
 
-
-fn fib_iter1(n : u32) -> u32 {
+fn fib_iter1(n: u32) -> u32 {
     let mut i = n;
     let mut curr = 0;
     let mut next = 1;
 
     loop {
-      let tmp = curr;
-      curr = next;
-      next = next + tmp;
-      i-=1;
-      if i == 0 { break curr }
+        let tmp = curr;
+        curr = next;
+        next = next + tmp;
+        i -= 1;
+        if i == 0 {
+            break curr;
+        }
     }
 }
 
-fn fib_iter2(n : u32) -> u32 {
+fn fib_iter2(n: u32) -> u32 {
     let mut i = n;
     let mut curr = 0;
     let mut next = 1;
 
     while i != 0 {
-      let tmp = curr;
-      curr = next;
-      next = next + tmp;
-      i-=1;
+        let tmp = curr;
+        curr = next;
+        next = next + tmp;
+        i -= 1;
     }
 
     return curr;
 }
 
-fn fib_iter3(n : u32) -> u32 {
+fn fib_iter3(n: u32) -> u32 {
     let mut i = n;
     let mut curr = 0;
     let mut next = 1;
 
     for i in 0..n {
-      let tmp = curr;
-      curr = next;
-      next = next + tmp;
+        let tmp = curr;
+        curr = next;
+        next = next + tmp;
     }
 
     return curr;
 }
 
-
 fn main() {
+    let n = 8;
 
-  let n = 8;
-
-  println!("Functional: The {}th fib is: {}", n, fib(n));
-  println!("Iterative 1: The {}th fib is: {}", n, fib_iter1(n));
-  println!("Iterative 2: The {}th fib is: {}", n, fib_iter2(n));
-  println!("Iterative 3: The {}th fib is: {}", n, fib_iter3(n));
-
+    println!("Functional: The {}th fib is: {}", n, fib(n));
+    println!("Iterative 1: The {}th fib is: {}", n, fib_iter1(n));
+    println!("Iterative 2: The {}th fib is: {}", n, fib_iter2(n));
+    println!("Iterative 3: The {}th fib is: {}", n, fib_iter3(n));
 }
 ```

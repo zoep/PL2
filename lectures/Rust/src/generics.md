@@ -9,7 +9,7 @@ functionality that is common to all types.
 A very simple example of a polymorphic function is the identity function.
 
 ```rust,editable
-fn id<T>(x:T) -> T {
+fn id<T>(x: T) -> T {
     x
 }
 
@@ -26,12 +26,12 @@ Function can be generic over more than one types. This is illustrated in the
 following example.
 
 ```rust,editable
-fn make_tuple<T,R>(x:T, y:R) -> (T,R) {
+fn make_tuple<T, R>(x: T, y: R) -> (T, R) {
     (x, y)
 }
 
 fn main() {
-    println!("{:?}", make_tuple(42,11));
+    println!("{:?}", make_tuple(42, 11));
 }
 ```
 
@@ -46,10 +46,10 @@ The example also illustrates macros in Rust.
 #[derive(Debug)]
 enum List<T> {
     Nil,
-    Cons(T, Box<List<T>>)
+    Cons(T, Box<List<T>>),
 }
 
-use List::{Cons,Nil}; // To be able to use Cons and Nil without qualifying them.
+use List::{Cons, Nil}; // To be able to use Cons and Nil without qualifying them.
 
 // Define some macros for lists
 macro_rules! list {
@@ -69,14 +69,12 @@ macro_rules! list {
     };
  }
 
-
 impl<T> List<T> {
-
     // return a reference to the head of the list (if any) or nothing
     fn head(&self) -> Option<&T> {
         match self {
             Nil => None,
-            Cons(x,_) =>   Some(x)
+            Cons(x, _) => Some(x),
         }
     }
 
@@ -87,7 +85,7 @@ impl<T> List<T> {
 
         while let Cons(value, mut next) = current {
             current = *next; // Move to the next node
-            *next = rev ; // Reverse the link
+            *next = rev; // Reverse the link
             rev = Cons(value, next); // Update the reversed list
         }
 
@@ -101,17 +99,17 @@ impl<T> List<T> {
     fn length(&self) -> u64 {
         match self {
             Nil => 0,
-            Cons(_,l) => 1 + l.length()
+            Cons(_, l) => 1 + l.length(),
         }
     }
 }
 
 fn main() {
-    let mut l = list![1,2,3];
+    let mut l = list![1, 2, 3];
 
     l.rev();
 
-    println!{"{:?}",l}
+    println!("{:?}",l);
 }
 ```
 

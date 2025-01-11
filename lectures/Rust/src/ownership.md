@@ -10,20 +10,17 @@ One can create a tuple, pass it to a function to compute the sum of its
 components, and then continue using the original tuple afterward:
 
 ```rust, editable
-
-fn addt(t : (u32,u32)) -> u32 {
+fn addt(t: (u32, u32)) -> u32 {
     t.0 + t.1
 }
 
 fn main() {
-
-    let t = (3,4);
+    let t = (3, 4);
 
     println!("The sum is: {}", addt(t));
 
     println!("The first component is: {}", t.0);
 }
-
 ```
 
 Nothing unusual about that; we do this all the time in various programming
@@ -66,7 +63,7 @@ additional fields to track its length and capacity.
 
 
 ```rust, editable
-fn main () {
+fn main() {
     let mut vec = Vec::new(); // calling the constructor
 
     vec.push(1);
@@ -77,19 +74,19 @@ fn main () {
     println!("The length of the vector is {}", vec.len());
     println!("The second element is {}", vec[1]);
 
-   // vec goes out of scope here. The rust compiler can safely drop the value.
+    // vec goes out of scope here. The rust compiler can safely drop the value.
 }
-
 ```
 
 
 Let's write a function to sum the elements of a vector.
 
 ```rust, editable
-fn sum (v : Vec<u32>) -> u32 {
+fn sum(v: Vec<u32>) -> u32 {
     let mut sum = 0;
 
-    for i in 0..v.len() { // 0 <= i < v.len() - 1.
+    for i in 0..v.len() {
+        // 0 <= i < v.len() - 1.
         sum += v[i]
     }
 
@@ -99,8 +96,7 @@ fn sum (v : Vec<u32>) -> u32 {
     // Once v goes out of scope the value can be dropped.
 }
 
-
-fn main () {
+fn main() {
     let mut vec = Vec::new(); // calling the constructor
 
     vec.push(1);
@@ -121,10 +117,11 @@ terminology.
 Consider the following example, where we attempt to use vec after calling sum:
 
 ```rust, editable
-fn sum (v : Vec<u32>) -> u32 {
+fn sum(v: Vec<u32>) -> u32 {
     let mut sum = 0;
 
-    for i in 0..v.len() { // 0 <= i < v.len() - 1.
+    for i in 0..v.len() {
+        // 0 <= i < v.len() - 1.
         sum += v[i]
     }
     return sum;
@@ -133,8 +130,7 @@ fn sum (v : Vec<u32>) -> u32 {
     // v.iter().sum()
 }
 
-
-fn main () {
+fn main() {
     let mut vec = Vec::new(); // calling the constructor
 
     vec.push(1);
@@ -163,7 +159,7 @@ Likewise, if you assign `vec` to another variable, the same move semantics
 apply—ownership is transferred, and the original variable can no longer be used.
 
 ```rust, editable
-fn main () {
+fn main() {
     let mut vec = Vec::new(); // calling the constructor
 
     vec.push(1);
@@ -188,20 +184,20 @@ ownership of the value and can continue using it.
 
 
 ```rust, editable
-fn sum (v : Vec<u32>) -> (u32, Vec<u32>) {
+fn sum(v: Vec<u32>) -> (u32, Vec<u32>) {
     let mut sum = 0;
 
-    for i in 0..v.len() { // 0 <= i < v.len() - 1.
+    for i in 0..v.len() {
+        // 0 <= i < v.len() - 1.
         sum += v[i]
     }
-    return (sum,v);
+    return (sum, v);
 
     // or just:
     // v.iter().sum()
 }
 
-
-fn main () {
+fn main() {
     let mut vec1 = Vec::new(); // calling the constructor
 
     vec1.push(1);
@@ -216,7 +212,6 @@ fn main () {
 
     let (sum2, _) = sum(vec2);
     println!("The sum of the elements of the vector is {:?}", sum2);
-
 }
 ```
 
@@ -230,24 +225,22 @@ Note that in order for the function parameter to take ownership of a vector and
 mutate it, we must declare the function parameter as mutable.
 
 ```rust, editable
-fn add_one(mut v : Vec<u32>) -> Vec<u32> {
-
+fn add_one(mut v: Vec<u32>) -> Vec<u32> {
     // That's not idiomatic Rust. We will learn how to do this with iterators.
 
-    for i in 0..v.len() { // 0 <= i < v.len() - 1.
+    for i in 0..v.len() {
+        // 0 <= i < v.len() - 1.
         v[i] += 1
     }
     return v;
 }
 
-
-fn main () {
-    let mut vec = vec![1,2,3];
+fn main() {
+    let mut vec = vec![1, 2, 3];
 
     let v = add_one(vec);
 
     println!("The vector is {:?}", v);
-
 }
 ```
 
