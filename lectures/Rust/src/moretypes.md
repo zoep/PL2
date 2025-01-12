@@ -100,13 +100,13 @@ impl Point {
     // distance from origin
     fn dist0(&self) -> f64 {
         // converts to f64 and calculares the square root
-        ((self.x^2 + self.y^2) as f64).sqrt()
+        ((self.x.pow(2) + self.y.pow(2)) as f64).sqrt()
     }
 
     // distance from any point
     fn dist(&self, p : Point) -> f64 {
         // converts to f64 and calculares the square root
-        (((self.x - p.x)^2 + (self.y - p.y)^2) as f64).sqrt()
+        (((self.x - p.x).pow(2) + (self.y - p.y).pow(2)) as f64).sqrt()
     }
 
     // add two points
