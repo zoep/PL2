@@ -1,26 +1,22 @@
 # Typestate Pattern
 
 The typestate pattern in Rust is a pattern for designing API's in Rust in a way
-that types encode information about an object's runtime state. 
+that types encode information about an object's runtime state.
 
 Each state is represented as a distinct type, and transitions between states are
 implemented as methods that consume the object and return a new object in a
-different state.
+different state. This pattern makes it easy to enforce the order of operations
+on an object statically, ensuring invalid transitions are impossible at compile
+time. This eliminates the need for runtime checks, improving safety and
+performance.
 
-
-This pattern makes it easy to enforce the order of operations on an object
-statically, ensuring invalid transitions are impossible at compile time. This
-eliminates the need for runtime checks, improving safety and performance.
-
-Some use cases involve: 
-
--  Prevent the use of an object before it is fully initialized.
-- 
-
+Some useful references:
 
 - https://blog.systems.ethz.ch/blog/2018/a-hammer-you-can-only-hold-by-the-handle.html
 - https://yoric.github.io/post/rust-typestate/
 - https://cliffle.com/blog/rust-typestate/#typestate-in-the-wild-serde
+
+## Example
 
 ```rust, editable
 /// Represents the unauthenticated state.
