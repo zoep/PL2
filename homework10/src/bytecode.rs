@@ -102,14 +102,12 @@ impl Bytecode {
                 Some(Opcode::Jump) => {
                     let addr = (instrs[i + 2] as u16) << 8 | instrs[i + 1] as u16;
                     labels.insert(addr, format!("label{cnt}"));
-                    //println!("{}: Found addr {} at label{}", i, addr, cnt);
                     i += 2;
                     cnt += 1;
                 }
                 Some(Opcode::Jnz) => {
                     let addr = (instrs[i + 2] as u16) << 8 | instrs[i + 1] as u16;
                     labels.insert(addr, format!("label{cnt}"));
-                    //println!("{}: Found addr {} at label{}", i, addr, cnt);
                     i += 2;
                     cnt += 1;
                 }
@@ -158,7 +156,6 @@ impl Bytecode {
                     match labels.get(&addr) {
                         Some(label) => program.push_str(&format!("Jump {label}\n")),
                         None => {
-                            //println!("{}", program);
                             return Err(format!("Jump: Unknown jump address {addr}"));
                         }
                     }
@@ -169,7 +166,6 @@ impl Bytecode {
                     match labels.get(&addr) {
                         Some(label) => program.push_str(&format!("Jnz {label}\n")),
                         None => {
-                            //println!("{}", program);
                             return Err(format!("Jnz: Unknown jump address {addr}"));
                         }
                     }
