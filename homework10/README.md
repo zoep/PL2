@@ -5,7 +5,7 @@ Rust. The virtual machine must include a garbage collector to reclaim
 dynamically allocated memory that is no longer reachable by the program.
 
 To test your virtual machine, you can use a [MiniML
-compiler](http://www.softlab.ntua.gr/~zoepar/miniml.html) that compiles MiniML
+compiler](http://www.softlab.ntua.gr/~zoepar/miniML/index.html) that compiles MiniML
 programs into the VM bytecode described in this exercise.
 
 ## VM State
@@ -251,7 +251,7 @@ and will serve as the to-space in the next garbage collection cycle.
 
 ## MiniML Compiler
 
-The [MiniML compiler](http://www.softlab.ntua.gr/~zoepar/miniml.html) compiles
+The [MiniML compiler](http://www.softlab.ntua.gr/~zoepar/miniML/index.html) compiles
 MiniML code into the bytecode of the VM. The MiniML language is almost identical
 to the one of [homework 8](https://github.com/zoep/PL2/tree/main/homework8), but it has been extended to include the following primitive functions:
 - `read_int : () -> int`  
