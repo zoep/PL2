@@ -36,7 +36,6 @@ pub enum Opcode {
 
 impl Opcode {
     /// Convert a byte to an `Opcode`, if it matches a valid opcode.
-    /// TODO note about the generated cod
     pub fn from_u8(value: u8) -> Option<Self> {
         match value {
             0x00 => Some(Opcode::Halt),
