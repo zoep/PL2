@@ -170,12 +170,10 @@ provided in parentheses.
   Pops the top of the stack, and pushes `1` if it is zero, and `0` otherwise.
 
 - **`and` (`0x16`)**  
-  Pops two values `b` and `a` from the stack, and pushes `1` if both of the
-  values are nonzero and `0` otherwise.
+  Pops two values `b` and `a` from the stack, and pushes the result of `a & b` (bitwise `AND`).
   
 - **`or` (`0x17`)**  
-  Pops two values `b` and `a` from the stack, and pushes `1` if at least one of
-  the values is nonzero and `0` otherwise.
+  Pops two values `b` and `a` from the stack, and pushes the result of `a | b` (bitwise `OR`).
 
 ### Input/Output
 
@@ -341,7 +339,7 @@ Elapsed time: 0.0000
 
 ## Further Instructions
 
-1. To implement the `output` opcode, you may find useful the following code that
+1. To implement the `input` opcode, you may find useful the following code that
 reads exactly one byte from the standard input. 
 
 ```rust
