@@ -219,13 +219,13 @@ allocator allocates new blocks contiguously in the from-space. When there is no
 sufficient space for an allocation in the from-space, the garbage collector is
 triggered to reclaim memory. The algorithm proceeds as follows:
 
-- It copies all heap blocks in that are referenced by the root set from the
+- It copies all heap blocks that are referenced by the root set from the
   from-space to the to-space. The root set consists of all the memory locations
   directly accessible by the program, i.e., all the pointers in the stack of the
   VM. The algorithm scans the root set, and for each pointer in the root set:
 
   1. If the pointer points to the header of a block in the from-space then the
-    block is copied to the from-space. The pointer is updated to hold the new
+    block is copied to the to-space. The pointer is updated to hold the new
     address of the block in the to-space. The old memory location is updated to
     hold a pointer to the new address of the block. This is called a *forwarding
     pointer* and signifies that the block has been moved to a new location.

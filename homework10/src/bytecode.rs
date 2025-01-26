@@ -223,7 +223,7 @@ impl Bytecode {
                         | (instrs[i + 2] as u32) << 16
                         | (instrs[i + 1] as u32) << 8
                         | (instrs[i] as u32);
-                    program.push_str(&format!("Push4 {lit}\n"));
+                    program.push_str(&format!("Load {lit}\n"));
                     i += 4;
                 }
                 None => return Err(format!("Invalid opcode at addr {}", i - 1)),
