@@ -28,7 +28,7 @@ A heap-allocated block consists of consecutive words of variable length, structu
 - The first word is the *header* that contains metadata about the block:
   - The 23 higher-order bits represent the number of fields, `n`, in the block.
   - The next 8 bits store the *tag*, which provides additional information about the type of the block.
-  - The **lowest-order bit** is always `0`.
+  - The **lowest-order bit** is always `1`.
 
 - The next `n` words are the *fields* of the block.
 
@@ -40,7 +40,7 @@ schematic representation of a block in the heap:
 Pointer to block
 │
 └─────▶  ┌────────────────────────────────┐
- Word 0: │       Size       │   Tag   │ 0 │
+ Word 0: │       Size       │   Tag   │ 1 │
 (Header) └────────────────────────────────┘
          31                 9         1   0
          ┌────────────────────────────────┐
