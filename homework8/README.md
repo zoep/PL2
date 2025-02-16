@@ -56,7 +56,7 @@ _fresh type variable_--—a type variable that has not yet been used in the
 program, the environment, or the constraints.
 
 Some rules for constraint-based typing are given below. The rules can be
-extended is a mostly straight forward way to handle all constructs of MiniML.
+extended in a mostly straight forward way to handle all constructs of MiniML.
 
 ```
       x : t ∈ Γ
@@ -125,7 +125,7 @@ Moreover, the solution for the set of constraints should be the _most general
 one_, meaning that for any other substitution `σ'` that is a solution to the set
 of constraints, there exist a substitution `δ` such that `σ' = δ ∘ σ`. 
 
-Given `Γ ⊢ e : t | C` an a `σ` that is a solution of the set of constraints `C`, 
+Given `Γ ⊢ e : t | C` and a `σ` that is a solution of the set of constraints `C`, 
 the type `σ(t)` is the _principal_ type of `e`.
 
 The operator `∘` denotes the composition of two substitutions: 
@@ -194,7 +194,7 @@ s := t | forall α, s
 ```
 
 The typing context will now map variables to type schemes. Note, that a type can
-be trivially made a type scheme. Therefore, function arguments (which cannot
+be trivially made into type scheme. Therefore, function arguments (which cannot
 have a polymorphic type) can still be added to the environment. 
 
 ### Inferring Polymorphic Types
@@ -275,7 +275,7 @@ in e2` during constraint generation, we proceed as follows:
 
 ## Syntax
 
-MiniML is a simply typed lambda calculus extended extended integers, booleans,
+MiniML is a simply typed lambda calculus extended with integers, booleans,
 unit, product types, sum types, and lists. Its concrete syntax and a brief
 description of each language construct is given below.
 
