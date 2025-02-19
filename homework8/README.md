@@ -101,7 +101,7 @@ extended in a mostly straight forward way to handle all constructs of MiniML.
 
          Γ ⊢ e : t | C
 ----------------------------CT-Inr              α is fresh
-    Γ ⊢ inr e : α + t | {} 
+    Γ ⊢ inr e : α + t | C 
 
 
       Γ ⊢ e1 : t1 | C1       Γ, x : α ⊢ e2 : t2 | C2       Γ, y : β ⊢ e3 : t3 | C3
