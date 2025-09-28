@@ -35,3 +35,5 @@
 - [Haskell in Industry](https://wiki.haskell.org/Haskell_in_industry)
 
 - [Programming Languages That Blew My Mind](https://yoric.github.io/post/programming-languages-that-blew-my-mind/)
+
+- [ACM  Programming Languages Software Award](https://www.sigplan.org/Awards/Software/)
