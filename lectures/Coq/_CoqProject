@@ -1,7 +1,0 @@
--R . PL2
-intro.v
-logic.v
-imp.v
-hoare.v
-lambda.v
-types.v

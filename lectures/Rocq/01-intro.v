@@ -1,10 +1,11 @@
-Require Import Coq.Lists.List Coq.Init.Nat.
+From Stdlib Require Import Lists.List Init.Nat.
+
 Import ListNotations.
 
-(** * A Small Introduction to The Coq Proof Assistant (I): Functional Programming with Proofs **)
+(** * A Small Introduction to The Rocq Proof Assistant (I): Functional Programming with Proofs **)
 
 
-(** Coq is a pure functional programming language and a theorem
+(** Rocq is a pure functional programming language and a theorem
     prover. Its underlying formal language is Calculus of Inductive
     Constructions (CiC) which is a dependently-typed, pure functional
     language with inductive types. This small but expressive language
@@ -12,11 +13,12 @@ Import ListNotations.
     similar to the ML family, express logical propositions, and write
     proofs. Coq can be used for:
 
+    - Developing functional programs.
+
     - Expressing and proving mathematical statements.
 
-    - Developing functional programs and writing formal specifications
-      of their behavior. Users can rigorously prove that these
-      programs conform to their specifications.
+    - Writing and proving formal specifications about programs written
+      in the same language.
 
     The proofs can be developed interactively and they are checked for
     validity by Coq's built-in proof checker.
@@ -31,69 +33,65 @@ Import ListNotations.
 
     - Type polymorphism
 
-    - Dependent types (we will learn more about dependent types later
-      in this course)
+    - Dependent types
 
     - Coinductive types
 
     In this course we will use Coq extensively to model programming
     languages and study their properties. But before delving into
-    this, we will first learn some basic usage.
-*)
+    this, we will first learn some basic usage.  *)
 
 
-(** ** Coq Code Development and Execution *)
+(** ** Rocq Code Development and Execution *)
 
-(** Coq files are commonly developed interactively, as we will do in
+(** Rocq files are commonly developed interactively, as we will do in
     the lectures. For this it is imperative to have an IDE with
-    support for interactive Coq development.
+    support for interactive Rocq development.
 
-    Coq has also support batch compilation with the `coqc` command
+    Rocq also support batch compilation with the `coqc` command
     file `file.v` can also be compiled from the command line, using
     the command `coqc file.v`. This produces
 
-    To execute Coq code, the Coq system provides extraction commands,
-    that translate Coq code to a functional language (OCaml, Haskell
+    To execute Rocq code, the Rocq system provides extraction commands,
+    that translate Rocq code to a functional language (OCaml, Haskell
     or Scheme). This process erases proofs and all information that is
     not relevant for computation. The files then can be compiled and
     executed as normal OCaml/Haskell/Scheme files. This allows us to
-    build software in Coq that comes with correctness proofs and
+    build software in Rocq that comes with correctness proofs and
     extract it in one of these languages. This software is commonly
     called [certified]. *)
 
 
-(** ** Coq Types *)
+(** ** Rocq Types *)
 
-(**  Coq has very few primitive types:
+(** Rocq has very few primitive types:
 
-       - The function type: [->] or [forall _, _].
-       - The type of types: [Type] and [Sort] are a special case of [Type].
-       - [Prop] the type of logical propositions
+       - The function type: [->] or [forall _, _].  The type of types:
+       - [Type] and [Sort] (a special case of [Type]).  [Prop] the
+       - type of logical propositions
 
-    Coq comes with an extensive #<a
+    Rocq comes with an extensive #<a
     href="https://coq.inria.fr/doc/V8.19.0/stdlib/">standard
-    library</a># that provides common data structures (e.g., booleans, list, numbers, pairs, maps, and more).
-    All of these are not primitives but defined using inductive types. We will cover many of these in this lecture.
+    library</a># that provides common data structures (e.g., booleans,
+    list, numbers, pairs, maps, and more). These are not primitives --
+    they are defined using inductive types. We will cover many of
+    these in this lecture.
 
     Note: "Primitive Objects" including 63-bit machine integers and
-    persistent arrays, have been added to recent versions Coq, but we
+    persistent arrays, have been added to recent versions Rocq, but we
     will not cover them in this class. *)
 
 
 (** *** Functions *)
 
-(** At the heart of Coq's language we have functions.
+(** At the heart of Rocq's language we have functions.  The
+    [Definition] keyword allows us to declare a function (or a
+    constant). *)
 
-    Let's define the identity function: a polymorphic function that
-    takes as arguments a _type_ parameter [A], a parameter [x] of type
-    [A] and returns [x].
 
-    The [Definition] keyword allows us to declare a function or a
-    constant. *)
+Definition foo (x y : nat) := x * (y + 1).
 
-Definition id (A : Type) (x : A) : A := x.
-
-(** Coq provides a number of useful commands to interact with the
+(** Rocq provides a number of useful commands to interact with the
     system. These are not expressions of the functional language but a
     way to communicate with the system. Some of these are [Check],
     [Print], [Compute], [Search] and others. We will use these
@@ -104,21 +102,63 @@ Definition id (A : Type) (x : A) : A := x.
     [Search]: find definition and lemmas in the current file or
               imported files whose name or type satisfies a number
               of conditions
-    [Compute]: evaluate an expression
+    [Compute]: evaluate an expression *)
 
-  Here we use [Check] to see the type of [id]. *)
+
+Check foo.
+
+Print foo.
+
+Compute (foo 6 6).
+
+
+(** **** Polymorphic Functions *)
+
+Definition id_nat (x : nat) := x.
+
+Check id_nat.
+
+(** The above function only works for [nat] -- but it doesn't need to!
+    Its definition makes no assumptions on the type of the input.
+
+    Let's try to define the identity function in a polymorphic way: *)
+
+
+Fail Definition id x := x.
+
+
+(** The above definition fails as Rocq cannot infer the type of [x].
+    We must pass the **type argument** explicitly: *)
+   
+
+Definition id (A : Type) (x : A) : A := x.
+
+(** The above definition takes as arguments a _type_ parameter [A], a
+    parameter [x] of type [A] and returns [x]. *)
 
 Check id.
+
 
 (** Prints:
 
 [id : forall A : Type, A -> A] *)
 
-(** Functions can be applied to arguments. We want to apply the [id]
-    function to a natural number, say 3, and a boolean value, say
-    [true]. To do that we must explicitly provide the type parameters,
-    [nat] and [bool] respectively. (We will see what [bool] and [nat]
-    are shortly.) *)
+(** The above type has a *for all quantifier*.
+
+    This is similar to the type constructor [->], but allows us to
+    find the type to a name (here [Type] is bound to [A] and use it
+    in the rest of the type.
+
+*)
+
+
+(** When applying [id] to an argument we must also provide the
+    concrete type parameter.
+
+    For example, we want to apply the [id] function to a natural
+    number, say 3, and a boolean value, say [true]. To do that we must
+    explicitly provide the type parameters, [nat] and [bool]
+    respectively. *)
 
 Compute (id nat 3).
 
@@ -126,42 +166,38 @@ Compute (id bool true).
 
 (** We can also apply [id] to [id] itself.
 
-    We must first provide the type parameter, in this case [forall A :
-    Type, A -> A], and then the parameter [id]. *)
+    Quiz: what will the concrete value of the type parameter [A] be in this case?
 
-Check (id (forall A : Type, A -> A) id).
-
-
-(** Note: in languages like ML or OCaml this definition is not
-    possible like this, as they only allow type quantification at the
-    outermost position in the type of a definition (prenex
-    polymorphism).  That is, type variables may not be instantiated
-    with polymorphic types as we did above. Coq has a more expressive
-    type system that lets us do this kind of thing. *)
-
-
-(** We can also ask Coq to evaluate an application. *)
-
-Compute (id bool true).
-
-(** Prints:
-
-[= true
-: bool]
 *)
+
+Fail Check (id _ (* ? *) id).
+
+
+(** Note: in languages like ML or OCaml this call is not possible like
+    this, as they only allow type quantification at the outermost
+    position in the type of a definition (prenex polymorphism).  That
+    is, type variables may not be instantiated with polymorphic types
+    as we did above. Rocq has a more expressive type system that lets
+    us do this kind of thing. *)
 
 Compute (id (forall A : Type, A -> A) id).
 
 (** Prints:
 
-[fun (A : Type) (x : A) => x
-: forall A : Type, A -> A]
-*)
+[fun (A : Type) (x : A) => x : forall A : Type, A -> A] *)
 
 
-(** We can also write anonymous functions, using the syntax above. *)
+(** The above syntax introduces an anonymous function. *)
 
 Check (fun (A : Type) (x : A) => x).
+
+
+(** The following two definitions are equivalent *)
+
+
+Definition id_1 (A : Type) (x : A) : A := x.
+
+Definition id_2 := fun A (x : A) => x.
 
 
 (** Since the result of the last application is a polymorphic
@@ -174,7 +210,7 @@ Compute (id (forall A : Type, A -> A) id bool true).
 Compute (id (forall A : Type, A -> A) id (forall A : Type, A -> A) id).
 
 
-(** Functions in Coq must be _total_. This means they must return an
+(** Functions in Rocq must be _total_. This means they must return an
     output for each element of their domain. They cannot loop forever
     or error out. This is important for the logical consistency of the
     system. We will revisit this concept again in the course. *)
@@ -184,56 +220,61 @@ Compute (id (forall A : Type, A -> A) id (forall A : Type, A -> A) id).
 
 (** It is not always convenient to explicitly provide the type of the
     arguments. In many cases, these can be inferred by type inference.
-    Coq lets us omit them either using an underscore, or by declaring
+    Rocq lets us omit them either using an underscore, or by declaring
     in a definition that some arguments are implicit using curly
     braces [{ ... }].
 
-    For example:
-*)
+    For example: *)
 
-Check (id _ 3).
+Compute (id _ 3).
 
-(** In the above, Coq figures out that the type argument is [nat] *)
+(** In the above, Rocq figures out that the type argument is [nat] *)
 
-(** We can also tell Coq that an argument is implicit during the
-    definition of the function. *)
+(** We can also tell Rocq that an argument is implicit during the
+    definition of the
+    function. *)
+
 Definition id' {A : Type} (x : A) : A := x.
 
-(** This way, we don't have to provide a type argument for [id'], [A] is implicit: *)
+(** This way, we don't have to provide a type argument for [id'], [A]
+is implicit: *)
+
 Check (id' 3).
 
-(** Using the [@] symbol before a function's name, we can tell Coq to
+(** Using the [@] symbol before a function's name, we can tell Rocq to
     treat all arguments as explicit. *)
+
 Check (@id' nat 3).
 
 
 (** ** Proofs *)
 
-(** Coq allows the development of mathematics proofs in an interactive
-    way.
+(** Rocq allows the development of mathematical proofs in an
+    interactive way.
 
-   During a proof we have a _goal_ that is the statement to be
-   proved. We also have a _proof context_ that has premises that we
-   know to be true at a certain point during the proof.
+    During a proof we have a _goal_ that is the statement to be
+    proved. We also have a _proof context_ that has premises that we
+    know to be true at a certain point during the proof.
 
-   Proof development in Coq is done through a language of so-called
-   _tactics_. Tactics allow us to apply rules of logical reasoning to
-   the goal and the proof context.
+    Proof development in Rocq is done through a language of so-called
+    _tactics_. Tactics allow us to apply rules of logical reasoning to
+    the goal and the proof context.
 
-   Tactics construct an internal representation of the proof, called a
-   _proof term_. This is then checked by Coq's proof checker for
-   validity.  For now, we will treat this as a black box. *)
+    Tactics construct an internal representation of the proof, called
+    a _proof term_. This is then checked by Rocq's proof checker for
+    validity.  For now, we will treat this as a black box. *)
 
-Lemma id_equality :
-  forall (A : Type) (x : A), id A x = x.
+Lemma id_equality : forall (A : Type) (x : A), id A x = x.
 Proof.
   (* The [intros] tactic moves universally quantified variables and
      and implications from the goal to the proof context. *)
   intros A x.
 
-  unfold id. (* The [unfold id] tactic replaces [id] with its definition. *)
+  unfold id. (* The [unfold id] tactic replaces [id] with its
+                definition. *)
 
-  reflexivity. (* [reflexivity] proves a goal of the form [e = e], for some expression [e]. *)
+  reflexivity. (* [reflexivity] proves a goal of the form [e = e], for
+                  some expression [e]. *)
 
   (* A complete proof ends with [Qed] which exits the interactive
      proof mode.  It stands for the Latin phrase "quod erat
@@ -241,22 +282,24 @@ Proof.
      to finish a proof. *)
 Qed.
 
-(** Now [id_equality] is a defined term and its type is exactly the statement we proved. *)
+(** Now [id_equality] is a defined term and its type is exactly the
+    statement we proved. *)
+
 Check id_equality.
+
+Print id_equality. 
 
 (** *** Skipping Parts of a Proof *)
 
-(** When developing large and complicated proofs, it is often
-    convenient to assume some part of them to make progress and come
-    back to them later. This can be done with the [admit] and [Admitted]
+(** When developing large and complex proofs, it is often convenient
+    to assume some part of them to make progress and come back to them
+    later. This can be done with the [admit] and [Admitted]
     keywords. *)
-Lemma id_equality_admitted :
-  forall (A : Type) (x : A), id A x = x.
+
+Lemma id_equality_admitted : forall (A : Type) (x : A), id A x = x.
 Proof.
   intros A x.
-
-  unfold id. (* replace [id] with its definition. *)
-
+  unfold id. 
   admit. (* proves the goal! *)
 
   (* A proof with admitted or unfinished subproofs cannot be completed
@@ -266,69 +309,99 @@ Admitted.
 
 (** An admitted proof can be used in other proofs to derive facts.
     Admitting proofs must be used with caution, as admitting an
-    invalid statement makes the system inconsistent as using it we can
-    derive other false statements. *)
+    invalid statement makes the system inconsistent as we can derive
+    other false statements when using it. *)
 
-(** ** Common Inductive Types *)
+(** ** Inductive Types *)
+
+(** *** The Structure of an Inductive Type *)
+      
+(** Inductive types in Rocq are a generalization of ML's algebraic
+    datatypes. The definition of an inductive type tells us how we can
+    build values of this type.
+
+    The inductive type is an enumeration of different ways to build
+    values that belong to this type. *)
+
+
+Inductive day :=
+| Mon : day (* optionally we can write the type of each constructor *)
+| Tue
+| Wed
+| Thu
+| Fri
+| Sat
+| Sun.
+
+
+(** We can build values of type [day] and also examine them (i.e.,
+    destruct them) using pattern matching *) 
+
+Definition my_favorite_day : day := Fri.
+
+Definition is_PL_day (x : day) : bool :=
+  match x with
+  | Fri => true
+  | _ => false (* wildcard: catch-all case *)
+  end.
+
+Print is_PL_day.
+
+(** All possible cases of a pattern matching must be defined (either
+    explicitly or with a wildcard).  Otherwise the function is not
+    total and Rocq rejects it. *)  
+
+Fail Definition is_PL_day_fail (x : day) : bool :=
+  match x with
+  | Fri => true
+  | Mon => false
+  | Thu => false
+  end.
+
+(** We will go through some very common inductive types in the Rocq
+    standard library *)
 
 (** *** Booleans *)
 
-(** We can also define _inductive types_, which are a generalization
-    of ML's algebraic datatypes, and write functions that manipulate
-    them. We will start by defining the boolean datatype.
-
-    Note: Because Coq's standard library already includes these
+(** Note: Because Rocq's standard library already includes these
     definitions, we put them in a separate namespace that we create
-    using a [Module]. After the end of the module, we can use these
-    names to refer to the definitions in the standard library. *)
+    using a [Module].
+
+    If we don't explicitly import the module, these names will refer
+    to the definitions in the standard library. *)
 
 Module Bool.
 
-(** The boolean data type is an inductive type with two
-    constructors: [true] and [false] *)
-Inductive bool : Type :=
-| true : bool
-| false : bool.
+  
+  (** The boolean data type is an inductive type with two constructors:
+      [true] and [false] *)
 
-(** We can define functions that operate on this type. We define
-    negation, conjunction and disjunction.*)
-Definition negb (x : bool) :=
-  match x with
-  | true => false
-  | false => true
-  end.
+  Inductive bool : Type :=
+  | true : bool
+  | false : bool.
 
-Definition andb (x y : bool) :=
-  match x with
-  | true => y
-  | false => false
-  end.
+  (** We can define functions that operate on this type. We define
+      negation, conjunction and disjunction.*)
+  
+  Definition negb (x : bool) :=
+    match x with
+    | true => false
+    | false => true
+    end.
 
-Definition orb (x y : bool) :=
-  match x with
-  | true => true
-  | false => y
-  end.
+  Definition andb (x y : bool) :=
+    match x with
+    | true => y
+    | false => false
+    end.
 
-(** We can use such functions to perform computations on booleans. *)
+  Definition orb (x y : bool) :=
+    match x with
+    | true => true
+    | false => y
+    end.
 
-Compute (negb true).
-
-(** Prints:
-
-[= false : bool]
-
-*)
-
-Compute (andb (orb false true) true).
-
-(** Prints:
-
-[= true : bool]
-
-*)
-
-(** Again, we can ask Coq what is the type of a definition: *)
+(** Again, we can ask Rocq what is the type of a definition: *)
 
 Check true.
 
@@ -352,17 +425,37 @@ Check andb.
 
 Print andb.
 
-(** Coq allows us to define syntax extensions that modify the way Coq
-    parses and prints objects. This can be done with the [Notation]
-    command.
+(** We can use such functions to perform computations on booleans. *)
+
+Compute (negb true).
+
+(** Prints:
+
+[= false : bool]
+
+*)
+
+Compute (andb (orb false true) true).
+
+(** Prints:
+
+[= true : bool]
+
+*)
+
+
+(** Rocq allows us to define syntax extensions that modify the way
+    Rocq parses and prints objects. This can be done with the
+    [Notation] command.
 
     Below, we use it to define familiar syntax for boolean
     operators. *)
 
 Notation "x && y" := (andb x y) (at level 40, left associativity).
+
 Notation "x || y" := (orb x y) (at level 50, left associativity).
 
-(** We can ask Coq to give us information about a particular notation
+(** We can ask Rocq to give us information about a particular notation
     using the command [Locate]. *)
 
 Locate "&&".
@@ -370,31 +463,33 @@ Locate "&&".
 Check (true || false).
 
 
-(** Tip: Coq IDEs provide keybindings that allow us to quickly
-    use [Print], [Check], [Search], and [Locate].
+(** Tip: Rocq IDEs provide keybindings that allow us to quickly use
+    [Print], [Check], [Search], and [Locate].
 
 
 <<
-           | VsCode + PG keybindings extension |        Emacs + PG
-    -------------------------------------------------------------------------
-    Print  |       shift+ctrl+P                |    ctrl+c ctrl+a ctrl+p
-    Check  |       shift+ctrl+S                |    ctrl+c ctrl+a ctrl+c
-    Search |       shift+ctrl+K                |    ctrl+c ctrl+a ctrl+a
-    Locate |       shift+ctrl+L                |    ctrl+c ctrl+a ctrl+l
+       | VsCode + PG keybindings extension | Emacs + PG
+-------------------------------------------------------------------------
+Print  | shift+ctrl+P | ctrl+c ctrl+a ctrl+p
+Check  | shift+ctrl+S | ctrl+c ctrl+a ctrl+c
+Search | shift+ctrl+K | ctrl+c ctrl+a ctrl+a
+Locate | shift+ctrl+L | ctrl+c ctrl+a ctrl+l
 >>
 
-   You can modify these keybindings as you wish from your editors settings. *)
+You can modify these keybindings from your editor's settings.
+ *)
 
 
 (** Crucially, we can prove facts about our definitions. *)
 
-Lemma or_true_false :
-  true || false = true.
+Lemma or_true_false : true || false = true.
 Proof.
 
-  (* The [simpl] tactic simplifies the goal. *) simpl.
+  (* The [simpl] tactic simplifies the goal performing possible
+     computation steps *)
+  simpl.
 
-  (* The reflexivity type proves an equality that has the same term on
+  (* The reflexivity tacric proves an equality that has the same term on
      both sides *)
   reflexivity.
 Qed.
@@ -402,8 +497,7 @@ Qed.
 
 (** Let's attempt to prove more interesting facts about booleans *)
 
-Lemma de_morgan_law :
-  forall (x y : bool), (* universal quantifier *)
+Lemma de_morgan_law : forall (x y : bool), (* universal quantifier *)
     (negb x) && (negb y) = negb (x || y).
 Proof.
   (* The [intros] tactic moves universally quantified variables and
@@ -425,24 +519,25 @@ Proof.
 
 Qed.
 
-(** Coq also has conditionals that can be used instead of pattern
-    matching to write the above functions: *)
+(** Rocq also has conditional statements (if-then-else) that can be
+    used instead of pattern matching to write the above functions: *)
 
 Definition orb' (b1:bool) (b2:bool) : bool := if b1 then true else b2.
 
-(** Recall that [bool] is not a primitive type, The if-then-else
-    construct is just syntactic sugar for pattern matching and can be used
-    to eliminate _any_ inductive type with exactly two constructors.
-    The "then" branch is taken if the guard evaluates to the first
-    constructor of the type and the "else" branch is taken if the
-    guard is evaluated to the second constructor of the type. *)
+(** Recall that [bool] is not a primitive type. The if-then-else
+    construct is just syntactic sugar for pattern matching and can be
+    used to eliminate _any_ inductive type with exactly two
+    constructors.  The "then" branch is taken if the guard evaluates
+    to the first constructor of the type and the "else" branch is
+    taken if the guard is evaluated to the second constructor of the
+    type. *)
 
 End Bool.
 
 (** *** Natural Numbers *)
 
 (** We can represent numbers in a variety of ways, using different
-    bases. Common examples binary (base-2) and decimal (base-10)
+    bases. Common examples are binary (base-2) and decimal (base-10)
     representations.
 
     For example, we can use the [bool] datatype to define a binary
@@ -452,7 +547,7 @@ Inductive bin_num4 : Type :=
 | Num : bool -> bool -> bool -> bool -> bin_num4.
 
 (** [Num] is a constructor that takes 4 arguments and returns a
-   [bin_num4 ].  Its type is: *)
+    [bin_num4 ].  Its type is: *)
 
 Check Num.
 
@@ -469,7 +564,7 @@ Check Num.
     mathematical numbers, and not numbers of certain bit width.
 
     We could define a datatype for infinite binary numbers, and such
-    representations are included in Coq's standard library.  Binary
+    representations are included in Rocq's standard library.  Binary
     numbers, however, are a good way for representing numbers on a
     machine and performing operations on them with logical circuits.
     But when it comes to proofs, they are not a very convenient
@@ -482,7 +577,7 @@ Check Num.
 
     I represents 1, II represents 2, III represents 3, and so on.
 
-    We can define this as an inductive type in Coq:
+    We can define this as an inductive type in Rocq:
 
 *)
 
@@ -516,7 +611,8 @@ Module Nat.
   Definition pred (n : nat) : nat :=
     match n with
     | O => O
-    | S n => n end.
+    | S n => n
+    end.
 
   (** A function that check if a number is zero *)
   Definition is_zero (n : nat) : bool :=
@@ -527,9 +623,9 @@ Module Nat.
 
   (** **** Recursion *)
 
-  (** Since [nat] is a recursive datatype, we can define recursive functions on them.
-      Recursive functions are defined using the [Fixpoint] keyword.
-   *)
+  (** Since [nat] is a recursive datatype, we can define recursive
+      functions on them.  Recursive functions are defined using the
+      [Fixpoint] keyword.  *)
 
   (** Addition **)
   Fixpoint add (n1 n2 : nat) : nat :=
@@ -561,7 +657,7 @@ Module Nat.
 
   (** Note that the argument to the recursive call of [add] is n1'
       which is structurally smaller than n1. The same is true for both
-      arguments of the function [sub]. Coq requires that there is one
+      arguments of the function [sub]. Rocq requires that there is one
       argument that gets structurally smaller in each recursive call.
       This guarantees that all functions will terminate which is
       necessary for logical consistency.
@@ -570,7 +666,7 @@ Module Nat.
       define a non structurally recursive function will produce an
       error.
 
-      Note: In Coq, there are ways to define generally recursive
+      Note: In Rocq, there are ways to define generally recursive
       functions (that terminate but are not structurally recursive),
       but we will not see this in this course.  *)
 
@@ -587,7 +683,8 @@ Module Nat.
     match n1, n2 with
     | O, O => true
     | S n1', S n2' => eqb n1' n2'
-    | _, _ => false end.
+    | _, _ => false
+    end.
 
 End Nat.
 
@@ -633,7 +730,18 @@ Proof.
   intros n. simpl. reflexivity.
 Qed.
 
-(** Equality on natural numbers is transitive. *)
+
+(** Hint: We can also search for specific term patters. This can be
+    very effective when we are looking for theorems in the library
+    that apply in a specific case. For example the following command
+    will return all theorems that have the pattern [_ + _ = _]. 
+
+ *)
+
+Search (_ + _ = _). 
+
+(** Let's prove that equality on natural numbers is transitive. *)
+
 Lemma eq_transitive :
   forall x y z : nat,
     x = y -> y = z -> x = z.
@@ -672,101 +780,24 @@ Proof.
   assumption.
 Qed.
 
-(** Adding two equal numbers *)
+(** Let's prove that adding two pairs of equal numbers results in two
+    equal numbers. *)
+
 Lemma add_eq_example:
   (* Coq has type inference, so it can figure out the types of
      variables [n1], [n2], [n3] and [n4], from the context they are
      used without us providing annotations. *)
   forall n1 n2 n3 n4,
-    n1 = n2 -> n3 = n4 -> n1 + n3 = n2 + n4.
+    n1 = n2 ->
+    n3 = n4 ->
+    n1 + n3 = n2 + n4.
 Proof.
   intros n1 n2 n3 n4 Heq1 Heq2.
   rewrite Heq1, Heq2.
   reflexivity.
 Qed.
 
-(** **** Injectivity and Distinctness of Constructors. *)
-
-(** The constructors of natural numbers have some important properties:
-
-    - If [S n = S m] then it must be [n = m]. (_injectivity_)
-
-    - It cannot be that [S m = O]. (_distinctness_)
-
-    These principles apply to all inductively defined types: all
-    constructors are injective, and the values built from distinct
-    constructors are never equal. Coq provides tactics that let us
-    reason about these two facts.
-*)
-
-Lemma S_injective :
-  forall n m,
-    S n = S m -> n = m.
-Proof.
-  intros n m Heq.
-
-  (* The [injection] tactic can be applied to a hypothesis of the form
-     [C n_1 ... n_k = C m_1 ... n_k] and will reduce it to an
-     hypothesis of the form [n_1 = m_1 /\ ... /\ n_k = m_k].  It can
-     take a name to explicitly name the new hypotheses.  *)
-
-  injection Heq as Heq'.
-  assumption.
-Qed.
-
-(** It is interesting to note that injectivity is not a primitive
-    property that is encoded in the logic. It is a property that
-    can be proved using the properties of equality.
-
-    We could prove the above lemma primitively, without using
-    injectivity, as shown below. The [injectivity] tactic does this
-    for us so that we don't have prove a separate lemma for each
-    constructor. *)
-
-Lemma S_injective_prim :
-  forall n m,
-    S n = S m -> n = m.
-Proof.
-  intros n m Heq.
-
-  (* applying a function to equal inputs yields the same output. *)
-  assert (Heq' : pred (S n) = pred (S m)).
-  { rewrite Heq. reflexivity. }
-
-  simpl in Heq'. assumption.
-Qed.
-
-
-
-(** Constructors of inductive types are distinct, meaning that values
-    constructed from different constructor must be different. This
-    means that [S n = O] is an absurd. In logic, we can prove anything
-    from a false assumption. This is referred to as the principle of
-    explosion or, in Latin, "Ex falso quodlibet".
-
-    We can exploit distinctness of constructors using the
-    [discriminate] tactic, as reflected in the following lemmas. *)
-
-Lemma O_eq_S_absurd :
-  forall x, O = S x -> 3 = 4.
-Proof.
-  intros x H.
-  (* [discriminate] can be applied to a hypothesis of the form [C1 x_1 ... x_n = C2 y_1 ... y_m],
-     where [C1] =/= [C2]. It will prove any goal. *)
-  discriminate H.
-Qed.
-
-(** We can apply this principle to booleans as well (or any other inductive type). *)
-Lemma true_eq_false_absurd :
-  true = false -> 3 = 4.
-Proof.
-  intros H.
-  discriminate H.
-Qed.
-
-
-(** **** Boolean Equality. *)
-
+(** **** Notions of Equality *)
 
 (** It is important to note that the operator [=] will _not_ test
     natural numbers for equality. A statement of the form [x = y]
@@ -786,7 +817,11 @@ Locate "=?".
 
 (** As expected, we can use [=?] for computation *)
 
+Check (3 =? 3). 
 Compute (3 =? 3).
+
+Check (3 = 3). 
+Compute (3 = 3).
 
 Compute (4 =? 2).
 
@@ -798,31 +833,122 @@ Proof.
   intros n. simpl. reflexivity.
 Qed.
 
+
+(** One can expect that boolean equality is sound and complete with
+    respect to logical equality. *)
+
+Search  (_ =? _ = true <-> _ = _).
+
+Check PeanoNat.Nat.eqb_eq.
+
+(** **** Injectivity and Distinctness of Constructors. *)
+
+(** The constructors of natural numbers have some important properties:
+
+    - If [S n = S m] then it must be [n = m]. (_injectivity_)
+
+    - It cannot be that [S m = O]. (_distinctness_)
+
+    These principles apply to all inductively defined types: all
+    constructors are injective, and the values built from distinct
+    constructors are never equal. Coq provides tactics that let us
+    reason about these two facts.
+*)
+
+Lemma S_injective :
+  forall n m,
+    S n = S m ->
+    n = m.
+Proof.
+  intros n m Heq.
+
+  (* The [injection] tactic can be applied to a hypothesis of the form
+     [C n_1 ... n_k = C m_1 ... n_k] and will reduce it to an
+     hypothesis of the form [n_1 = m_1 /\ ... /\ n_k = m_k].
+     It can take a name to explicitly name the new hypotheses. *)
+
+  injection Heq as Heq'.
+  assumption.
+Qed.
+
+(** It is worth noting that injectivity is not a primitive property
+    that is encoded in the logic. It is a property that can be proved
+    using the properties of equality.
+
+    We could prove the above lemma primitively, without using
+    injectivity, as shown below. The [injectivity] tactic does this
+    for us so that we don't have prove a separate lemma for each
+    constructor. *)
+
+Lemma S_injective_prim :
+  forall n m,
+    S n = S m ->
+    n = m.
+Proof.
+  intros n m Heq.
+
+  (* applying a function to equal inputs yields the same output. *)
+  assert (Heq' : pred (S n) = pred (S m)).
+  { rewrite Heq. reflexivity. }
+  
+  simpl in Heq'. assumption.
+Qed.
+
+
+
+(** Constructors of inductive types are distinct, meaning that values
+    constructed from different constructor must be different. This
+    means that [S n = O] is an absurd statement. In logic, we can
+    prove anything from a false assumption. This is referred to as the
+    principle of explosion or, in Latin, "Ex falso quodlibet".
+
+    We can exploit distinctness of constructors using the
+    [discriminate] tactic, as reflected in the following lemmas. *)
+
+Lemma O_eq_S_absurd :
+  forall x,
+    O = S x ->
+    3 = 4.
+Proof.
+  intros x H.
+  (* [discriminate] can be applied to a hypothesis of the form [C1 x_1 ... x_n = C2 y_1 ... y_m],
+     where [C1] =/= [C2]. It will prove any goal. *)
+  discriminate H.
+Qed.
+
+(** We can apply this principle to booleans as well (or any other inductive type). *)
+Lemma true_eq_false_absurd :
+  true = false -> 3 = 4.
+Proof.
+  intros H.
+  discriminate H.
+Qed.
+
+
 (** **** Destructing Inductive Types *)
 
 (** Let's now try to prove something similar *)
 Lemma add1_not_zero:
-  forall n, n + 1 =? 0 = false.
+  forall n, n + 1 = 0 -> False.
 Proof.
   (* Note: writing [n + 1] _does not_ simplify to [S n]. Can you see why? *)
-  intros n. simpl.
+  intros n Heq. simpl in Heq.
+
+  Fail discriminate Heq.
 
   (* We proceed by considering cases for [n] *)
 
   (* Using destruct, will generate subgoals for each possible
-     constructor case for a variable of an inductive type. Here it
-     generates cases for when [n] is [O] and for when [n] is the
+     constructor of a variable that belongs to an inductive type. Here
+     it generates cases for when [n] is [O] and for when [n] is the
      successor of a number.  *)
-  destruct n as [ | n'] eqn:Heq.
+  destruct n as [ | n'] eqn:Heq'.
 
   - (* case [n = 0] *)
-    simpl. reflexivity.
-
+    simpl in *. discriminate Heq.
+    
   - (* case [n = S n'] *)
-    simpl. reflexivity.
-    (* Note: [simpl] is not necessary here, as [reflexivity] will do
-       it internally and succeed regardless of us using it first. This
-       is true for other tactics as well. *)
+    simpl in *. discriminate Heq.
 Qed.
 
 
@@ -830,10 +956,10 @@ Qed.
     [eqn:Heq].
 
     The annotation [as [ l1 | l2 | ... | l_n ]] is called an
-    _introduction pattern_.  Each [l_i] is a (possibly) empty list of
+    _introduction pattern_. Each [l_i] is a (possibly empty) list of
     variable names and it corresponds to each case of the destruct.
     Each variable list [l_i] specifies the names of the constructor
-    arguments that corresponds to this case.
+    arguments that correspond to this case.
 
     If we don't specify any variable names, Coq will automatically
     pick some for us (that may not be the best choices). It is
@@ -847,19 +973,23 @@ Qed.
     The annotation [eqn:H] tells [destruct] to remember the equalities
     [n = 0] and [n = S n'] and put them in the context with the name
     [H]. In the first case, Coq will add [Heq : n = 0] to the proof
-    context and in the second case it will add [Heq : n = S n'].
-*)
+    context and in the second case it will add [Heq : n = S n'].  *)
 
 
-(** In the previous proof we observe that [n + 0] does not directly
-    simplify to [n]. Of course, it ought to be equal to it. Let's
-    prove it once and for all, so we can use it in proofs.  (As you
-    might expect, such statement is also part of the standard
-    library.)  *)
+
+(** In the previous proof we observe that [0 + 1] directly simplifies
+    to [n].
+
+    However the same does not happen for expressions like [n + 0]. Can
+    you see why?
+
+    Of course, it ought to be equal to it. Let's prove it once and for
+    all, so we can use it in proofs.  (As you might expect, such
+    statement is also part of the standard library.)  *)
 
 Lemma add_n_O : forall n : nat, n + 0 = n.
 Proof.
-  intros n. simpl.
+  intros n. simpl. (* does nothing *)
 
   (* Let's try destruct again *)
   destruct n as [ | n' ].
@@ -870,7 +1000,7 @@ Proof.
   - (* case n = S n' *)
     simpl.
 
-    (* [assert] let's us prove individual statements within a proof,
+    (* [assert] lets us prove individual statements within a proof,
        and then puts the statement in the proof context with the
        chosen name, here [Heq']. It can be very handy as it allows as
        to prove intermediate results during a proof. *)
@@ -893,25 +1023,30 @@ Abort. (* The keyword [Abort] aborts the current proof. *)
 
 (** But how can we prove that admitted statement? It seems that we
     need a more powerful reasoning principle to prove this fact.
-    This principle is the _principle of induction_.
- *)
+    This principle is the _principle of induction_. *)
 
 (** **** Proof by Induction *)
 
 (** The induction principle over natural numbers says, informally,
-    that if we can prove that a claim is valid for [0] and that if the
-    claim's validity for a number implies that the claim is valid for
-    its successor, then the claim ought to be valid for all natural
-    numbers. Put more formally:
+    that:
+    - if we can prove that a claim is valid for [0] and that
+    - if the claim's validity for a number implies that the claim is
+      valid for its successor
 
-     If
+    then the claim ought to be valid for all natural numbers.
 
-     (1) [P(0)] holds (base case)
+    Put more formally:
 
-     (2) for any [n], if [P(n)] holds, then so does [P(n+1)] (inductive case)
+    Let [P] be a predicate on natural numbers and that we wish to prove
+    [P(n)].
 
-         Note: In this case, we must prove [P(n+1)] by assuming [P(n)].
-         The premise [P(n)] is called the _inductive hypothesis_.
+    If
+
+     (1) [P(0)] holds (**base case***)
+
+     (2) For any [n], if [P(n)] holds then so does [P(n+1)] (**inductive case**)
+
+         Note: The premise [P(n)] is called the _inductive hypothesis_.
 
      Then, for all [n], [P(n)] holds.
 
@@ -926,11 +1061,10 @@ Proof.
   intros n. simpl.
 
   induction n as [ | n' IHn' ].
-  (* With the induction tactic, we can *)
 
-  - (* case n = 0 *) simpl. reflexivity.
+  - (* Base case: n = 0 *) simpl. reflexivity.
 
-  - (* case n = S n' *)
+  - (* Inductive case: n = S n' *)
     simpl.
 
     (* Now, we have the induction hypothesis [IHn'] in the context.
@@ -939,7 +1073,7 @@ Proof.
     rewrite IHn'. reflexivity.
 Qed.
 
-(** Addition is commutative. *)
+(** Next, let us prove that addition is commutative. *)
 Theorem add_comm : forall (n m : nat), n + m = m + n.
 Proof.
   intros n m.
@@ -977,8 +1111,8 @@ Module Pairs.
   Check (pair nat bool 42 true).
 
 
-  (** Luckily, Coq has type inference that lets us elide the type
-      arguments. We could write an underscore [_], and Coq would
+  (** Luckily, Rocq has type inference that lets us elide the type
+      arguments. We could write an underscore [_], and Rocq would
       infer the type argument.  *)
 
   Check (pair _ _ 42 true).
@@ -990,7 +1124,7 @@ Module Pairs.
    *)
 
 
-  (** We can also tell Coq that the type arguments are implicit and can
+  (** We can also tell Rocq that the type arguments are implicit and can
       be elided.  *)
 
   Arguments pair {A} {B}.
@@ -1036,13 +1170,15 @@ End Pairs.
     pairs are equal, then the two pairs are equal
 
     Notice that in the following theorem, we don't have to insert type
-    annotations in [A], [B] and [y]. Its type can be inferred by Coq.
+    annotations in [A], [B] and [y]. Its type can be inferred by Rocq.
 
  *)
 
 Lemma fst_snd_eq :
   forall A B (x : A * B) y,
-    fst x = fst y -> snd x = snd y -> x = y.
+    fst x = fst y ->
+    snd x = snd y ->
+    x = y.
 Proof.
   intros A B x y Heq1 Heq2.
 
@@ -1050,7 +1186,7 @@ Proof.
 
   destruct x as [a1 b1] eqn:Heqa.
   (* The intro pattern [a1 b1] is again optional. It lets us pick
-     names for the two components of the pair. If we don't use it Coq
+     names for the two components of the pair. If we don't use it Rocq
      will pick names for us. *)
 
   destruct y as [a2 b2].
@@ -1092,8 +1228,10 @@ Module Lists.
 
   (** We define "levels" (of precedence) and associativity to avoid
       ambiguity *)
+  
   Notation "x :: y" := (cons x y) (at level 60, right associativity).
   Notation "[ ]" := nil.
+
   (** This is some notation "magic" that lets us write arbitrarily long
       notations. *)
   Notation "[ x ; .. ; y ]" := (cons x .. (cons y []) ..).
@@ -1179,9 +1317,9 @@ End Lists.
 
     (2) for all [x] and [l], if [P(l)] (inductive hypothesis) then [P(x::l)] (_inductive case_)
 
-    We can deduce [forall l, P(l)].
+    Then, we can deduce [forall l, P(l)].
 
- *)
+*)
 
 Lemma length_app :
   forall A (l1 l2 : list A),
@@ -1323,7 +1461,7 @@ Proof.
        [x]) ++ acc = rev l' ++ ([x] ++ acc)] *)
 
     (* But we need a lemma to prove this in order to use it. Luckily
-       we can search in the Coq data base that contains all known
+       we can search in the Rocq data base that contains all known
        definitions and theorems to see if we can find something. *)
 
     (* We can search a definition and find all the relevant
@@ -1381,7 +1519,7 @@ Fixpoint nth {A:Type} (n : nat) (l : list A) (def : A) : A :=
 (** *** Option *)
 
 (** Another common datatype is [Option]. Among other things, [Option]
-    is useful to encode partial functions. Recall that functions in Coq
+    is useful to encode partial functions. Recall that functions in Rocq
     have to be total. By using an option result type we can indicate
     the "absence" of result in certain cases, while still writing a
     total function. *)

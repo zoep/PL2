@@ -1,1 +1,0 @@
-(fun f -> fun x -> (f (fst x), f (snd x)))
