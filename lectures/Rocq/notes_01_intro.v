@@ -307,6 +307,8 @@ Proof.
      assumes the current proof without it being finished. *)
 Admitted.
 
+Print Assumptions id_equality_admitted.
+
 (** An admitted proof can be used in other proofs to derive facts.
     Admitting proofs must be used with caution, as admitting an
     invalid statement makes the system inconsistent as we can derive
