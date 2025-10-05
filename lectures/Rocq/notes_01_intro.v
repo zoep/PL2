@@ -129,7 +129,7 @@ Fail Definition id x := x.
 
 (** The above definition fails as Rocq cannot infer the type of [x].
     We must pass the **type argument** explicitly: *)
-   
+
 
 Definition id (A : Type) (x : A) : A := x.
 
@@ -287,7 +287,7 @@ Qed.
 
 Check id_equality.
 
-Print id_equality. 
+Print id_equality.
 
 (** *** Skipping Parts of a Proof *)
 
@@ -299,7 +299,7 @@ Print id_equality.
 Lemma id_equality_admitted : forall (A : Type) (x : A), id A x = x.
 Proof.
   intros A x.
-  unfold id. 
+  unfold id.
   admit. (* proves the goal! *)
 
   (* A proof with admitted or unfinished subproofs cannot be completed
@@ -317,7 +317,7 @@ Print Assumptions id_equality_admitted.
 (** ** Inductive Types *)
 
 (** *** The Structure of an Inductive Type *)
-      
+
 (** Inductive types in Rocq are a generalization of ML's algebraic
     datatypes. The definition of an inductive type tells us how we can
     build values of this type.
@@ -337,7 +337,7 @@ Inductive day :=
 
 
 (** We can build values of type [day] and also examine them (i.e.,
-    destruct them) using pattern matching *) 
+    destruct them) using pattern matching *)
 
 Definition my_favorite_day : day := Fri.
 
@@ -351,7 +351,7 @@ Print is_PL_day.
 
 (** All possible cases of a pattern matching must be defined (either
     explicitly or with a wildcard).  Otherwise the function is not
-    total and Rocq rejects it. *)  
+    total and Rocq rejects it. *)
 
 Fail Definition is_PL_day_fail (x : day) : bool :=
   match x with
@@ -374,7 +374,7 @@ Fail Definition is_PL_day_fail (x : day) : bool :=
 
 Module Bool.
 
-  
+
   (** The boolean data type is an inductive type with two constructors:
       [true] and [false] *)
 
@@ -384,7 +384,7 @@ Module Bool.
 
   (** We can define functions that operate on this type. We define
       negation, conjunction and disjunction.*)
-  
+
   Definition negb (x : bool) :=
     match x with
     | true => false
@@ -616,7 +616,7 @@ Module Nat.
     | S n => n
     end.
 
-  (** A function that check if a number is zero *)
+  (** A function that checks if a number is zero *)
   Definition is_zero (n : nat) : bool :=
     match n with
     | O => true
@@ -625,9 +625,9 @@ Module Nat.
 
   (** **** Recursion *)
 
-  (** Since [nat] is a recursive datatype, we can define recursive
-      functions on them.  Recursive functions are defined using the
-      [Fixpoint] keyword.  *)
+  (** Since [nat] is a recursive datatype, we can define functions by recursion
+        on a natural number. Recursive functions are defined using the
+        [Fixpoint] keyword. *)
 
   (** Addition **)
   Fixpoint add (n1 n2 : nat) : nat :=
@@ -655,6 +655,7 @@ Module Nat.
     end.
 
   (** This is just syntactic sugar for nested pattern matching: *)
+
   Print sub'.
 
   (** Note that the argument to the recursive call of [add] is n1'
@@ -736,11 +737,11 @@ Qed.
 (** Hint: We can also search for specific term patters. This can be
     very effective when we are looking for theorems in the library
     that apply in a specific case. For example the following command
-    will return all theorems that have the pattern [_ + _ = _]. 
+    will return all theorems that have the pattern [_ + _ = _].
 
  *)
 
-Search (_ + _ = _). 
+Search (_ + _ = _).
 
 (** Let's prove that equality on natural numbers is transitive. *)
 
@@ -786,9 +787,8 @@ Qed.
     equal numbers. *)
 
 Lemma add_eq_example:
-  (* Coq has type inference, so it can figure out the types of
-     variables [n1], [n2], [n3] and [n4], from the context they are
-     used without us providing annotations. *)
+  (* Coq has type inference. Therefore, it can figure out the types of the
+     variables [n1], [n2], [n3] and [n4] qwithout us providing annotations. *)
   forall n1 n2 n3 n4,
     n1 = n2 ->
     n3 = n4 ->
@@ -815,33 +815,56 @@ Check eqb.
 
 (** [n =? m] is a convenient notation for [eqb n m]. We can use Coq's
     locate command to print information about a notation. *)
+
 Locate "=?".
 
-(** As expected, we can use [=?] for computation *)
+(** As expected, we can use [=?] for computation, It is just a function that
+    returns [bool] *)
 
-Check (3 =? 3). 
+Check (3 =? 3).
+
 Compute (3 =? 3).
 
-Check (3 = 3). 
+Check (3 = 3).
 Compute (3 = 3).
 
 Compute (4 =? 2).
 
 (** Let's prove that the successor of a number cannot be equal to
-    zero. *)
-Lemma succ_not_zero: forall n, 1 + n =? 0 = false.
+    zero, but using boolean equality. *)
+Lemma succ_not_zero:
+    forall n, 1 + n =? 0 = false.
 Proof.
   (* Note: writing [1 + n] is the same (up to simplification) with writing [S n] *)
-  intros n. simpl. reflexivity.
+  intros n.
+  simpl. (* The expression [1 + n =? 0] directly simplifies to [false]. (Why?) *)
+  reflexivity.
 Qed.
 
-
-(** One can expect that boolean equality is sound and complete with
-    respect to logical equality. *)
+(** Boolean equality is sound and complete with respect to logical equality and
+      there is a lemma in the standard library that proves this. *)
 
 Search  (_ =? _ = true <-> _ = _).
 
 Check PeanoNat.Nat.eqb_eq.
+
+(* Let's try to prove the same thing using logical equality. *)
+
+Lemma succ_not_zero_prop:
+    forall n, 1 + n = 0 -> False.
+Proof.
+    intros n H1. simpl in *.
+
+    (* There is no obvious way to make progress... In the hypothesis there is an
+       absurd statement: that a successor of a number is equal to 0.
+
+       In the next session we will learn how we can utilize the absurd statement
+       in order to finish the proof.
+
+    *)
+Abort. (* This command abandons the current proof *)
+
+
 
 (** **** Injectivity and Distinctness of Constructors. *)
 
@@ -892,10 +915,9 @@ Proof.
   (* applying a function to equal inputs yields the same output. *)
   assert (Heq' : pred (S n) = pred (S m)).
   { rewrite Heq. reflexivity. }
-  
+
   simpl in Heq'. assumption.
 Qed.
-
 
 
 (** Constructors of inductive types are distinct, meaning that values
@@ -926,10 +948,22 @@ Proof.
   discriminate H.
 Qed.
 
+Print O_eq_S_absurd.
+
+Check eq_ind.
+
+
+(* Using discriminate we can make the above proof go through. *)
+Lemma succ_not_zero_prop:
+    forall n, 1 + n = 0 -> False.
+Proof.
+    intros n H1. simpl in *. discriminate H1.
+Qed.
 
 (** **** Destructing Inductive Types *)
 
-(** Let's now try to prove something similar *)
+(** Let's now try to prove something similar to [succ_not_zero_prop]
+    but this time we flip the arguments of addition. *)
 Lemma add1_not_zero:
   forall n, n + 1 = 0 -> False.
 Proof.
@@ -948,7 +982,7 @@ Proof.
 
   - (* case [n = 0] *)
     simpl in *. discriminate Heq.
-    
+
   - (* case [n = S n'] *)
     simpl in *. discriminate Heq.
 Qed.
@@ -985,7 +1019,7 @@ Qed.
     However the same does not happen for expressions like [n + 0]. Can
     you see why?
 
-    Of course, it ought to be equal to it. Let's prove it once and for
+    Of course, these two ought to be equal. Let's prove it once and for
     all, so we can use it in proofs.  (As you might expect, such
     statement is also part of the standard library.)  *)
 
@@ -1076,6 +1110,7 @@ Proof.
 Qed.
 
 (** Next, let us prove that addition is commutative. *)
+
 Theorem add_comm : forall (n m : nat), n + m = m + n.
 Proof.
   intros n m.
@@ -1214,7 +1249,7 @@ Qed.
 Module Lists.
 
   (** Let us now define another very commonly used type: lists. The
-      definition is similar to the one we know from ML. *)
+      definition is similar to the one we know from ML/OCaml. *)
 
   Inductive list (A : Type) : Type :=
   | nil : list A
@@ -1230,7 +1265,7 @@ Module Lists.
 
   (** We define "levels" (of precedence) and associativity to avoid
       ambiguity *)
-  
+
   Notation "x :: y" := (cons x y) (at level 60, right associativity).
   Notation "[ ]" := nil.
 
@@ -1239,7 +1274,7 @@ Module Lists.
   Notation "[ x ; .. ; y ]" := (cons x .. (cons y []) ..).
 
   Check ([]).
-  Check ([1;2;3]).
+  Check ([1;2;3;4]).
   Compute (0::[1;2;3]).
 
   (** Do you see any difference with the definition of lists and
@@ -1348,11 +1383,11 @@ Proof.
 Qed.
 
 
-(** Let's figure out what it means to map two functions subsequently
-    to a list ...
+(** Let's figure out what it means to map two functions one after the other to a
+    list ...
 
-    Hint: let's first define function composition. This is a
-    function-returning function.  *)
+    Hint: let's first define function composition. This is a function-returning
+    function.  *)
 
 Definition comp {A B C} (g : B -> C) (f : A -> B) : A -> C :=
   fun (x : A) => g (f x).
@@ -1408,11 +1443,10 @@ Proof.
    (* What do you think is wrong here? *)
 Abort.
 
-(** The inductive hypothesis is not general enough. We have to reason
-    about any recursive call of [rev_fast], not just the top
-    level. Therefore, we need to talk about what happens with any
-    value of the accumulator, not just []. We must prove a more
-    general lemma. *)
+(** The inductive hypothesis is not general enough, as it tells us something
+    about the call [rev_fast_aux l' []], and not any call of [rev_fast_aux]. We
+    need to talk about what happens with any value of the accumulator, not just
+    []. We must prove a more general lemma. *)
 
 Lemma rev_rev_fast_aux_first_try :
   forall A (l : list A) (acc : list A),
@@ -1441,7 +1475,7 @@ Lemma rev_rev_fast_aux :
   forall A (l : list A) (acc : list A),
     rev l ++ acc = rev_fast_aux l acc.
 Proof.
-  intros A l.
+  intros A l acc. revert acc.
   (* [revert] is the opposite of [intros]. *)
   (* We could also just do: [intros A l.] *)
 
@@ -1462,7 +1496,7 @@ Proof.
     (* [app] is an associative operator, meaning that [(rev l' ++
        [x]) ++ acc = rev l' ++ ([x] ++ acc)] *)
 
-    (* But we need a lemma to prove this in order to use it. Luckily
+    (* But we to prove this as a lemma in order to use it. Luckily
        we can search in the Rocq data base that contains all known
        definitions and theorems to see if we can find something. *)
 
