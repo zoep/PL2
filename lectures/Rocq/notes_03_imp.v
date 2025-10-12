@@ -325,9 +325,9 @@ Inductive step_exp : exp -> exp -> Prop :=
     step_exp e1 e1' ->
     step_exp (Plus e1 e2) (Plus e1' e2)
 | step_Plus_r :
-  forall n1 e2 e2',
+  forall e1 e2 e2',
     step_exp e2 e2' ->
-    step_exp (Plus (Num n1) e2) (Plus (Num n1) e2')
+    step_exp (Plus e1 e2) (Plus e1 e2')
 | step_Minus :
   forall n1 n2,
     step_exp (Minus (Num n1) (Num n2)) (Num (n1 - n2))
@@ -336,9 +336,9 @@ Inductive step_exp : exp -> exp -> Prop :=
     step_exp e1 e1' ->
     step_exp (Minus e1 e2) (Minus e1' e2)
 | step_Minus_r :
-  forall n1 e2 e2',
+  forall e1 e2 e2',
     step_exp e2 e2' ->
-    step_exp (Minus (Num n1) e2) (Minus (Num n1) e2')
+    step_exp (Minus e1 e2) (Minus e1 e2')
 | step_Mult :
   forall n1 n2,
     step_exp (Mult (Num n1) (Num n2)) (Num (n1 * n2))
@@ -347,12 +347,16 @@ Inductive step_exp : exp -> exp -> Prop :=
     step_exp e1 e1' ->
     step_exp (Mult e1 e2) (Mult e1' e2)
 | step_Mult_r :
-  forall n1 e2 e2',
+  forall e1 e2 e2',
     step_exp e2 e2' ->
-    step_exp (Mult (Num n1) e2) (Mult (Num n1) e2').
+    step_exp (Mult e1 e2) (Mult e1 e2').
 
 (** Again, we define a pretty notation. *)
 Notation "e '-->' e'" := (step_exp e e') (at level 39).
+
+(** Note that this relation does not enforce any particular order of evaluation:
+    any redex can be reduced at any time. This is a deliberate choice. We could 
+    have also enforced an order (e.g. left-to-right). Can you see how? *)
 
 (** We want a way to compose multiple of these steps together.  That
     is, a relation [e -->* e'] that says that [e] takes multiple steps
@@ -431,7 +435,7 @@ Proof.
     apply step_Plus.
   - (* Mult (Num 6) (Num 7) -->* Num 42 *)
     eapply multi_step; [ | now apply multi_refl ].
-    apply step_Mult.
+    simpl. apply step_Mult.
 Qed.
 
 
@@ -581,22 +585,22 @@ Proof.
 Qed.
 
 Lemma multi_Plus_compose_r :
-  forall n1 e2 e2',
+  forall e1 e2 e2',
     e2 -->* e2' ->
-    Plus (Num n1) e2 -->* Plus (Num n1) e2'.
+    Plus e1 e2 -->* Plus e1 e2'.
 Proof.
-  intros e1 e2 e1' Hs1. induction Hs1.
+  intros e1 e2 e2' Hs1. induction Hs1.
   - eapply multi_refl.
   - eapply multi_step.
-    + eapply step_Plus_r; eauto.
+    + eapply step_Plus_r. eauto.
     + assumption.
 Qed.
 
 Corollary multi_Plus_compose :
-  forall e1 e2 n1 e2',
-    e1 -->* (Num n1) ->
+  forall e1 e2 e1' e2',
+    e1 -->* e1' ->
     e2 -->* e2' ->
-    Plus e1 e2 -->* Plus (Num n1) e2'.
+    Plus e1 e2 -->* Plus e1' e2'.
 Proof.
   intros e1 e2 n1 e2' Hs1 Hs2.
   eapply multi_transitive.
@@ -617,9 +621,9 @@ Proof.
 Qed.
 
 Lemma multi_Mult_compose_r :
-  forall n1 e2 e2',
+  forall e1 e2 e2',
     e2 -->* e2' ->
-    Mult (Num n1) e2 -->* Mult (Num n1) e2'.
+    Mult e1 e2 -->* Mult e1 e2'.
 Proof.
   intros e1 e2 e1' Hs1. induction Hs1.
   - eapply multi_refl.
@@ -641,10 +645,10 @@ Proof.
 Qed.
 
 Lemma multi_Mult_compose :
-  forall e1 e2 n1 e2',
-    e1 -->* (Num n1) ->
+  forall e1 e2 e1' e2',
+    e1 -->* e1' ->
     e2 -->* e2' ->
-    Mult e1 e2 -->* Mult (Num n1) e2'.
+    Mult e1 e2 -->* Mult e1' e2'.
 Proof.
   intros e1 e2 n1 e2' Hs1 Hs2.
   eapply multi_transitive.
@@ -653,9 +657,9 @@ Proof.
 Qed.
 
 Lemma multi_Minus_compose_r :
-  forall n1 e2 e2',
+  forall e1 e2 e2',
     e2 -->* e2' ->
-    Minus (Num n1) e2 -->* Minus (Num n1) e2'.
+    Minus e1 e2 -->* Minus e1 e2'.
 Proof.
   intros e1 e2 e1' Hs1. induction Hs1.
   - eapply multi_refl.
@@ -665,10 +669,10 @@ Proof.
 Qed.
 
 Corollary multi_Minus_compose :
-  forall e1 e2 n1 e2',
-    e1 -->* (Num n1) ->
+  forall e1 e2 e1' e2',
+    e1 -->* e1' ->
     e2 -->* e2' ->
-    Minus e1 e2 -->* Minus (Num n1) e2'.
+    Minus e1 e2 -->* Minus e1' e2'.
 Proof.
   intros e1 e2 n1 e2' Hs1 Hs2.
   eapply multi_transitive.
@@ -778,7 +782,6 @@ Proof.
   - eapply small_step_eval_compose; eauto.
 Qed.
 
-
 (** ** The [Imp] language *)
 
 (** The [Imp] language is a small imperative language. Its AST
@@ -794,21 +797,19 @@ Qed.
 >>
 *)
 
-(** where <var> are variables, <aexp> arithmetic expressions, similar to
-those we saw above, and <bexp> is a boolean expression which we will examine
-next.
+(** where <var> are variables, <aexp> arithmetic expressions, similar to those
+    we saw above, and <bexp> is a boolean expression which we will examine next.
 
-The difference is that now <aexp>s and <bexp>s can contain variables.
-To write an interpreter or give semantics to such a program, we will
-need an environment mapping variables to their value during execution.
-We pass this mapping as an extra parameter. This environment will be
-created and maintained during the execution of the <com> command.
+The difference is that now <aexp>s and <bexp>s can contain variables. To write
+an interpreter or give semantics to such a program, we will need an environment
+mapping variables to their value during execution. We pass this mapping as an
+extra parameter. This environment will be created and maintained during the
+execution of the <com> command.
 
-In this simple language, variables can only have values that are
-natural numbers. In this language, variables don't need to be
-explicitly declared and have a default value of [0]. Therefore, we
-will model this environment as a total function from variable names to
-natural numbers. *)
+In this simple language, variables can only have values that are natural
+numbers. In this language, variables don't need to be explicitly declared and
+have a default value of [0]. Therefore, we will model this environment as a
+total function from variable names to natural numbers. *)
 
 (** A map from variable names to their values *)
 
@@ -863,7 +864,6 @@ Inductive bexp : Type :=
   | BNot : bexp -> bexp
   | BAnd : bexp -> bexp -> bexp
   | BOr :  bexp -> bexp -> bexp.
-
 
 
 (** **** Notations *)
@@ -1005,7 +1005,7 @@ Set Printing Coercions.
 (** The above syntax constructed the following terms: *)
 Print add.
 
-Set Printing Notations.
+(* Set Printing Notations. *)
 Unset Printing Coercions.
 
 
