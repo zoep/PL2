@@ -1,2 +1,5 @@
 -R . PL2
 notes_01_intro.v
+notes_02_logic.v
+notes_03_imp.v
+
