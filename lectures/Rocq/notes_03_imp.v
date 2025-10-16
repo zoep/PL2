@@ -976,7 +976,7 @@ Notation "x ; y" :=
            (in custom com at level 90,
             right associativity) : com_scope.
 Notation "{ x }" := x (in custom com, x at level 50) : com_scope.
-Notation "'if' x 'then' y 'else' z" :=
+Notation "'if' x 'then' y 'else' z 'end'" :=
          (CIf x y z)
            (in custom com at level 89, x at level 99,
             y at level 99, z at level 99) : com_scope.
@@ -1107,11 +1107,11 @@ Inductive ceval : imp_state -> com -> imp_state -> Prop :=
   | E_IfTrue : forall st st' b c1 c2,
       binterp st b = true ->
       st =[ c1 ]=> st' ->
-      st =[ if b then c1 else c2]=> st'
+      st =[ if b then c1 else c2 end ]=> st'
   | E_IfFalse : forall st st' b c1 c2,
       binterp st b = false ->
       st =[ c2 ]=> st' ->
-      st =[ if b then c1 else c2 ]=> st'
+      st =[ if b then c1 else c2 end ]=> st'
   | E_WhileFalse : forall b st c,
       binterp st b = false ->
       st =[ while b do c ]=> st
