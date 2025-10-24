@@ -28,6 +28,7 @@ Inductive exp : Type :=
 (** We can use this abstract syntax to construct arithmetic expressions. *)
 Definition answer : exp := Mult (Num 6) (Plus (Num 4) (Num 3)).
 
+
 (** So far, we haven't attached any meaning to arithmetic expressions.
    There are a few ways to do so.
     We will write:
@@ -123,10 +124,10 @@ Qed.
 Theorem interp_eval_exp :
   forall e n,
     interp e = n ->
-    eval_exp e n.
+    e ==> n.
 Proof.
-  (* In this proof we sequence tactics to handle four cases at once,
-     since their proofs are very similar *)
+(* In this proof we sequence tactics to handle four cases at once,
+  since their proofs are very similar *)
   intros e; induction e; intros n' Hi;
     simpl in *; subst; constructor; auto.
 Qed.
@@ -136,7 +137,7 @@ Qed.
 (** Often it is useful to define shorthand for tactics that we use
     often by combining several tactics into one. We can do this with
     the [Ltac] command. [Ltac] provides powerful facilities to inspect
-    the proof context and goal and automate proofs. We wil see only a 
+    the proof context and goal and automate proofs. We wil see only a
     few of its capabilities.
 
     We will define a tactic that inverts a hypothesis (that should be
@@ -147,9 +148,9 @@ Qed.
 
     Recall that inverting a proof of an inductive proposition
     considers all cases by which a proof of the proposition can be
-    derived. For each of these cases, Rocq will generate equalities 
-    for the arguments of the relation that enforce that they unify 
-    with the arguments of the relation in the conclusion of the 
+    derived. For each of these cases, Rocq will generate equalities
+    for the arguments of the relation that enforce that they unify
+    with the arguments of the relation in the conclusion of the
     case we are considering. *)
 
 
@@ -161,18 +162,24 @@ Ltac inv H :=
     relation, the same result is computed by the interpreter. *)
 Theorem eval_exp_interp_long_proof :
   forall e n,
-    eval_exp e n ->
+    e ==> n ->
     interp e = n.
 Proof.
   intros e;
       (* we proceed by induction on the expression [e] *)
-      induction e as [ | e1 IHe1 e2 IHe2 | e1 IHe1 e2 IHe2 | e1 IHe1 e2 IHe2 ];
+    induction e as
+    [ | e1 IHe1 e2 IHe2 | e1 IHe1 e2 IHe2 | e1 IHe1 e2 IHe2 ];
     intros n' Heval.
-  - (* e = Num n *) 
-    simpl. inv Heval. 
-    reflexivity.
+  - (* e = Num n *)
+    inversion Heval; subst.
+    simpl. reflexivity.
+
   - (* e = Plus n1 n2 *)
-    inv Heval; simpl.
+    inv Heval. simpl.
+
+    erewrite IHe1; [ | eassumption ]. (* generated an extra goal: [e1 ==> ?n] *)
+    erewrite IHe2; [ | eassumption ]. (* generated an extra goal: [e2 ==> ?n] *)
+    reflexivity.
 
     (* Here, we want to rewrite with the conclusion of IHe1.  We can
        use the [rewrite] tactic with all logical statements whose
@@ -183,15 +190,6 @@ Proof.
        subterm of the goal. If it cannot unify them all, it will fail.
        If we can use [erewrite] then Rocq will generate evars for the
        unknown variable that must be unified in the next steps. *)
-    erewrite IHe1. (* generated an extra goal: [e1 ==> ?n] *)
-
-    erewrite IHe2.  (* generated an extra goal: [e2 ==> ?n0] *)
-
-    reflexivity. (* unifies ?n with  n1 and ?n0 with n2 *)
-
-    assumption.
-
-    assumption.
 
   - (* e = Minus n1 n2 *)
     inv Heval; simpl.
@@ -244,7 +242,8 @@ Qed.
 Lemma repeat_example (x : nat) :
   x = x + 0 /\ x = x + 0 /\ x = x + 0 /\ x = x + 0 /\ x = x + 0 /\ x = x + 0.
 Proof.
-  repeat split; rewrite <- plus_n_O; reflexivity.
+  repeat split;
+  rewrite <- plus_n_O; reflexivity.
 Qed.
 
 
@@ -277,7 +276,7 @@ Qed.
 Lemma or_example (x : nat) :
   x = x + 0 /\ x = x * 1 /\ x = x + 0 /\ x = x * 1 /\ x = x + 0 /\ x = x * 1.
 Proof.
-  repeat split; 
+  repeat split;
     (rewrite <- plus_n_O || rewrite Nat.mul_1_r); reflexivity.
 Qed.
 
@@ -295,9 +294,10 @@ Theorem eval_exp_interp :
     interp e = n.
 Proof.
   intros e;
-    induction e as [ | e1 IHe1 e2 IHe2 | e1 IHe1 e2 IHe2 | e1 IHe1 e2 IHe2 ];
+    induction e as
+        [ | e1 IHe1 e2 IHe2 | e1 IHe1 e2 IHe2 | e1 IHe1 e2 IHe2 ];
     intros n' Heval; inv Heval; simpl;
-    try erewrite IHe1; try erewrite IHe1; eauto.
+    try erewrite IHe1; try erewrite IHe2; eauto.
 Qed.
 
 (** *** Arithmetic Expressions: Small-step semantics *)
@@ -355,7 +355,7 @@ Inductive step_exp : exp -> exp -> Prop :=
 Notation "e '-->' e'" := (step_exp e e') (at level 39).
 
 (** Note that this relation does not enforce any particular order of evaluation:
-    any redex can be reduced at any time. This is a deliberate choice. We could 
+    any redex can be reduced at any time. This is a deliberate choice. We could
     have also enforced an order (e.g. left-to-right). Can you see how? *)
 
 (** We want a way to compose multiple of these steps together.  That
@@ -818,14 +818,15 @@ total function from variable names to natural numbers. *)
 (** The definition of the state type. It is useful to make these
     definitions parametric on the type [A], as we may use them later
     when we extend the language. *)
+
 Definition state (A : Type) := string -> A.
 
 (** We write a function to generate an empty state *)
-Definition empty_st {A : Type} (def : A) : state A := fun _ => def.
+Definition empty_st {A : Type} (def : A) : state A :=
+  fun _ => def.
 
 (** and a function to update the state when the value of a variable is changed *)
-Definition update_st {A : Type} (st : state A)
-  (x : string) (v : A) : state A :=
+Definition update_st {A : Type} (st : state A) (x : string) (v : A) : state A :=
   fun z => if (x =? z)%string then v else st z.
 
 (** We write some fancy notation for these operations. *)
@@ -836,6 +837,9 @@ Notation "x '!->' v ';' m" :=
   (update_st m x v)
     (at level 100, v at next level, right associativity).
 
+(* (_ !-> 0) = (fun _ => 0) *)
+
+(* (x !-> v; st) = fun z => if (x =? z)%string then v else st z. *)
 
 (** Next we define arithmetic expressions again, but now with the
     ability to refer to variables. We also write the AST for boolean
@@ -854,16 +858,15 @@ Inductive aexp : Type :=
 
 
 (** Boolean expressions: *)
-
 Inductive bexp : Type :=
-  | BTrue : bexp
-  | BFalse : bexp
-  | BEq : aexp -> aexp -> bexp
-  | BLe : aexp -> aexp -> bexp
-  | BLt : aexp -> aexp -> bexp
-  | BNot : bexp -> bexp
-  | BAnd : bexp -> bexp -> bexp
-  | BOr :  bexp -> bexp -> bexp.
+| BTrue : bexp
+| BFalse : bexp
+| BEq : aexp -> aexp -> bexp
+| BLe : aexp -> aexp -> bexp
+| BLt : aexp -> aexp -> bexp
+| BNot : bexp -> bexp
+| BAnd : bexp -> bexp -> bexp
+| BOr :  bexp -> bexp -> bexp.
 
 
 (** **** Notations *)
@@ -915,8 +918,10 @@ Definition exp1 := <{ 3 + 4 * 6 }>.
 Definition exp2 := <{ (2 + 1 = "x") && (true || false) }>.
 
 
-Set Printing All.
 (** The above syntax constructed the following terms: *)
+
+Set Printing All.
+
 Print exp1.
 Print exp2.
 
@@ -936,6 +941,8 @@ Fixpoint ainterp (st : imp_state) (e: aexp) : nat :=
   | AMult e1 e2 => (ainterp st e1) * (ainterp st e2)
   end.
 
+
+
 (** We do the same for [bexpr]. *)
 Fixpoint binterp (st : imp_state) (b : bexp) : bool :=
   match b with
@@ -949,6 +956,7 @@ Fixpoint binterp (st : imp_state) (b : bexp) : bool :=
   | BOr b1 b2 =>  (binterp st b1) || (binterp st b2)
   end.
 
+
 (** We could also define the big-step semantics, we will use these
     interpreters instead.*)
 
@@ -956,6 +964,7 @@ Fixpoint binterp (st : imp_state) (b : bexp) : bool :=
 
 (** We are ready to define the AST for commands. It closely follows
    the structure of the informal grammar. *)
+
 Inductive com : Type :=
   | CSkip : com
   | CAsgn : string -> aexp -> com
@@ -1088,18 +1097,16 @@ Unset Printing Coercions.
     defining new inductive relations. This is just syntactic
     convenience. *)
 
-Reserved Notation
-         "st '=[' c ']=>' st'"
-         (at level 40, c custom com at level 99,
-          st constr, st' constr at next level).
+Reserved Notation "st '=[' c ']=>' st'"
+    (at level 40, c custom com at level 99,
+        st constr, st' constr at next level).
 
 
 Inductive ceval : imp_state -> com -> imp_state -> Prop :=
   | E_Skip : forall st,
-      ceval st CSkip st
-  | E_Asgn : forall st a n x,
-      ainterp st a = n ->
-      st =[ x := a ]=> (x !-> n ; st)
+      st =[ CSkip ]=> st
+  | E_Asgn : forall st a x,
+      st =[ x := a ]=> (x !-> ainterp st a; st)
   | E_Seq : forall c1 c2 st st' st'',
       st =[ c1 ]=> st' ->
       st' =[ c2 ]=> st'' ->
@@ -1138,14 +1145,13 @@ Proof.
 
   econstructor. (* eapply E_Seq. *)
 
-  - constructor. (* apply E_Asgn *) simpl. reflexivity.
+  - constructor. (* apply E_Asgn *)
 
   - econstructor. (* eapply E_Seq. *)
 
-    constructor. (* apply E_Asgn *) simpl. reflexivity.
+    constructor. (* apply E_Asgn *)
 
-    econstructor. (* apply E_Asgn *) simpl. reflexivity.
-
+    simpl. constructor. (* apply E_Asgn *)
 Qed.
 
 
@@ -1154,7 +1160,8 @@ Qed.
 
 Theorem add_result' :
   forall (a b : nat) (st : imp_state),
-    exists st', st =[ add a b ]=> st' /\ st' RES = a + b.
+    exists st',
+      st =[ add a b ]=> st' /\ st' RES = a + b.
 Proof.
   intros a b st.
 
@@ -1164,10 +1171,10 @@ Proof.
   split.
   - (* proof that [add a b] evaluates to the above state. *)
     eapply E_Seq.
-    + apply E_Asgn. reflexivity.
+    + apply E_Asgn.
     + eapply E_Seq.
-      * apply E_Asgn. reflexivity.
-      * eapply E_Asgn. reflexivity.
+      * apply E_Asgn.
+      * eapply E_Asgn.
 
   - (* proof that in the final state the variable [RES] has the expected value . *)
     unfold update_st. simpl. reflexivity.
@@ -1280,14 +1287,29 @@ Compute (match cinterp 3 (_ !-> 0) (add 21 21) with
          | None => None
          end).
 
+
+(** Completeness :
+
+st =[ c ]=> st' ->
+exists fuel, cinterp fuel st c = Some st'
+
+*)
+
+(* Soundness :
+
+cinterp fuel st c = Some st' ->
+st =[ c ]=> st'
+
+*)
+
 (** *** Case study: Correctness of [pow] *)
 
 Theorem pow_result :
   forall (base exp : nat) st,
   exists st',
-      st =[ pow base exp ]=> st' /\ st' RES = base ^ exp.
+      st =[ pow base exp ]=> st' /\
+      st' RES = base ^ exp.
 Proof.
-
   (* First we will prove a more general statement for the while loop
      by induction on the value of Z in the state. *)
   assert (Hloop :
@@ -1322,8 +1344,8 @@ Proof.
           -- (* Prove that the condition is true *)
              simpl. rewrite Heq. reflexivity.
           -- (* Evaluate the first iteration *)
-             econstructor. econstructor. reflexivity.
-             econstructor. reflexivity.
+             econstructor. econstructor.
+             econstructor.
           -- (* Evaluate subsequent iterations. Here we use the IH *)
              eassumption.
 
