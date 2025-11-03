@@ -170,7 +170,7 @@ Qed.
     inference rule:
 
 <<
-      P  -> Q      P
+      P -> Q      P
    --------------------
             Q
 >>
@@ -743,7 +743,6 @@ Qed.
 Lemma not_not_P_implies_P :
   forall P, ~ ~ P -> P.
 Proof.
-  unfold not.
   intros P HP. (* there is no obvious way to proceed *)
 Abort.
 
@@ -788,6 +787,7 @@ Abort.
     the proof itself cannot be used to provide evidence as to weather
     a particular program [p] terminates or not. Formalizing the [or]
     connective will make this clearer. *)
+
 
 (** *** Disjunction *)
 
@@ -1054,7 +1054,7 @@ Proof.
 Qed.
 
 Lemma iff_example2 :
-  forall P Q, P <-> Q -> Q -> P.
+  forall P Q, (P <-> Q) -> Q -> P.
 Proof.
   intros  P Q H1 Hq.
   (* equivalences can be applied both ways. *)
@@ -1081,6 +1081,8 @@ Qed.
 
 
 (** *** Equality *)
+
+Check (4 = 4).
 
 Module Eq.
 
@@ -1149,6 +1151,9 @@ Proof.
   congruence.
 Qed.
 
+
+
+
 (** *** Existential Quantification *)
 
 Module Exists.
@@ -1171,8 +1176,9 @@ End Exists.
 Lemma fourtytwo_is_even_1 :
   exists (n : nat), 42 = n + n.
 Proof.
+  
   apply ex_intro with (x := 21).
-
+  
   reflexivity.
 Qed.
 
@@ -1180,7 +1186,7 @@ Lemma fourtytwo_is_even_2 :
   exists (n : nat), 42 = n + n.
 Proof.
   (* There is a more intuitive way to prove this *)
-
+  
   (* Use the tactic [exist] to provide the evidence *)
   exists 21. (* This is equivalent to [apply ex_intro with (x := 21).] *)
 
@@ -1198,10 +1204,9 @@ Proof.
   (* if we have an hypothesis with an existential quantifier
      we can use [inversion] to obtain the evidence and a proof
      that the predicates holds on the evidence. *)
-  inversion H1 as [n Hn].
+  destruct H1 as [n Hn].
 
-  exists n.
-  rewrite Hn. reflexivity.
+  exists n. congruence. 
 Qed.
 
 
@@ -1224,7 +1229,6 @@ Proof.
   intros.
   (* We want to use the previous proof with [n = x] and [m = x]. Now
      we want to omit explicitly providing the variables. *)
-
 
   Fail apply even_or_odd_aux.
   (* The above tactic fails with the message:
@@ -1270,13 +1274,13 @@ Proof.
   Fail apply Hyp. (* Fails with: Unable to find an instance for the variable m. *)
 
   eapply Hyp.
-
+  
   (* Now it's easier to solve the goal 2 first, so we can unify
      [?m]. Coq lets us select the goal we want to work with with the
      syntax [N:{ ... }]. Inside the braces we put the proof of the
      goal. *)
-
-  2:{ Fail assumption.  eassumption. (* [eassumption] can deal with existential variables. *) }
+ 
+  2:{ Fail assumption. eassumption. (* [eassumption] can deal with existential variables. *) }
   simpl.
   assumption.
 
@@ -1295,9 +1299,9 @@ Proof.
     does not deal with existential variables. Coq provides [eauto]
     that will try to solve a goal using [eapply], [reflexivity],
     [eexists], [split], [left], [right]. *)
-
+  
   auto. (* Does nothing *)
-
+  
   eauto. (* Solves the goal *)
 Qed.
 
@@ -1385,10 +1389,11 @@ Module le.
   Example leq_3_5:
     le 3 5.
   Proof.
-    apply leS.
-    apply leS.
-    apply leS.
-    apply leO.
+    (* apply leS. *)
+    (* apply leS. *)
+    (* apply leS. *)
+    (* apply leO. *)
+    repeat constructor.
     (* or just [repeat constructor] *)
   Qed.
 
@@ -1446,13 +1451,13 @@ Module le.
       le n k.
   Proof.
     intros n m k Hle. revert k.
-    induction Hle as [| n' m' HP IHle Heq1 Heq2];
-      intros k Hle'.
+    induction Hle; intros k Hle'.
     - apply leO.
-    - inversion Hle'; subst. (* [Hle'] can only be derived by [leS] *)
-
+    - inversion Hle'.
+      subst. (* [Hle'] can only be derived by [leS] *)
+      
        apply leS.
-       apply IHle. assumption.
+       apply IHHle. assumption.
   Qed.
 
   (** Note: In this case we can also do the proof by induction on [n]. *)
