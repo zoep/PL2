@@ -768,7 +768,7 @@ Proof.
 Qed.
 
 
-(** It is also easy to prove that [wp c Q] is indeed the weakest
+(** It is also trivial to prove that [wp c Q] is indeed the weakest
     precondition for any valid triple. *)
 
 Lemma wp_is_wp :
@@ -940,9 +940,9 @@ Fixpoint vc (ac : acom) (Q : assertion) : Prop :=
       ((INV AND FALSE b) ->> Q) (* Inv implies postcondition *)
   end.
 
-(** We can now prove that if the verification conditions hold for a
-    given program [ac] and precondition [Q], then the triple
-    [{{ wlp ac Q }} erase ac {{ Q }}] is derivable. *)
+(** We can now prove that if the verification conditions for a given
+    program [ac] hold, then the triple [{{ wlp ac Q }} erase ac {{ Q }}]
+    is provable. *)
 Theorem wlp_sound:
   forall (ac : acom) (Q : assertion),
     vc ac Q ->
@@ -975,8 +975,8 @@ Proof.
 Qed.
 
 
-(** As a corollary, we can prove that in order to prove any triple [{{
-    P }} ac {{ Q }}] for an annotated program, it suffices to prove
+(** As a corollary, we can prove that in order to prove any triple
+    [{{ P }} ac {{ Q }}] for an annotated program, it suffices to prove
     that the precondition [P] implies the weakest precondition and that
     the verification conditions hold. *)
 
@@ -1017,7 +1017,6 @@ Ltac norm_plus :=
           | H : context [?e + 1] |- _ => rewrite (PeanoNat.Nat.add_1_r e) in H
           | |- context [?e + 1] => rewrite (PeanoNat.Nat.add_1_r e)
           end).
-
 
 
 Hint Extern 3 => norm_plus : hoareDB.

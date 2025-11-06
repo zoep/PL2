@@ -13,8 +13,8 @@ clean: Makefile.coq
 	@+$(MAKE) -f $(COQMAKEFILE) cleanall
 	@rm -f $(COQMAKEFILE) $(COQMAKEFILE).conf
 
-Makefile.coq: _RocqProject
-	$(COQBIN)coq_makefile -f _RocqProject -o $(COQMAKEFILE)
+Makefile.coq: _CoqProject
+	$(COQBIN)coq_makefile -f _CoqProject -o $(COQMAKEFILE)
 
 invoke-coqmakefile: $(COQMAKEFILE)
 	$(MAKE) -f $^
