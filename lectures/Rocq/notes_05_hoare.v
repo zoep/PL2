@@ -214,6 +214,8 @@ Note that according to our definitions above, [P AND (TRUE b)]
 is just notation for the assertion [fun st => P st /\ binterp st b = true]. *)
 
 
+
+
 (** **** Loops *)
 
 (** The last command we have to examine is the while loop. Loops
@@ -280,6 +282,7 @@ is just notation for the assertion [fun st => P st /\ binterp st b = true]. *)
     {{ fun st => 42 < st Y + 1 }} X := Y + 1 {{ fun st => 42 < st X }}
 >>
 
+
     This precondition is _weaker_ than the previous one, meaning that
     if a state satisfies [{{ fun st => st Y = 42 }}] then it must also
     satisfy [{{ fun st => 42 < st Y + 1 }}]. *)
@@ -290,6 +293,7 @@ is just notation for the assertion [fun st => P st /\ binterp st b = true]. *)
 
     Assertion implication [P ->> Q] holds when for any state on which
     [P] holds, so does [Q]. *)
+
 
 Definition assert_implies (P Q : assertion) : Prop :=
   forall st, P st -> Q st.
@@ -385,15 +389,18 @@ Example hoare_asgn_example :
   {{ fun st => st X = 11 /\ st Y = 42 }}.
 Proof.
   eapply H_Seq.
+  
   - apply H_Asgn.
-  - Fail eapply H_Asgn.
+  - 
+
+
+    Fail eapply H_Asgn.
     (* We cannot apply this rule directly. We have to strengthen
        the precondition first *)
     eapply H_PreStrengthening.
     + apply H_Asgn.
     + intros st _.
       unfold assertion_sub.
-      simpl.
       unfold update_st. simpl.
       auto.
 Qed.
@@ -408,15 +415,18 @@ Proof.
   apply H_If.
   - eapply H_PreStrengthening.
     + apply H_Asgn.
+      
+    + unfold assert_and, TRUE,
+        assert_implies, assertion_sub, update_st. simpl.
 
-    + unfold assert_and, TRUE, assert_implies, assertion_sub, update_st. simpl.
-
-      intros st [_ Heqb]. apply Compare_dec.leb_complete in Heqb.
+      intros st [_ Heqb].
+      apply Compare_dec.leb_complete
+        in Heqb.
       lia.
 
   - eapply H_PreStrengthening.
     + apply H_Asgn.
-
+      
     + unfold assert_and, FALSE, TRUE, assert_implies, assertion_sub, update_st. simpl.
 
       intros st [_ Heqb]. apply Compare_dec.leb_complete_conv in Heqb.
@@ -438,9 +448,9 @@ Proof.
     + apply H_Asgn.
     + intros st [H1 H2].
       unfold assertion_sub.
-      simpl.
       unfold update_st. simpl.
-      subst. split; lia.
+      subst.
+      split; lia.
 Qed.
 
 (** *** Automation *)
@@ -535,7 +545,6 @@ Proof.
   (* the [debug] tactical tells us exactly what [eauto] did. *)
 Qed.
 
-
 Lemma swap_auto (a b : nat) :
   {{ fun st => st X = a /\ st Y = b }}
     <{ X := X + Y;
@@ -543,7 +552,7 @@ Lemma swap_auto (a b : nat) :
        X := X - Y }>
   {{ fun st => st Y = a /\ st X = b }}.
 Proof.
-  time eauto 7 with hoareDB.
+  eauto 7 with hoareDB.
   (* Tactic call ran for 3.435 secs (3.377u,0.055s) (success) *)
 Qed.
 
@@ -577,10 +586,11 @@ Print if_minus_plus_auto.
 Fixpoint fib (n : nat) : nat :=
   match n with
   | 0 => 0
-  | S n' => match n' with
-            | 0 => 1
-            | S n'' => fib n' + fib n''
-            end
+  | S n' =>    
+      match n' with
+      | 0 => 1
+      | S n'' => fib n' + fib n''
+      end
   end.
 
 Definition CURR := "curr".
@@ -616,6 +626,28 @@ Proof.
   intros n. unfold FIB_FAST.
   repeat eapply H_Seq.
   - apply H_Asgn.
+    (* - set (INV := fun st => *)
+    (*                 st CURR = fib (st X + 1) /\ *)
+    (*                   st PREV = fib (st X)). *)
+
+    (* eapply H_PostWeakening. *)
+    
+    (* + eapply H_While with (P := INV). *)
+    (*   { repeat eapply H_Seq. *)
+    (*     * apply H_Asgn. *)
+    (*     * apply H_Asgn. *)
+    (*     * apply H_Asgn. *)
+    (*     * eapply H_PreStrengthening. *)
+    (*       apply H_Asgn. *)
+
+    (*       unfold INV. unfold_all. simpl. *)
+    (*       intros st [[H1 H2] H3]. *)
+    (*       rewrite H1, H2. *)
+    (*       repeat *)
+    (*         rewrite PeanoNat.Nat.add_1_r. *)
+    (*       simpl. lia. *)
+    (*   } *)
+    
   - (* Loop invariant. Find an assertion that
         1. If it holds before the execution of the loop body,
            then it also holds after the execution of the loop body
@@ -685,19 +717,28 @@ Proof.
   unfold valid.
   intros P Q c Htriple.
   induction Htriple; intros st1 st2 Heval HP.
-  - inv Heval; auto.
+  - inv Heval. auto.
   - inv Heval. assumption.
-  - inv Heval. eauto.
+  - inv Heval. 
+    eapply IHHtriple1.
+    eassumption.
+    eapply IHHtriple2.
+    eassumption.
+    eassumption.
   - inv Heval.
     + (* binterp st1 b = true *)
-      eapply IHHtriple1; hoare_auto.
+      eapply IHHtriple1. eassumption.
+      hoare_auto.
     + (* binterp st1 b = false *)
       eapply IHHtriple2; hoare_auto.
-  - remember <{ while b do c }> as loop eqn:Heq.
+  - 
+ 
+    remember <{ while b do c }> as loop eqn:Heq.
+    
     induction Heval; try congruence; inv Heq.
     + (* E_WhileFalse *)
       split; eauto.
-    + (* E_WhileTrue *)
+    + (* E_WhileTrue *) clear IHHeval1. 
       apply IHHeval2. reflexivity.
       eapply IHHtriple; hoare_auto.
   - hoare_auto.
@@ -723,6 +764,7 @@ Qed.
 (** We can express such assertion in the following way: [wp c Q] holds
     for any state [st] for which the execution of [c] on [st] produces
     a state [st'] that satisfies [Q]. *)
+
 Definition wp (c:com) (Q:assertion) : assertion :=
   fun s => forall s', s =[ c ]=> s' -> Q s'.
 
@@ -930,7 +972,7 @@ Fixpoint wlp (ac : acom) (Q : assertion) : assertion :=
 
 Fixpoint vc (ac : acom) (Q : assertion) : Prop :=
   match ac with
-  | DCSkip => True
+  | DCSkip => True 
   | DCAsgn X a => True
   | DCSeq c1 c2 => vc c1 (wlp c2 Q) /\ vc c2 Q
   | DCIf b c1 c2 => vc c1 Q /\ vc c2 Q
@@ -944,9 +986,9 @@ Fixpoint vc (ac : acom) (Q : assertion) : Prop :=
     program [ac] hold, then the triple [{{ wlp ac Q }} erase ac {{ Q }}]
     is provable. *)
 Theorem wlp_sound:
-  forall (ac : acom) (Q : assertion),
-    vc ac Q ->
-    {{ wlp ac Q }} erase ac {{ Q }}.
+  forall (prog : acom) (Q : assertion),
+    vc prog Q ->
+    {{ wlp prog Q }} erase prog {{ Q }}.
 Proof.
   intros dc;
     induction dc as [ | x a | c1 IHda1 c2 IHac2
@@ -981,9 +1023,10 @@ Qed.
     the verification conditions hold. *)
 
 Corollary verify_triple :
-  forall (ac : acom) (P Q : assertion),
-    vc ac Q -> (P ->> wlp ac Q) ->
-    {{ P }} erase ac {{ Q }}.
+  forall (prog : acom) (P Q : assertion),
+    vc prog Q ->
+    (P ->> wlp prog Q) ->
+    {{ P }} erase prog {{ Q }}.
 Proof.
   intros ac P Q H1 H2.
   eapply H_PreStrengthening.
@@ -1004,7 +1047,9 @@ Definition FIB_FAST_ANNOT (n : nat) : acom :=
   <[ PREV := 0;
      CURR := 1;
      X := 0;
-     while (X <> n) {{ fun st => st CURR = fib (st X + 1) /\ st PREV = fib (st X) }} do
+     while (X <> n)
+       {{ fun st => st CURR = fib (st X + 1) /\
+                    st PREV = fib (st X) }} do
      { Y := CURR + PREV;
        PREV := CURR;
        CURR := Y;
@@ -1026,7 +1071,9 @@ Hint Extern 1 (_ /\ _)=> split : hoareDB.
     finishes execution, variable [RES] will hold the value [fib n]. *)
 Lemma fib_fast_correct' :
   forall n,
-    {{ fun _ => True }} erase (FIB_FAST_ANNOT n) {{ fun st => st RES = fib n }}.
+    {{ fun _ => True }}
+      erase (FIB_FAST_ANNOT n)
+    {{ fun st => st RES = fib n }}.
 Proof.
   intros n. apply verify_triple.
   - repeat split; hoare_auto.

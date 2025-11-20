@@ -6,14 +6,26 @@ method Swap(a: int , b: int) returns (x: int , y: int)
   y := a; 
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
 // Sort a tuple of three integers
 method Sort(a: int, b: int, c: int) returns (x: int, y: int, z: int) 
   ensures x <= y <= z && multiset{a, b, c} == multiset{x, y, z}
 {  
-  x, y, z := a, b, c;
-  if z < y { y, z := z, y; } 
-  if y < x { x, y := y, x; } 
-  if z < y { y, z := z, y; }
+    x, y, z := a, b, c;
+    if z < y { y, z := z, y; } 
+    if y < x { x, y := y, x; } 
+    if z < y { y, z := z, y; }
 }
 
 // Binary search

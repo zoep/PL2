@@ -16,15 +16,14 @@ ensures (b == fib(n)) // functional specification for the imperative Fibonacci c
   
   var a := 0;
   b := 1;
-  while i < n
+  while i != n
+    invariant (a == fib(i-1))
     invariant (b == fib(i))
-    invariant (a == fib(i - 1))
     invariant (i <= n)
   {
     a, b := b, a + b;
     i := i + 1;
   }
-
 }
 
 method Main()
@@ -32,3 +31,19 @@ method Main()
   var n := ComputeFib(11);
   print "fib(11) = ", n, "\n";
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // invariant (b == fib(i))
+    // invariant (a == fib(i - 1))
+    // invariant (i <= n)

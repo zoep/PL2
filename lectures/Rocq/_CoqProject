@@ -1,0 +1,8 @@
+-R . PL2
+notes_01_intro.v
+notes_02_logic.v
+notes_03_imp.v
+notes_04_compcorrect.v
+notes_05_hoare.v
+notes_06_lambda.v
+notes_07_types.v
