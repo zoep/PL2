@@ -67,6 +67,9 @@ Require Import Coq.Strings.String Coq.Init.Nat Lia.
 >>
 *)
 
+
+
+
 (** ** Natural Numbers *)
 
 (** - Type: [Nat]
@@ -236,6 +239,7 @@ Require Import Coq.Strings.String Coq.Init.Nat Lia.
 - Dynamic semantics:
 <<
 
+
           value v1    value v2
       ---------------------------(step_fst_v)
            (v1, v2).1 --> v1
@@ -267,6 +271,7 @@ Require Import Coq.Strings.String Coq.Init.Nat Lia.
         (v1, e2) --> (v1, e2')
 >>
 *)
+
 
 (** ** Sum Type *)
 
@@ -309,6 +314,8 @@ Require Import Coq.Strings.String Coq.Init.Nat Lia.
 
 - Dynamic semantics:
 <<
+
+
                                   value v
       --------------------------------------------------------------------(step_case_inl)
         case inl v of | inl y1 => e1 | inr y2 => e2  --> [y1 := v]e1
@@ -422,7 +429,6 @@ Inductive term : Type :=
 | T_Inr : type -> term -> term
 | T_Case : term -> string -> term -> string -> term -> term
 .
-
 
 (** As usual, we define familiar syntax for terms of the object
     language. Terms of the object language are written inside
