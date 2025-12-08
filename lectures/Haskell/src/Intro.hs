@@ -341,7 +341,10 @@ Laziness
 Haskell is a lazy language. It has call-by-need semantics and arguments to
 functions are evaluated at most once, and only when its needed. 
 
-In Haskell, it is easy to define Short-circuit operators, wh. 
+In Haskell, it is easy to define short-circuit operators, that only evaluate their
+second argument, unless it's value is needed. 
+
+For example:
 -}
 
 and' :: Bool -> Bool -> Bool
@@ -384,38 +387,45 @@ fst' (x, _) = x
 -- >>> fst' ((\x -> x) ((42, 11), (undefined, error "unreachable")))
 -- (42,11)
 
--- In Haskell, an expression whose value has not been explicitly needed yet
--- is represented by a thunk. A thunk is a heap-allocated data structure that
--- represents a suspended computation. Once evaluated, the thunk's value is
--- memoized, so subsequent uses don’t recompute it. 
+-- In Haskell, an expression whose value has not yet been needed is represented
+-- by a *thunk*. A thunk is a heap-allocated structure that stores a suspended
+-- computation. Once the computation is evaluated, its result is memoized so that
+-- subsequent uses do not recompute it.
 
--- The evaluation of a thunk is _forced_ when the value of the expression is
--- needed. This commonly happens when the expression is pattern-matched against
--- a constructor and the outmost constructor of the expression needs to be
--- known. Then the thunk is evaluated to what is called _weak-head normal form_:
--- an expression whose outermost is not a redex. 
+-- A thunk is *forced* when the value of the expression is required. This most
+-- commonly happens during pattern matching, when the program needs to know the
+-- outermost constructor of a value. Forcing a thunk evaluates it to *weak-head
+-- normal form* (WHNF): an expression whose outermost form is not a redex.
 
--- A value in weak-head normal form (WHNF) is either:
--- - A fully evaluated value of a primitive type (Int, Char, etc.)
--- - A constructed value of an algebraic data type that consists of a
---   constructor applied to potentially unevaluated arguments.Applicative
+-- A value is in weak-head normal form if it is either:
+--   • A fully evaluated primitive value (Int, Char, etc.)
+--   • A constructed value of an algebraic data type whose outer constructor is
+--     known, even if its fields are still thunks
 
--- For example (1+2, 3+4) is in WHNF, but (fst ((1,2),3)) is
--- not.
+-- For example, the pair (1+2, 3+4) is in WHNF, because its outermost form is a
+-- pair constructor. In contrast, fst ((1,2),3) is not in WHNF, because the
+-- outermost form is still an application that must be reduced.
 
--- The point of WHNF is that the arguments of constructed values will not be
--- evaluated unless their value is also forced. When only the outermost
--- constructor is needed for computation then the arguments of the constructor
--- will remain thunks.
+-- WHNF matters because the arguments of a constructor are not evaluated unless
+-- their values are also demanded. If the program only needs the constructor
+-- itself, its fields remain thunks.
 
--- In order to express sharing of thunks, and avoid duplicate compulation,
--- expressions are internally represented using graphs instead of trees.  
+-- To support sharing and avoid recomputation, Haskell represents expressions
+-- internally as graphs rather than trees. This ensures that evaluating a shared
+-- thunk updates all references to it.
 
--- Laziness has the benefit that avoids unnecessary computations by only
--- evaluating exactly what is needed. It also enables working with infinite data
--- structures like streams. However, it can lead to inefficiencies as thunk can
--- accumulate memory and create memory leaks (we explain this later with an
--- example). 
+-- Laziness brings significant benefits: it avoids unnecessary computation by
+-- evaluating only what is required, and it enables working with infinite data
+-- structures such as streams. However, laziness can also introduce performance
+-- pitfalls: unevaluated thunks may accumulate and consume memory, leading to
+-- space leaks (we will illustrate this later with an example).
+
+-- Laziness  avoids unnecessary computation by evaluating only what is required,
+-- and it enables working with infinite data structures such as streams.
+-- However, laziness can also introduce performance pitfalls: unevaluated thunks
+-- may accumulate and consume memory, leading to space leaks (we will illustrate
+-- this later with an example). 
+
 
 -- Sometimes, it is useful to control evaluation with one of the following operations.
 
@@ -512,18 +522,21 @@ range x = x : range (x + 1)
 -- application. It is a convenient way to avoid parentheses around the last
 -- argument of an application.
 
--- Manipulating list in Haskell with higher-order functions is a very common
--- programming pattern. Doing so with point-free notation is a quite common
--- idiom that can result in concise and elegant code (but sometimes difficult to
--- understand)
+-- Manipulating lists in Haskell using higher-order functions is a very common
+-- programming pattern. Doing so in a point-free style is also a common idiom:
+-- it can lead to concise and elegant code, though sometimes at the cost of
+-- readability.
 
-mapExample :: [Integer] -> [Bool]
-mapExample = map (even . (+1))
+mapExample :: [Integer] -> [Integer]
+mapExample = map ((+1) . abs)
 
 
--- >>> mapExample [1..4]
--- [True,False,True,False]
+-- >>> mapExample [-4..4]
+-- [5,4,3,2,1,2,3,4,5]
 
+-- Let's now look at three functions that compute the same result (the sum of an
+-- integer list) but are asymptotically different in their space consumption
+-- behavior, because of thunk creation.
 
 sum1 :: [Integer] -> Integer
 sum1 = foldr (+) 0
@@ -741,38 +754,40 @@ data Tree a = Leaf | Node a (Tree a) (Tree a)
 
 {-
 
-Interacting with the World with IO
-----------------------------------
+Interacting with the World using IO
+-----------------------------------
 
-The IO monad is a mechanism for handling side effects in Haskell while
-preserving its purity.  Any computation that interacts with the "outside world"
-by performing input and output operations must be inside of an IO type. That is,
-the IO type separates impure actions (e.g., reading a file) from pure code.
+The IO monad is Haskell’s mechanism for handling side effects while preserving
+purity. Any computation that interacts with the “outside world” — such as
+reading input, writing output, or accessing files — must live inside the IO
+type. In this sense, IO separates impure actions (e.g., reading a file) from
+pure code.
 
 Examples of IO types:
 
-- IO String : An IO computation that, when executed, produces a String.
-- IO (): An IO computations that produces unit
+  - IO String : An IO computation that, when executed, produces a String.
+  - IO ()     : An IO computation that produces the unit value.
 
-IO computations can be sequenced inside a so-called "do block". Examples of its
-syntax are below. 
+IO computations are typically sequenced inside a *do block*. Examples of this
+syntax will appear below.
 
-Note: The IO type and its syntax are instances of a more general pattern called
+Note: IO and do-notation are instances of a more general abstraction called
 monads. We will learn more about monads in the next lecture.
 
 Some common IO actions:
 
--- Prints a string with a newline. 
-putStrLn :: String -> IO () 
+-- Prints a string followed by a newline.
+putStrLn :: String -> IO ()
 
--- Reads a line of input 
-getLine :: IO String 
+-- Reads a line of input.
+getLine :: IO String
 
--- Reads the contents of a file 
-readFile :: FilePath -> IO String 
+-- Reads the contents of a file.
+readFile :: FilePath -> IO String
 
--- Writes a string to a file 
+-- Writes a string to a file.
 writeFile :: FilePath -> String -> IO ()
+
 -}
 
 
@@ -852,7 +867,7 @@ query2Dbg = do
 
 qsortDbg :: (Ord a, Show a) => [a] -> [a] -- What is Ord?
 qsortDbg [] = []
-qsortDbg (p:xs) = lt ++ [p] ++ ge
+qsortDbg (p:xs) = trace "Pivot:" $ traceShow p $ lt ++ [p] ++ ge
   where 
     lt = qsortDbg [x | x <- xs, x < p]
     ge = qsortDbg [x | x <- xs, x >= p]
