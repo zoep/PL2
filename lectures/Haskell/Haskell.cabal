@@ -20,6 +20,7 @@ library
     exposed-modules:
         Main
         Intro
+        SymbDiff
         Typeclasses
         QuickCheck
     -- other-modules:
