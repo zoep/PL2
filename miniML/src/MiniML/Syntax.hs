@@ -105,7 +105,9 @@ instance Eq Exp where
     Asgn _ e1 e2         == Asgn _ e1' e2'            = e1 == e1' && e2 == e2'
     Deref _ e1           == Deref _ e1'               = e1 == e1'
     Ref _ e1             == Ref _ e1'                 = e1 == e1'
+    Prim _ s e1          == Prim _ s' e1'             = s == s' && e1 == e1'
     _                    == _                         = False
+
 
 
 nowhere :: Posn
@@ -161,7 +163,7 @@ occursFree x (LetRec _ f y _ _ e1 e2) = (occursFree x e1 && x /= f && x /= y) ||
 occursFree x (Abs _ y _ e) = occursFree x e && x /= y
 occursFree x (ITE _ e1 e2 e3) = occursFree x e1 || occursFree x e2 || occursFree x e3
 occursFree x (Case _ e z e1 y e2) = occursFree x e || (occursFree x e1  && x /= z) || (occursFree x e2  && x /= y)
-occursFree _ Prim{} = False
+occursFree x (Prim _ _ e) = occursFree x e
 
 -- Get the list of free variables in an expression excluding the bound variables
 -- that are passed as the second argument (as a set for efficiency). You may
@@ -192,7 +194,7 @@ freeVars expr b = nub $ freeVarsAux expr b []
     freeVarsAux (Abs _ y _ e) bound aux = freeVarsAux e (S.insert y bound) aux
     freeVarsAux (ITE _ e1 e2 e3) bound aux = freeVarsAux e1 bound (freeVarsAux e2 bound (freeVarsAux e3 bound aux))
     freeVarsAux (Case _ e z e1 y e2) bound aux = freeVarsAux e bound (freeVarsAux e1 (S.insert z bound) (freeVarsAux e2 (S.insert y bound) aux))
-    freeVarsAux Prim{} _ aux = aux
+    freeVarsAux (Prim _ _ e) bound aux = freeVarsAux e bound aux
 
 -- Values. The result of evaluation.
 type Loc = Integer

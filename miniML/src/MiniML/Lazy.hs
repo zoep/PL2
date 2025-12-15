@@ -11,7 +11,6 @@ implementLazy (Prim p "lazy" e) = error "TODO!"
 implementLazy (Prim p "force" e) = error "TODO!"
 implementLazy _ = error "TODO!"
 
-
 {- Question1:  How would you define a stream (lazy list)?
 Answer: 
 

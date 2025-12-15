@@ -2,9 +2,7 @@ module Main (main) where
 
 import Test.Tasty
 import Test.Tasty.QuickCheck
-import Control.Monad.State
 
-import Data.Map as M
 import MiniML
 import Gen
 import Debug.Trace (trace)

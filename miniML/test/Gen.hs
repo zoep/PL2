@@ -61,8 +61,8 @@ genExpSize s = case s of
                    , (1, liftM2 (Asgn nowhere) genExpS genExpS)
                    , (1, liftM  (Deref nowhere) genExpS)
                    , (1, liftM  (Ref nowhere) genExpS)
-                   , (1, liftM2 (Prim nowhere "lazy") genExpS)
-                   , (1, liftM2 (Prim nowhere "force") genExpS)
+                   , (1, liftM (Prim nowhere "lazy") genExpS)
+                   , (1, liftM (Prim nowhere "force") genExpS)
                    ]
   where
     genExpS = genExpSize (s-1)

@@ -216,7 +216,7 @@ prettyExp _ e = case e of
   Deref _ e1      -> pretty "!" <> prettyExp lvl e1
   -- nil and cons
   Nil _ Nothing   -> pretty "nil"
-  Nil _ (Just ty) -> pretty "nil(" <+> prettyType 0 ty <> pretty ")"
+  Nil _ (Just ty) -> pretty "nil[" <+> prettyType 0 ty <> pretty "]"
   Cons _ e1 e2    -> prettyOp2Right prettyExp (levelOfExp e) "::" e1 e2
   -- application
   App _ e1 e2     -> nest 2 . sep $ [prettyExp lvl e1, prettyExp (lvl+1) e2]
@@ -225,8 +225,8 @@ prettyExp _ e = case e of
   Proj _ 0 e1     -> prettyOp1 prettyExp lvl "fst" e1
   Proj _ 1 e1     -> prettyOp1 prettyExp lvl "snd" e1
   Proj _ i e1     -> prettyOp1 prettyExp lvl ("#" <> show i) e1
-  Inl _ (Just t) e1      -> pretty "inl(" <> prettyType 0 t <> pretty ")" <+> prettyExp lvl e1
-  Inr _ (Just t) e1      -> pretty "inr(" <> prettyType 0 t <> pretty ")" <+> prettyExp lvl e1
+  Inl _ (Just t) e1      -> pretty "inl[" <> prettyType 0 t <> pretty "]" <+> prettyExp lvl e1
+  Inr _ (Just t) e1      -> pretty "inr[" <> prettyType 0 t <> pretty "]" <+> prettyExp lvl e1
   Inl _ Nothing e1      -> pretty "inl" <+> prettyExp lvl e1  
   Inr _ Nothing e1      -> pretty "inr"<+> prettyExp lvl e1  
   -- left assoc binary ops
