@@ -164,7 +164,7 @@ sortedProp f = isSorted . f
 ghci> quickCheck $ sortedProp insertionSort
 +++ OK, passed 100 tests.
 
-That's good. But also, a trivial wrong implementation that always the empty list satisfies this spec.
+That's good. But also, a trivial implementation that always returns the empty list satisfies this spec.
 
 ghci> quickCheck $ sortedProp (\_ -> [])
 -- ... complains about some types ...
@@ -184,7 +184,7 @@ ghci> quickCheck $ lengthProp insertionSort
 That's better but we can still find a wrong implementation that passes all of this tests.
 
 
-ghci> quickCheck $ sortedProp (\xs -> repeat 1 (length xs))
+ghci> quickCheck $ sortedProp (\xs -> replicate (length xs) 1)
 
 -}
 
@@ -244,7 +244,7 @@ insertPreservesSorted x xs = isSorted xs ==> isSorted (insert x xs)
 
 Let's see what happens.
 
-ghci> quickCheck $ insertPreservesSorted
+ghci> quickCheck insertPreservesSorted
 *** Gave up! Passed only 63 tests; 1000 discarded tests.
 
 QuickCheck reports that 63 tests passed but the rest were discarded. We can try
@@ -261,15 +261,15 @@ quickCheckN n = quickCheck . withMaxSuccess n
 
 {-
 
-We configure ghci to also output timing and memory info after the evaluation of every expression.
+We configure ghci to also output timing and memory info after the evaluation of
+every expression.
 
 ghci> :set +s
 
 Then we test the property.
 
-ghci> quickCheckN 100000 $ insertPreservesSorted
-*** Gave up! Passed only 55173 tests; 1000000 discarded tests.
-(13.83 secs, 17,899,048,256 bytes)
+ghci> quickCheckN 100000 $ insertPreservesSorted *** Gave up! Passed only 55173
+tests; 1000000 discarded tests. (13.83 secs, 17,899,048,256 bytes)
 
 This is somewhat better than above, but still very inefficient. It takes almost
 14 seconds and tests only the ~5% of the generated tests.
@@ -283,7 +283,9 @@ increases.
 QuickCheck lets us peek at the distribution of various properties of test cases
 by providing a combinator called collect.
 
--- Collect will gather all values that are being passed to it and will print out a histogram of the distribution of the values.
+Collect will gather all values that are being passed to it and will print out
+a histogram of the distribution of the values. 
+
 collect :: (Show a, Testable prop) => a -> prop -> Property collect
 
 By using collect, we can group test cases based on a specific property (e.g.,
@@ -296,7 +298,7 @@ ensures that critical edge cases are adequately represented.
 insertPreservesSorted':: Integer -> [Integer] -> Property
 insertPreservesSorted' x xs = isSorted xs ==> collect (length xs) $ isSorted (insert x xs)
 
-{-
+{-`
 
 ghci> quickCheckN 100000 $ insertPreservesSorted'
 ghci> quickCheckN 100000 $ insertPreservesSorted'
@@ -385,14 +387,14 @@ the size of the generated elements.
 
 When running tests, QC will use increasingly larger size parameters.
 
-In practice, it is vert common to write a generator that generates
-elements of or up to a given size parameter and then use the combinator [sized]
-internalize the size parameter.
+In practice, it is very common to write a generator that generates elements of
+or up to a given size parameter, by recursion on the size, and then use the
+combinator [sized] internalize the size parameter.
 
--- Used to construct generators that depend on the size parameter.
+Using sized, we can write a primitive generator for list of a given type a:
+
+-- Used to construct generators that depend on the size parameter. 
 sized :: (Int -> Gen a) -> Gen a
-
-Using sized, we can write a primitive generator for list of a given type a.
 
 -}
 

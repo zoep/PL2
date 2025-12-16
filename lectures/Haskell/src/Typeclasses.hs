@@ -7,6 +7,7 @@ import qualified Data.Map as M
 import Control.Monad hiding (fail)
 import Control.Monad.Trans
 import Debug.Trace
+import Test.QuickCheck.Monadic (run)
 
 {-
 
@@ -22,6 +23,7 @@ add :: Num a => a -> a -> a
 add = (+)
 
 {-
+
 The above type tells us that add works for any type `a`, as long as this type
 implements the [Num] type class.
 
@@ -69,7 +71,7 @@ data Tree a = Leaf | Node a (Tree a) (Tree a)
 -- type a must implement Eq
 
 instance Eq a => Eq (Tree a) where
-    (==) :: Eq a => Tree a -> Tree a -> Bool
+    (==) :: Tree a -> Tree a -> Bool
     Leaf          == Leaf             = True
     Node a1 t1 t2 == Node a1' t1' t2' = a1 == a1' && t1 == t1' && t2 == t2'
     _             == _                = False
@@ -80,13 +82,17 @@ tree1 = Node 42 (Node 17 Leaf Leaf) Leaf
 tree2 :: Tree Int
 tree2 = Node 17 (Node 11 Leaf Leaf) Leaf
 
+
+-- >>> (42 ==) <$> tree1
+-- Node True (Node False Leaf Leaf) Leaf
+
 --- >>> tree1 == tree2
 -- False
 
 --- >>> tree1 == tree1
 -- True
 
--- Haskell lets us use the keyword deriving to automatically derive some
+-- Haskell lets us use the keyword `deriving` to automatically derive some
 -- instances. In Haskell 98, the only derivable classes are Eq, Ord, Enum, Ix,
 -- Bounded, Read, and Show. Various language extensions extend this list.
 
@@ -116,35 +122,39 @@ tree2' = Node' 17 (Node' 11 Leaf' Leaf') Leaf'
 -- -- These derived instances might not always be the desired ones.
 
 -- For example, consider the following simple AST that contains information
--- about the position of the node in the source code. When we compare
--- expressions, we would like to ignore this.
+-- about the source code position of each node in the source AST. When we
+-- compare expressions, we would like to ignore this.
+
 
 -- The source code position
-type Posn = (Int,Int) -- a type synonym
+type Posn = (Int,Int) -- [type] declares a type synonym
 
-data Exp = Var Posn String
-         | App Posn Exp Exp
-         | Abs Posn String Exp
-         | Num Posn Int
+data Exp = Num Posn Int
          | Add Posn Exp Exp
+         | Sub Posn Exp Exp
+         | Mul Posn Exp Exp
+         | Div Posn Exp Exp
    deriving Show
+
+-- If we derive the Eq instance, it will compare the positions as well.
+-- Instead, we can provide our own instance that ignores the positions.
 
 instance Eq Exp where
     (==) :: Exp -> Exp -> Bool
-    Var _ x     == Var _ x'      = x == x'
-    App _ e1 e2 == App _ e1' e2' = e1 == e1' && e2 == e2'
-    Abs _ x e   == Abs _ x' e'   = x == x' && e == e'
     Num _ n     == Num _ n'      = n == n'
     Add _ e1 e2 == Add _ e1' e2' = e1 == e1' && e2 == e2'
+    Sub _ e1 e2 == Sub _ e1' e2' = e1 == e1' && e2 == e2'
+    Mul _ e1 e2 == Mul _ e1' e2' = e1 == e1' && e2 == e2'
+    Div _ e1 e2 == Div _ e1' e2' = e1 == e1' && e2 == e2
     _ == _ = False
 
 -- >>> (Add (0,2) (Num (0,0) 3) (Num (0,4) 4)) == (Add (1,2) (Num (1,0) 3) (Num (1,4) 4))
--- True
+-- False
 
 -- Another common typeclass is the Ord typeclass that provides comparison
--- functions.
+-- operations.
 
--- Using Ord we can write a generic quicksort function
+-- Using Ord we can write a generic quicksort functionz
 
 qsort :: Ord a => [a] -> [a] -- What is Ord?
 qsort [] = []
@@ -165,40 +175,112 @@ To summarize, we've seen four very standard type classes in Haskell:
 Next, we will move to another very common Haskell type class: Monads.
 -}
 
+
+{- Functors -}
+
+{- A Functor is a type class that represents types that can be mapped over.
+   The functor type class is defined as follows:
+
+class Functor f where
+    fmap :: (a -> b) -> f a -> f b
+
+   The type constructor f must take one type argument. The fmap function
+   takes a function from a to b, and a value of type f a, and returns a value
+   of type f b, by applying the function inside the structure f.
+
+   For example, the List type constructor is an instance of Functor:
+
+instance Functor [] where
+    fmap :: (a -> b) -> [a] -> [b]
+    fmap _ []     = []
+    fmap f (x:xs) = f x : fmap f xs
+
+
+Functors must satisfy the following laws:
+
+fmap id = id
+
+fmap (g . h) = fmap g . fmap h
+
+These ensure that fmap preserves the structure of the functor and the only thing that 
+fmap does is to apply the function to the elements inside the structure.
+
+-} 
+
+-- We can write a Functor instance for our Tree type:
+instance Functor Tree' where
+  fmap :: (a -> b) -> Tree' a -> Tree' b
+  fmap _ Leaf'         = Leaf'
+  fmap f (Node' a l r) = Node' (f a) (fmap f l) (fmap f r)
+
+
+-- >>> fmap (*2) tree1'
+-- Node' 84 (Node' 34 Leaf' Leaf') Leaf'
+
 {-
 
 Monads
 ------
 
-Monads can be seen as a generic interface to various types of computations.
+Monads are a very important type class in Haskell and functional programming in
+general. They provide a way to sequence computation that take place inside the
+context of a type constructor m. 
 
-This interface can be used to simulate an imperative programming style in purely
-functional languages by hiding a lot of . This makes it easier to write code
-that manipulates state, throws errors, models nondeterminism, etc.
+A monad is more powerful than a functor, as it provides not only a way to map
+functions over values inside the context, but also a way to sequence
+computations that produce values inside the context.
 
-Monads can also be used to encapsulate truly impure code and keep it
-separate from the pure language fragment (like the IO monad).
+Monads can be seen as programmable semicolons, that let us define how to
+sequence computations. Thus, monads 
 
-The interface that must be implemented by a monad is the following.
 
-class Monad (m :: Type -> Type) where
-  -- encapsulate a pure computation in a monadic one
-  return :: a -> m a
-  -- sequence two monadic computations
+The interface of a monad can be used to simulate an imperative programming style
+in purely functional languages by hiding a lot of boilerplate code under the
+hood (i.e., the monadic interface).
+
+Thus, it is easier to write code that manipulates state, throws errors, models
+nondeterminism, etc.
+
+Monads can also be used to encapsulate truly impure code and keep it separate
+from the pure language fragment (like the IO monad). 
+
+The interface defined by a monad is the following.
+
+class Monad (m :: Type -> Type) where 
+  -- encapsulate a pure computation in a monadic one 
+  return :: a -> m a 
+  -- sequence two monadic computations 
   (>>=)  :: m a -> (a -> m b) -> m b
 
-Note, that the monad is not parametric on a type, but a type operator. As we
-will see, this can be a List, a Maybe, or a "side-effect" type like IO.
 
 In addition to the interface, monads should satisfy the _monad laws_:
 
-return a >>= k = k a
-m >>= return = m
+-- left identity
+return a >>= k = k 
+
+-- right identity
+m >>= return = m 
+
+-- associativity
 m >>= (\x -> k x >>= h)  =  (m >>= k) >>= h
 
+The monad laws ensure that the sequencing of computations behaves in a canonical way: 
+
+- Left identity ensures that if we encapsulate a pure value and then
+  sequence it with a computation, it is the same as just running the computation
+  on the value, i.e., no extra effects are introduced by return or bind.
+
+- Right identity ensures that sequencing a computation with return does not
+  change the computation, ensuring again that return does not introduce any extra
+  effects.
+
+- Associativity ensures that the order of sequencing does not matter, i.e., we
+  can group computations in any way we like without changing the result.
+
+
 Note: As of 2017, Haskell require every Monad to also be an Applicative
-instance, and every Applicative to also have a Functor instance. So in
-the code below, we also provide these instances.
+instance, and every Applicative to also have a Functor instance. So in the code
+below, we also provide these instances.
 
 -}
 
@@ -209,7 +291,7 @@ the code below, we also provide these instances.
 
 instance Monad Maybe where
    return      :: a -> Maybe a
-   return         =  Just
+   return      =  Just
 
    (>>=)       :: Maybe a -> (a -> Maybe b) -> Maybe b
    Nothing  >>= _ =  Nothing
@@ -224,46 +306,39 @@ fail = Nothing
 -- We can use the Maybe monad to avoid boilerplate code when writing recursive
 -- functions that return optional types.
 
--- For example we can write an interpreter for lambda calculus, which is a
--- partial function, without having to explicitly match the result to get it out
--- of the Maybe type. We can simply use monadic bind to do this.
+-- For example we can write an interpreter for a simple arithmetic language with
+-- runtime errors (e.g., division by zero) without having to check for errors at
+-- each step. The monadic bind operator will take care of propagating errors for us.
 
-subst :: String -> Exp -> Exp -> Exp
-subst x t' t@(Var _ y)    = if x == y then t' else t
-subst x t' t@(Abs p y t1) = if x == y then t else Abs p y (subst x t' t1)
-subst x t' (App p t1 t2)  = App p (subst x t' t1) (subst x t' t2)
-subst _ _ t@(Num _ _)     = t
-subst x t' (Add p t1 t2)  = Add p (subst x t' t1) (subst x t' t2)
 
-psn :: Posn
-psn = (0,0)
-
-exp1 :: Exp
-exp1 = subst "x" (Abs psn "z" (Var psn "z")) (App psn (Var psn "x") (Add psn (Num psn 1) (Num psn 2)))
-
--- >>> exp1
--- App (0,0) (Abs (0,0) "z" (Var (0,0) "z")) (Add (0,0) (Num (0,0) 1) (Num (0,0) 2))
-
-eval :: Exp -> Maybe Exp
-eval (Var _ _) = fail
-eval (Abs p x t) = return (Abs p x t)
-eval (App _ t1 t2) =
-  eval t1 >>= (\v ->
-    case v of
-      Abs _ x t ->
-        eval t2 >>= (\v2 ->
-        eval (subst x v2 t))
-      _ -> fail)
-eval (Num p n) = return (Num p n)
+eval :: Exp -> Maybe Int
+eval (Num p n) = return n
 eval (Add p t1 t2) =
   eval t1 >>= (\v1 ->
   eval t2 >>= (\v2 ->
-  case (v1, v2) of
-    (Num _ n1, Num _ n2) -> return $ Num p (n1 + n2)
-    _ -> Nothing))
+  return $ v1 + v2))
+eval (Sub p t1 t2) =
+  eval t1 >>= (\v1 ->
+  eval t2 >>= (\v2 ->
+  return $ v1 - v2))
+eval (Mul p t1 t2) =
+  eval t1 >>= (\v1 ->
+  eval t2 >>= (\v2 ->
+  return $ v1 * v2))
+eval (Div p t1 t2) =
+  eval t1 >>= (\v1 ->
+  eval t2 >>= (\v2 ->
+    if v2 == 0 then fail
+    else return $ v1 `div` v2))
+
+
+exp1 :: Exp
+exp1 = Mul (0,0) (Num (0,0) 6) (Add (0,0) (Num (0,0) 4) (Num (0,0) 3))
+
 
 -- >>> eval exp1
--- Just (Num (0,0) 3)
+-- Just 42
+
 
 {--
 
@@ -277,36 +352,45 @@ A monadic bind operation
 
 m >>= \x -> m'
 
-in do notation becomes
+can be written with do notation as:
 
-x <- m;
-m'
+do
+  x <- m;
+  m'
 
 This notation, which resembles an imperative program, must be written inside a
 do block. The following example demonstrates this.
+
 -}
 
 
 -- eval with do notation
 
-eval' :: Exp -> Maybe Exp
-eval' (Var _ _) = fail
-eval' (Abs p x t) = return (Abs p x t)
-eval' (App _ t1 t2) = do
-  v <- eval' t1;
-  case v of
-    Abs _ x t -> do
-      v2 <- eval' t2;
-      eval (subst x v2 t)
-    _ -> fail
-eval' (Num p n) = return (Num p n)
-eval' (Add p t1 t2) = do
-  v1 <- eval' t1;
-  v2 <- eval' t2;
-  case (v1, v2) of
-    (Num _ n1, Num _ n2) -> return $ Num p (n1 + n2)
-    _ -> fail
+eval' :: Exp -> Maybe Int
+eval' (Num _ n) = return n
+eval' (Add _ t1 t2) = do
+  v1 <- eval' t1
+  v2 <- eval' t2
+  return $ v1 + v2
+eval' (Sub _ t1 t2) = do
+  v1 <- eval' t1
+  v2 <- eval' t2
+  return $ v1 - v2
+eval' (Mul _ t1 t2) = do
+  v1 <- eval' t1
+  v2 <- eval' t2
+  return $ v1 * v2
+eval' (Div _ t1 t2) = do
+  v1 <- eval' t1
+  v2 <- eval' t2
+  if v2 == 0 then fail
+  else return $ v1 `div` v2
 
+-- >>> eval' exp1
+-- Just 42
+
+-- >>> eval' (Div (0,0) (Num (0,0) 1) (Num (0,0) 0))
+-- Nothing
 
 
 {-
@@ -333,6 +417,19 @@ liftM2 :: Monad m => (a1 -> a2 -> r) -> m a1 -> m a2 -> m r
 You can find more monadic combinators here: https://hackage.haskell.org/package/base/docs/Control-Monad.html
 -}
 
+
+-- As an excercise, you can try to implement some of these combinators yourself.
+
+-- Here is the implementation of sequence (without using Traversable, just list):
+
+sequence' :: Monad m => [m a] -> m [a]
+sequence' [] = return []
+sequence' (m:ms) = do
+    as <- sequence' ms
+    a <- m
+    return $ a:as
+
+
 {-
 
 The Reader Monad
@@ -340,10 +437,9 @@ The Reader Monad
 
 The Reader monad (also called the Environment monad) encapsulates a computation
 that reads values from a shared environment. Essentially a Reader monad, is a
-function from the environment to the result type. The computation can ask for
-the value of the environment and execute subcomputations in a modified
+function from the type of environment to the result type. The computation can
+ask for the value of the environment and execute subcomputations in a modified
 environment.
-
 -}
 
 newtype Reader env a = Reader { runReader :: env -> a }
@@ -371,63 +467,60 @@ local :: (env -> env) -> Reader env a -> Reader env a
 local f (Reader m) = Reader (m . f)
 
 
--- For example, we can write the substitution function in a reader monad, to
--- avoid explicitly passing the variable and expression to be substituted.
-
-substR :: Exp -> Reader (String, Exp) Exp
-substR t@(Var _ y) = do
-   (x, t') <- ask
-   if x == y then return t' else return t
-substR t@(Abs p y t1) = do
-  (x, _) <- ask
-  if x == y then return t
-  else liftM (Abs p y) (substR t1)
-substR (App p t1 t2)  = liftM2 (App p) (substR t1) (substR t2)
-substR t@(Num _ _)    = return t
-substR (Add p t1 t2)  = liftM2 (Add p) (substR t1) (substR t2)
-
-
-subst' :: String -> Exp -> Exp -> Exp
-subst' x t' t = runReader (substR t) (x,t')
-
--- We can also write an environment based evaluator as a computation in a Reader
--- monad.
+-- For example, we can write an interepreter for a simple lambda calculus 
+-- with variables and function application using the Reader monad to model
+-- the environment.
 
 type Env = M.Map String Value
 
--- The type of values
-data Value = VClo Env String Exp | VNum Int
+data Value = VNum Integer
+           | VClo Env String Term
+  deriving (Show, Eq)
 
-evalEnv :: Exp -> Reader Env Value
-evalEnv (Var _ x) = do
+data Term = TVar Posn String
+          | TAbs Posn String Term
+          | TApp Posn Term Term
+          | TInt Posn Integer
+          | TAdd Posn Term Term
+  deriving (Show, Eq)
+
+
+evalTerm :: Term -> Reader Env Value
+evalTerm (TVar _ x) = do
   env <- ask
   case M.lookup x env of
-    Just v -> return v
-    _ -> error "Unbound variable"
-evalEnv (Abs _ x t) = do
+    Just v  -> return v
+    Nothing -> error $ "Unbound variable: " ++ x
+evalTerm (TAbs _ x t) = do
   env <- ask
   return (VClo env x t)
-evalEnv (App _ t1 t2) = do
-  v <- evalEnv t1;
+evalTerm (TApp _ t1 t2) = do
+  v <- evalTerm t1
   case v of
     VClo cenv x t -> do
-      v2 <- evalEnv t2;
-       -- evaluate t in the closure environment update with the argument value
-      local (\_ -> M.insert x v2 cenv) (evalEnv t)
-    _ -> error "Value must be a closure"
-evalEnv (Num _ n) = return $ VNum n
-evalEnv (Add _ t1 t2) = do
-  v1 <- evalEnv t1;
-  v2 <- evalEnv t2;
+      v2 <- local (\_ -> cenv) (evalTerm t2)
+      local (M.insert x v2) (evalTerm t)
+    _ -> error "Trying to apply a non-function"
+evalTerm (TInt _ n) = return $ VNum n
+evalTerm (TAdd _ t1 t2) = do
+  v1 <- evalTerm t1
+  v2 <- evalTerm t2
   case (v1, v2) of
     (VNum n1, VNum n2) -> return $ VNum (n1 + n2)
-    _ -> error "Values must be numbers"
+    _ -> error "Trying to add non-numbers"
 
 
--- >>> subst' "x" (Abs psn "z" (Var psn "z")) (App psn (Var psn "x") (Add psn (Num psn 1) (Num psn 2)))
--- App (0,0) (Abs (0,0) "z" (Var (0,0) "z")) (Add (0,0) (Num (0,0) 1) (Num (0,0) 2))
+term :: Term
+term = TApp (0,0)
+         (TAbs (0,0) "x"
+           (TAdd (0,0)
+             (TVar (0,0) "x")
+             (TInt (0,0) 1)))
+         (TInt (0,0) 41)    
 
 
+-- >>> runReader (evalTerm term) M.empty
+-- VNum 42
 
 {-
 
@@ -457,6 +550,8 @@ instance Monad (State state) where
   (>>=) :: State state a -> (a -> State state b) -> State state b
   x >>= f = State $ \s -> let (s', x') = runState x s in runState (f x') s'
 
+-- Monadic actions specific to the State monad
+
 get :: State state state
 get = State (\s -> (s,s))
 
@@ -467,6 +562,30 @@ put s = State (\_ -> (s,()))
 -- Example: Fibonacci as a stateful function, various versions
 
 type FibState = State (Integer, Integer) ()
+
+
+fibSt :: Integer -> FibState
+fibSt n =
+  forM_ [1..n] (\_ -> do
+    (prev, curr) <- get
+    put (curr, prev+curr))
+    
+fibN :: Integer -> Integer
+fibN n = case fibSt n of
+  State fibst -> 
+    let ((prev, curr), _) = fibst (0,1) in
+    prev
+
+-- >>> fibN 8
+-- 21
+
+
+mapM' :: Monad m => (a -> m b) -> [a] -> m [b]
+mapM' _ [] = return []
+mapM' f (x:xs) = do
+    y <- f x    
+    ys <- mapM' f xs
+    return $ y:ys
 
 
 fibState :: Integer -> FibState
@@ -513,12 +632,60 @@ fibNFor n = snd . flip runState (0,1) $ do
   (curr,_) <- get
   return curr
 
+
+-- Stack based evaluator for arithmetic expressions written in a state monad
+
+type StackSt =  State [Int] ()
+
+evalStackBop :: (Int -> Int -> Int) -> StackSt
+evalStackBop op = do
+    stack <- get
+    case stack of
+      (x:y:rest) -> put (x `op` y:rest)
+      _          -> error "Stack underflow"
+
+
+evalStack :: Exp -> StackSt
+evalStack (Num _ n) = do
+    stack <- get
+    put (n:stack)
+evalStack (Add _ t1 t2) = do
+    evalStack t1
+    evalStack t2
+    evalStackBop (+)
+evalStack (Sub _ t1 t2) = do
+    evalStack t1
+    evalStack t2
+    evalStackBop (+)
+evalStack (Mul _ t1 t2) = do
+    evalStack t1
+    evalStack t2
+    evalStackBop (*)
+evalStack (Div _ t1 t2) = do
+    evalStack t1
+    evalStack t2
+    evalStackBop div
+
+evalStackTop :: Exp -> Int
+evalStackTop exp = 
+  let (stack, _) = runState (evalStack exp) [] in
+  case stack of
+    (v:_) -> v
+    _     -> error "Empty stack after evaluation"
+
+
+-- >>> evalStackTop exp1    
+-- 42
+
+
 -- >>> fibNFor 9
 -- 34
 
+
+
 {- Monad Transformers -}
 
--- Often it is useful to combine two monads together. For example, in the
+-- Often, it is useful to combine two monads together. For example, in the
 -- environment based interpreter we might want to use a Maybe monad inside the
 -- state in order to do error handling.
 
@@ -636,27 +803,27 @@ instance MonadTrans MaybeT where
 
 type Eval = ReaderT Env Maybe
 
-evalEnv' :: Exp -> Eval Value
-evalEnv' (Var _ x) = do
+evalTerm' :: Term -> Eval Value
+evalTerm' (TVar _ x) = do
   env <- askT
   case M.lookup x env of
     Just v -> return v
     _ -> lift fail
-evalEnv' (Abs _ x t) = do
+evalTerm' (TAbs _ x t) = do
   env <- askT
   return (VClo env x t)
-evalEnv' (App _ t1 t2) = do
-  v <- evalEnv' t1;
+evalTerm' (TApp _ t1 t2) = do
+  v <- evalTerm' t1;
   case v of
     VClo cenv x t -> do
-      v2 <- evalEnv' t2;
+      v2 <- evalTerm' t2;
        -- evaluate t in the closure environment update with the argument value
-      localT (\_ -> M.insert x v2 cenv) (evalEnv' t)
+      localT (\_ -> M.insert x v2 cenv) (evalTerm' t)
     _ -> lift fail
-evalEnv' (Num _ n) = return $ VNum n
-evalEnv' (Add _ t1 t2) = do
-  v1 <- evalEnv' t1;
-  v2 <- evalEnv' t2;
+evalTerm' (TInt _ n) = return $ VNum n
+evalTerm' (TAdd _ t1 t2) = do
+  v1 <- evalTerm' t1;
+  v2 <- evalTerm' t2;
   case (v1, v2) of
     (VNum n1, VNum n2) -> return $ VNum (n1 + n2)
     _ -> lift fail

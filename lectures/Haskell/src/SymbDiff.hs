@@ -36,16 +36,19 @@ eval (Pow e1 n) env = eval e1 env ** fromIntegral n
 approxRoot :: Expr -> String -> Double -> [Double]
 approxRoot f var x = x:approxRoot f var next
   where
-    fx = eval [(var, x)] f
-    f'x = eval [(var, x)] (diff f var)
+    fx = eval f [(var, x)]
+    f'x = eval (diff f var) [(var, x)]
     next = x - fx / f'x
 
 
 sqroot :: Double -> Double
-sqroot y = head $ dropWhile cond (approx f "x" 1)
+sqroot y = head $ dropWhile cond (approxRoot f "x" 1)
   where
     cond x = abs (x * x - y) > 1e-12
     f = Sub (Pow (Var "x") 2) (Const y)
+
+-- sqroot 2
+
 
 
 
