@@ -3,11 +3,11 @@ module Intro where
 
 import Prelude hiding (elem)
 -- we can explicitly choose which functions to import from a module
-import Data.List (foldl', tails) 
+import Data.List (foldl', tails)
 
 import Debug.Trace -- Useful for debugging
 
-{- 
+{-
 
 Introduction to Haskell
 =======================
@@ -49,7 +49,7 @@ memory if not carefully managed, leading to unexpected memory consumption.
 Type system
 -----------
 Haskell has a strong, static type system. Its basis is the Hindley-Milner type
-system, with a few extensions.  
+system, with a few extensions.
 
 Type classes: A way to define an interface (set of functions/constraints) that
 work for multiple types. Type classes provide a principled way to define
@@ -60,7 +60,7 @@ is a feature that allows expressive and reusable abstractions.
 
 Higher-rank polymorphism: By default, Haskell's type system only allows prenex
 polymorphism (a.k.a. let-polymorphism). This means that type quantification in
-polymorphic types can only happen at the outermost of the type. 
+polymorphic types can only happen at the outermost of the type.
 
 Higher-rank polymorphism allows function arguments to be polymorphic as well. A
 rank-N type is type in which a universal quantifier can be at most N level deep
@@ -69,7 +69,7 @@ inside a function argument. For example, the following type is a rank-2 type:
 (forall b, b -> (b, b)) -> Int -> Bool -> ((Int, Int), (Bool, Bool))
 
 GHC has extensions for both rank-2 polymorphism (Rank2Types) and arbitrary rank
-polymorphism (RankNTypes). 
+polymorphism (RankNTypes).
 
 With rank-2 polymorphic types, type inference remains decidable, but rank-N type
 reconstruction becomes undecidable, and some explicit type annotations are
@@ -77,7 +77,7 @@ required in their presence.
 
 Reference: https://wiki.haskell.org/Rank-N_types
 
-Haskell Glossary 
+Haskell Glossary
 ----------------
 
 ghc   : The Glasgow Haskell Compiler, the primary compiler for Haskell.
@@ -97,7 +97,7 @@ once! (very rough description)
 Monad : Just a monoid in the category of endofunctors (just kidding, see next
 lecture).
 
-Thunk : A suspended computation (a value which is not yet evaluated)  
+Thunk : A suspended computation (a value which is not yet evaluated)
 
 Side Effects : None! Haskell ensures side effects are managed explicitly through
 constructs like the IO monad.
@@ -121,14 +121,14 @@ n1 = 42
 -- >>> n1
 -- 42
 
--- The type Int is the type of word-sized integers, which is machine dependent. 
+-- The type Int is the type of word-sized integers, which is machine dependent.
 n1' :: Int
 n1' = 42
 
 -- >>> n1'
 -- 42
 
--- Definitions don't have to be in order 
+-- Definitions don't have to be in order
 n3 :: Int
 n3 = n2 + 21
 
@@ -139,7 +139,7 @@ n2 = 21
 -- 42
 
 -- Double precision floating point
-f1 :: Double 
+f1 :: Double
 f1 = 123.4567
 
 --- >>> f1
@@ -153,7 +153,7 @@ b1 = True && (False :: Bool) || (n2 == 42)
 -- False
 
 -- Strings
-hello :: String 
+hello :: String
 hello = "Hello " ++ "world!"
 
 -- >>> hello
@@ -195,7 +195,7 @@ add'' = (+)
 -- 42
 
 {- Infix and Prefix notations
-   
+
 In Haskell we can define infix operators, like +, -, etc. We defined them as
 ordinary functions but their symbol is put in parentheses.
 
@@ -221,11 +221,11 @@ put an prefix operator inside backticks then it becomes infix.
 -- >>> 3 `add` 4
 -- 7
 
-{- Function composition 
-  
+{- Function composition
+
    Haskell introduces an infix notation for composing functions: the '.' operator.
    Its type is (.) :: forall b c a. (b -> c) -> (a -> b) -> a -> c
-   For example we can write the following 
+   For example we can write the following
 
 -}
 
@@ -239,7 +239,7 @@ myodd = not . even
 
 -- (\x -> f x) :: A -> A
 
--- Point-free notation 
+-- Point-free notation
 
 -- Writing functions without explicitly mentioning arguments is considered
 -- idiomatic Haskell. This style typically involves composing partially applied
@@ -273,9 +273,9 @@ compf' f = (. (f .)) . (.) -- what?
 -- More fun examples here: https://wiki.haskell.org/Pointfree
 
 {- Pattern matching -}
- 
+
 fib :: Integer -> Integer
-fib 0 = 0 
+fib 0 = 0
 fib 1 = 1
 fib x = fib (x-1) + fib (x-2)
 
@@ -294,31 +294,35 @@ fib' x = case x of
 
 -- ... or using "guards"
 fib'' :: Integer -> Integer
-fib'' x 
-  | x == 0 = 0
-  | x == 1 = 1
-  | otherwise = fib'' (x-1) + fib'' (x-2)
+fib'' x | x == 0 = 0
+        | x == 1 = 1
+        | otherwise = fib'' (x-1) + fib'' (x-2)
 
 
 -- Haskell is an indentation-sensitive language. For example, the following two
--- functions have a different meaning 
+-- functions have a different meaning
 
 test1 :: Integer -> Integer -> Bool
-test1 x y = 
-  case x of 
-    0 -> True 
-    1 -> case y of 
+test1 x y =
+  case x of
+    0 -> True
+    1 -> case y of
       0 -> True
     _ -> False
 
 -- >>> test1 3 1
 -- False
 
+-- >>> test1 1 2
+-- /Users/zoo/Repos/PL2/lectures/Haskell/src/Intro.hs:(309,10)-(310,15): Non-exhaustive patterns in case
+
+
+
 test2 :: Integer -> Integer -> Bool
-test2 x y = 
-  case x of 
-    0 -> True 
-    1 -> case y of 
+test2 x y =
+  case x of
+    0 -> True
+    1 -> case y of
       0 -> True
       _ -> False
 
@@ -330,19 +334,19 @@ test2 x y =
 
 -- As a general guideline, all grouped expressions must be exactly aligned. This
 -- includes cases and other constructs like let, where, and do blocks that we
--- will see later. 
+-- will see later.
 
 
 
-{- 
+{-
 Laziness
 --------
 
 Haskell is a lazy language. It has call-by-need semantics and arguments to
-functions are evaluated at most once, and only when its needed. 
+functions are evaluated at most once, and only when its needed.
 
 In Haskell, it is easy to define short-circuit operators, that only evaluate their
-second argument, unless it's value is needed. 
+second argument, unless it's value is needed.
 
 For example:
 -}
@@ -352,14 +356,14 @@ and' False _ = False
 and' True y = y
 
 
--- To check that `and'` uses indeed short-circuit evaluation we can use two 
--- special Haskell combinators: undefined and error, that always fail when 
--- they are evaluated. 
+-- To check that `and'` uses indeed short-circuit evaluation we can use two
+-- special Haskell combinators: undefined and error, that always fail when
+-- they are evaluated.
 
--- >>> :t error 
+-- >>> :t error
 -- error :: HasCallStack => [Char] -> a
 
--- >>> :t undefined 
+-- >>> :t undefined
 -- undefined :: HasCallStack => a
 
 -- >>> and' False (error "unreachable")
@@ -371,9 +375,9 @@ and' True y = y
 -- >>> and' True undefined
 -- Prelude.undefined
 
--- A non terminating function. 
+-- A non terminating function.
 
--- We can define such a function and pass it around without observing any 
+-- We can define such a function and pass it around without observing any
 -- non termination, as long as its value is not explicitly needed
 loop :: () -> a
 loop _ = loop ()
@@ -424,14 +428,14 @@ fst' (x, _) = x
 -- and it enables working with infinite data structures such as streams.
 -- However, laziness can also introduce performance pitfalls: unevaluated thunks
 -- may accumulate and consume memory, leading to space leaks (we will illustrate
--- this later with an example). 
+-- this later with an example).
 
 
 -- Sometimes, it is useful to control evaluation with one of the following operations.
 
 -- seq: The seq operator forces evaluation of its first argument before returning the second
 
--- Bang patterns: A function argument annotated with ! is strict 
+-- Bang patterns: A function argument annotated with ! is strict
 
 -- $!: Strict Application
 
@@ -442,7 +446,6 @@ fst' (x, _) = x
 -- which usually happens through pattern matching, the outermost constructor of
 -- the thunk will be evaluated.  (unless they have been evaluated by some earlier use). We say the
 -- expression is evaluated in _weak head normal form_.
-
 
 {-
 
@@ -466,7 +469,7 @@ Option Types
 The datatype Maybe in Haskell is used to model optional values. It has two constructors:
 
 Just :: a -> Maybe a
-Nothing :: Maybe a 
+Nothing :: Maybe a
 
 -}
 
@@ -485,17 +488,17 @@ hd (x:_) = Just x
 Lists
 -----
 
-The list datatype in Haskell is denoted [a], where a is the type of the elements. 
+The list datatype in Haskell is denoted [a], where a is the type of the elements.
 It has two constructors
 
 []  :: [a]
-(:) :: a -> [a] -> [a] 
+(:) :: a -> [a] -> [a]
 
 -}
 
--- List ranges 
+-- List ranges
 
--- A convenient way of constructing lists is with list ranges. 
+-- A convenient way of constructing lists is with list ranges.
 upto :: Integer -> [Integer]
 upto n = [1..n]
 
@@ -503,7 +506,7 @@ upto n = [1..n]
 -- [1,2,3,4,5,6,7,8,9,10]
 
 -- One can also construct infinite ranges. If only finite prefixes need to be
--- evaluated then the computation can terminate.  
+-- evaluated then the computation can terminate.
 
 -- >>> take 5 [1..]
 -- [1,2,3,4,5]
@@ -529,7 +532,6 @@ range x = x : range (x + 1)
 
 mapExample :: [Integer] -> [Integer]
 mapExample = map ((+1) . abs)
-
 
 -- >>> mapExample [-4..4]
 -- [5,4,3,2,1,2,3,4,5]
@@ -560,23 +562,30 @@ sum3 = foldl' (+) 0
 -- >>> sum3 [1..10]
 -- 55
 
+-- You can try these functions on larger lists on your terminal to observe
+-- their space consumption.
+
+-- sum1 [1..100000000]
+-- sum2 [1..100000000]
+-- sum3 [1..100000000]
+
 -- The three functions return the same result, but have different behavior
 -- regarding space consumption. In an ideal situation, we would like to do this
 -- computation in constant space, after all we shouldn't use linear space for
--- this summation. 
+-- this summation.
 
 -- In Haskell it is possible to do this with a list because lists are
 -- constructed lazily. The list [1..n] will be generated as needed. Any list
 -- elements that are no longer needed, are garbage collected. Therefore, it is
 -- possible to have only a constant portion of the list expanded in the heap of
--- the program at each point. 
+-- the program at each point.
 
--- However, not all three functions achieve this. Let's analyze their behaviour. 
+-- However, not all three functions achieve this. Let's analyze their behaviour.
 
 {-
 
   foldr (+) 0 [1..10]
-= 1 + (foldr (+) 0 [2..10]) 
+= 1 + (foldr (+) 0 [2..10])
 = 1 + (2 + foldr (+) 0 [3..10])
 = 1 + (2 + (3 + foldr (+) 0 [4..10]))
 ....
@@ -596,15 +605,15 @@ sum3 = foldl' (+) 0
 = foldl (+) (0 + 1 + 2) [3..10]
 = foldl (+) (0 + 1 + 2 + 3) [4..10]
 = foldl (+) (0 + 1 + 2 + 3 + 4) [5..10]
-... 
-= foldl (+) (0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10) []
+...
+= foldl (+) ((((0 + 1) + 2) + 3 + 4 + 5 + 6 + 7 + 8 + 9) + 10) []
 = 55
 
--} 
+-}
 
 -- This computation is still expanded and takes linear space. However, in this
--- case there is no reason for the computation to be expanded! We could simply 
--- fully evaluate the accumulator at each step and reduce space usage. 
+-- case there is no reason for the computation to be expanded! We could simply
+-- fully evaluate the accumulator at each step and reduce space usage.
 
 -- We can achieve this with foldl' that has a strict application of the operator.
 
@@ -616,19 +625,24 @@ sum3 = foldl' (+) 0
 = foldl' (+) 3 [3..10]
 = foldl' (+) 6 [4..10]
 = foldl' (+) 10 [5..10]
-... 
+...
 = foldl' (+) 55 []
 = 55
 
--} 
+-}
 
 -- Now the sum uses constant space!
 
--- There are however cases where the other versions of fold would have been more
--- efficient. 
+-- For a more detailed explanation of the differences between foldl, foldl' and foldr
+-- see: https://wiki.haskell.org/Foldr_Foldl_Foldl%27
 
--- In particular when the operator of the fold is lazy on its second argument, 
+
+-- There are however cases where the other versions of fold would have been more
+-- efficient.
+
+-- In particular when the operator of the fold is lazy on its second argument,
 -- foldr can have significant performance gains.
+
 
 
 trues :: [Bool]
@@ -637,8 +651,11 @@ trues = True:trues
 -- >>> foldr (&&) True (False:trues)
 -- False
 
-elem :: (Eq a, Foldable t) => a -> t a -> Bool 
-elem x = foldr (\y b -> x == y || b) False    
+-- >>> foldl (&&) True (False:trues)
+-- ProgressCancelledException
+
+elem :: (Eq a, Foldable t) => a -> t a -> Bool
+elem x = foldr (\y b -> x == y || b) False
 
 -- >>> elem 1 [1..]
 -- True
@@ -652,7 +669,7 @@ elem x = foldr (\y b -> x == y || b) False
 
 -- This fibonacci function uses constant space. Notice that next is strict on its arguments
 fibl :: Integer -> Integer
-fibl x = fst $ foldl' (\ c _ -> next c) (0,1) [1..x]
+fibl x = fst $ foldl' (\c _ -> next c) (0,1) [1..x]
   where
     next (!p1,!p2) = (p1 + p2,p1)
 
@@ -672,7 +689,7 @@ fibl' x = fst $ foldr (const next) (0,1) [1..x]
 -- We can write operations on list using a notation familiar from math:
 -- comprehensions.
 
---- More examples 
+--- More examples
 
 filter' :: (a -> Bool) -> [a] -> [a]
 filter' p xs = [ x | x <- xs, p x ]
@@ -684,10 +701,10 @@ filter' p xs = [ x | x <- xs, p x ]
 pythag :: Integer -> [(Integer,Integer,Integer)]
 pythag n =
   [(x,y,z) | x <- [1..n], y <- [x..n],
-             z <- [y..n], x^2 + y^2 == z^2 ]
+             z <- [y..n], x^2 + y^2 ==z^2 ]
 
--- >>> pythag 17
--- [(3,4,5),(5,12,13),(6,8,10),(8,15,17),(9,12,15)]
+-- >>> pythag 20
+-- [(3,4,5),(5,12,13),(6,8,10),(8,15,17),(9,12,15),(12,16,20)]
 
 
 qsort :: Ord a => [a] -> [a] -- What is Ord?
@@ -706,10 +723,10 @@ uniquePairs xs = [(x,y) | (x:ys) <- tails xs, y <- ys]
 -- >>> uniquePairs [1,9,5,4,2,8,10,11,5,42,100,21]
 -- [(1,9),(1,5),(1,4),(1,2),(1,8),(1,10),(1,11),(1,5),(1,42),(1,100),(1,21),(9,5),(9,4),(9,2),(9,8),(9,10),(9,11),(9,5),(9,42),(9,100),(9,21),(5,4),(5,2),(5,8),(5,10),(5,11),(5,5),(5,42),(5,100),(5,21),(4,2),(4,8),(4,10),(4,11),(4,5),(4,42),(4,100),(4,21),(2,8),(2,10),(2,11),(2,5),(2,42),(2,100),(2,21),(8,10),(8,11),(8,5),(8,42),(8,100),(8,21),(10,11),(10,5),(10,42),(10,100),(10,21),(11,5),(11,42),(11,100),(11,21),(5,42),(5,100),(5,21),(42,100),(42,21),(100,21)]
 
--- Primes sieve 
+-- Primes sieve
 primes :: [Integer]
 primes = sieve [2..]
-  where 
+  where
     sieve (p:ns) = p : sieve [n | n <- ns, n `mod` p /= 0]
 
 
@@ -718,10 +735,10 @@ primes = sieve [2..]
 
 -- [(1,2),(1,3),(1,4),(2,3),(2,4),(3,4)]
 
--- Fib, again 
+-- Fib, again
 
 fibi :: [Integer]
-fibi  = 0 : fibi1 
+fibi  = 0 : fibi1
 
 fibi1 :: [Integer]
 fibi1 = 1 : fibi2
@@ -738,7 +755,7 @@ consumer :: (Eq t, Num t, Show a) => [a] -> t -> [Char]
 consumer stream n =
   if n == 1 then show x
   else show x ++ ", " ++ consumer xs (n-1)
-    where 
+    where
       x:xs = stream
 
 -- >>> consumer fibi 10
@@ -806,7 +823,7 @@ many = do
 
 query :: IO ()
 query = do
-  putStr "What is your name? "
+  putStr "What is your name?"
   n <- getLine -- this syntax binds the result of the getLine computation to n
   putStrLn ("Welcome to PL2 " ++ n)
 
@@ -826,7 +843,7 @@ readSomeLines f = do
 -- Haskell offers an escape mechanism from the IO monad. This is not a safe
 -- feature, as it brakes encapsulation of side effects.
 
--- unsafePerformIO :: IO a -> a 
+-- unsafePerformIO :: IO a -> a
 
 {-
 
@@ -837,11 +854,11 @@ Because of purity and lazy evaluation, debugging Haskell programs can be hard.
 Haskell provides a library called Debug.Trace that offers a few functions that
 can be helpful with debugging. Some useful functions are below.
 
--- The function trace outputs the trace message given as its first argument, 
--- before returning the second argument as its result 
+-- The function trace outputs the trace message given as its first argument,
+-- before returning the second argument as its result
 trace     :: String -> a -> a
 
--- Note that trace is not a pure functional program: it has a side-effect (and 
+-- Note that trace is not a pure functional program: it has a side-effect (and
 -- it is not even defined inside IO!) However it is very useful for debugging.
 
 
@@ -855,7 +872,7 @@ traceShowM :: (Monad m, Show a) => a -> m ()
 
 -}
 
--- Examples 
+-- Examples
 
 query2Dbg :: IO String
 query2Dbg = do
@@ -868,6 +885,6 @@ query2Dbg = do
 qsortDbg :: (Ord a, Show a) => [a] -> [a] -- What is Ord?
 qsortDbg [] = []
 qsortDbg (p:xs) = trace "Pivot:" $ traceShow p $ lt ++ [p] ++ ge
-  where 
+  where
     lt = qsortDbg [x | x <- xs, x < p]
     ge = qsortDbg [x | x <- xs, x >= p]
