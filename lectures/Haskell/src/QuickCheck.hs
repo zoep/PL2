@@ -48,14 +48,19 @@ Let's start by defining some basic properties for QC to test.
 -}
 
 
+rev :: [a] -> [a]
+rev [] = []
+rev (x:xs) = rev xs ++ [x]
+
+
 revLength :: [Integer] -> Bool
-revLength l = length l == length (reverse l)
+revLength l = length l == length (rev l)
 
 revInvolutive :: [Integer] -> Bool
-revInvolutive xs = reverse (reverse xs) == xs
+revInvolutive xs = rev (rev xs) == xs
 
 revSingleton :: Integer -> Bool
-revSingleton a = reverse [a] == [a]
+revSingleton a = rev [a] == [a]
 
 revAppend :: [Integer] -> [Integer] -> Bool
 revAppend xs ys = reverse (xs ++ ys) == reverse ys ++ reverse xs
@@ -140,8 +145,9 @@ insertionSort :: [Integer] -> [Integer]
 insertionSort [] = []
 insertionSort (x:xs) = insert x (insertionSort xs)
 
--- >>> insertionSort [7,5,4,3,4]
--- [3,4,4,5,7]
+
+-- >>> insertionSort [7,5,1,4,3,4]
+-- [1,3,4,4,5,7]
 
 -- We will define and test the properties that our implementation needs to
 -- satisfy. One obvious one is that the output of insertionSort must be sorted.
@@ -150,11 +156,8 @@ insertionSort (x:xs) = insert x (insertionSort xs)
 
 isSorted :: [Integer] -> Bool
 isSorted [] = True
-isSorted (x:xs)= aux x xs
- where
-    aux _ [] = True
-    aux y (z:zs) = y <= z && aux z zs
-
+isSorted [_] = True
+isSorted (x1:x2:xs) = x1 <= x2 && isSorted (x2:xs)
 
 sortedProp :: ([Integer] -> [Integer]) -> [Integer] -> Bool
 sortedProp f = isSorted . f
@@ -284,7 +287,7 @@ QuickCheck lets us peek at the distribution of various properties of test cases
 by providing a combinator called collect.
 
 Collect will gather all values that are being passed to it and will print out
-a histogram of the distribution of the values. 
+a histogram of the distribution of the values.
 
 collect :: (Show a, Testable prop) => a -> prop -> Property collect
 
@@ -367,6 +370,7 @@ For example we can write a naive generator for lists of type a.
 
 -}
 
+
 genList :: Gen [Integer]
 genList = listOf arbitrary
 
@@ -393,7 +397,7 @@ combinator [sized] internalize the size parameter.
 
 Using sized, we can write a primitive generator for list of a given type a:
 
--- Used to construct generators that depend on the size parameter. 
+-- Used to construct generators that depend on the size parameter.
 sized :: (Int -> Gen a) -> Gen a
 
 -}
@@ -407,6 +411,7 @@ genList' = sized genListSize
       x <- arbitrary
       xs <- genListSize (n-1)
       return $ x:xs
+
 
 -- Note: List has already an arbitrary instance defined in QuickCheck. This is
 -- just for demonstration purposes.
@@ -653,7 +658,7 @@ ghci> quickCheck insertPreservesRedBlack
    ---------------------------
 
 
-The code indludes: 
+The code indludes:
 
 - Definitions of abstract syntax for simply-typed lambda calculus with numbers and addition
 - Typechecker for STLC

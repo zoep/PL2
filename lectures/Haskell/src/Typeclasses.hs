@@ -202,10 +202,10 @@ fmap id = id
 
 fmap (g . h) = fmap g . fmap h
 
-These ensure that fmap preserves the structure of the functor and the only thing that 
+These ensure that fmap preserves the structure of the functor and the only thing that
 fmap does is to apply the function to the elements inside the structure.
 
--} 
+-}
 
 -- We can write a Functor instance for our Tree type:
 instance Functor Tree' where
@@ -224,14 +224,14 @@ Monads
 
 Monads are a very important type class in Haskell and functional programming in
 general. They provide a way to sequence computation that take place inside the
-context of a type constructor m. 
+context of a type constructor m.
 
 A monad is more powerful than a functor, as it provides not only a way to map
 functions over values inside the context, but also a way to sequence
 computations that produce values inside the context.
 
 Monads can be seen as programmable semicolons, that let us define how to
-sequence computations. Thus, monads 
+sequence computations. Thus, monads
 
 
 The interface of a monad can be used to simulate an imperative programming style
@@ -242,29 +242,29 @@ Thus, it is easier to write code that manipulates state, throws errors, models
 nondeterminism, etc.
 
 Monads can also be used to encapsulate truly impure code and keep it separate
-from the pure language fragment (like the IO monad). 
+from the pure language fragment (like the IO monad).
 
 The interface defined by a monad is the following.
 
-class Monad (m :: Type -> Type) where 
-  -- encapsulate a pure computation in a monadic one 
-  return :: a -> m a 
-  -- sequence two monadic computations 
+class Monad (m :: Type -> Type) where
+  -- encapsulate a pure computation in a monadic one
+  return :: a -> m a
+  -- sequence two monadic computations
   (>>=)  :: m a -> (a -> m b) -> m b
 
 
 In addition to the interface, monads should satisfy the _monad laws_:
 
 -- left identity
-return a >>= k = k 
+return a >>= k = k
 
 -- right identity
-m >>= return = m 
+m >>= return = m
 
 -- associativity
 m >>= (\x -> k x >>= h)  =  (m >>= k) >>= h
 
-The monad laws ensure that the sequencing of computations behaves in a canonical way: 
+The monad laws ensure that the sequencing of computations behaves in a canonical way:
 
 - Left identity ensures that if we encapsulate a pure value and then
   sequence it with a computation, it is the same as just running the computation
@@ -467,7 +467,7 @@ local :: (env -> env) -> Reader env a -> Reader env a
 local f (Reader m) = Reader (m . f)
 
 
--- For example, we can write an interepreter for a simple lambda calculus 
+-- For example, we can write an interepreter for a simple lambda calculus
 -- with variables and function application using the Reader monad to model
 -- the environment.
 
@@ -516,7 +516,7 @@ term = TApp (0,0)
            (TAdd (0,0)
              (TVar (0,0) "x")
              (TInt (0,0) 1)))
-         (TInt (0,0) 41)    
+         (TInt (0,0) 41)
 
 
 -- >>> runReader (evalTerm term) M.empty
@@ -569,10 +569,10 @@ fibSt n =
   forM_ [1..n] (\_ -> do
     (prev, curr) <- get
     put (curr, prev+curr))
-    
+
 fibN :: Integer -> Integer
 fibN n = case fibSt n of
-  State fibst -> 
+  State fibst ->
     let ((prev, curr), _) = fibst (0,1) in
     prev
 
@@ -583,7 +583,7 @@ fibN n = case fibSt n of
 mapM' :: Monad m => (a -> m b) -> [a] -> m [b]
 mapM' _ [] = return []
 mapM' f (x:xs) = do
-    y <- f x    
+    y <- f x
     ys <- mapM' f xs
     return $ y:ys
 
@@ -667,20 +667,19 @@ evalStack (Div _ t1 t2) = do
     evalStackBop div
 
 evalStackTop :: Exp -> Int
-evalStackTop exp = 
+evalStackTop exp =
   let (stack, _) = runState (evalStack exp) [] in
   case stack of
     (v:_) -> v
     _     -> error "Empty stack after evaluation"
 
 
--- >>> evalStackTop exp1    
+-- >>> evalStackTop exp1
 -- 42
 
 
 -- >>> fibNFor 9
 -- 34
-
 
 
 {- Monad Transformers -}
@@ -713,6 +712,7 @@ instance Monad m => Monad (StateT state m) where
     (s', x') <- runStateT x s
     runStateT (f x') s'
 
+
 instance (Monad m) => Applicative (StateT s m) where
   pure = return
   (<*>) :: Monad m => StateT s m (a -> b) -> StateT s m a -> StateT s m b
@@ -720,7 +720,6 @@ instance (Monad m) => Applicative (StateT s m) where
 
 instance (Monad m) => Functor (StateT s m) where
   fmap = liftM
-
 
 instance MonadTrans (StateT s) where
   lift :: (Monad m) => m a -> StateT s m a
@@ -733,6 +732,63 @@ getT = StateT (\s -> return (s,s))
 
 putT ::  Monad m => state -> StateT state m ()
 putT s = StateT (\_ -> return (s,()))
+
+
+-- Example: Stack evaluator combining State and Maybe monads
+type StackStM =  StateT [Int] Maybe ()
+
+evalStackBopT :: (Int -> Int -> Int) -> StackStM
+evalStackBopT op = do
+    stack <- getT
+    case stack of
+      (x:y:rest) -> putT (x `op` y:rest)
+      _          -> lift Nothing
+
+
+peekStackT :: StateT [Int] Maybe Int -- ([Int] -> Maybe ([Int] , Int)
+peekStackT = do
+    stack <- getT
+    case stack of
+      s:_ -> return s
+      _ -> lift Nothing
+
+
+evalStackT :: Exp -> StackStM
+evalStackT (Num _ n) = do
+    stack <- getT
+    putT (n:stack)
+evalStackT (Add _ t1 t2) = do
+    evalStackT t1
+    evalStackT t2
+    evalStackBopT (+)
+evalStackT (Sub _ t1 t2) = do
+    evalStackT t1
+    evalStackT t2
+    evalStackBopT (+)
+evalStackT (Mul _ t1 t2) = do
+    evalStackT t1
+    evalStackT t2
+    evalStackBopT (*)
+evalStackT (Div _ t1 t2) = do
+    evalStackT t1
+    evalStackT t2
+    n <- peekStackT
+    if n == 0 then lift Nothing
+    else evalStackBopT div
+
+
+
+evalStackTopT :: Exp -> Int
+evalStackTopT exp =
+  let res = runStateT (evalStackT exp) [] in
+  case res of
+    Just (top:_, _) -> top
+    _ -> error "Error when running the computation"
+
+
+-- >>> evalStackTopT exp1
+-- 42
+
 
 -- Reader transformers
 
