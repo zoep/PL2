@@ -11,7 +11,7 @@ common common
     ghc-options: -Wall
     default-language:   Haskell2010
     build-depends:
-        base                   >= 4.19.0.0,
+        base                   >= 4.17.0.0,
         containers             >= 0.5,
         array                  >= 0.5.3.0,
         prettyprinter          >= 1.7.1,
@@ -36,6 +36,7 @@ library
         MiniML.Parse
         MiniML.Print
         MiniML.TypeCheck
+        MiniML.Infer
         MiniML.Eval
         MiniML.ClosureConv
         MiniML.Lazy

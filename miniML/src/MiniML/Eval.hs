@@ -151,7 +151,7 @@ eval (Bop _ bop e1 e2) | bop == Le || bop == Lt || bop == Ge || bop == Gt || bop
             Le -> (<=)
             Lt -> (<)
             Ge -> (>=)
-            Gt -> (<)
+            Gt -> (>)
             Eq -> (==)
             _ -> error "unreachable"
   v1 <- eval e1
@@ -304,7 +304,7 @@ evalcc (Bop _ bop e1 e2) | bop == Le || bop == Lt || bop == Ge || bop == Gt || b
             Le -> (<=)
             Lt -> (<)
             Ge -> (>=)
-            Gt -> (<)
+            Gt -> (>)
             Eq -> (==)
             _ -> error "unreachable"
   v1 <- evalcc e1
@@ -331,7 +331,7 @@ evalcc (Uop _ Not e1) = do
     _ -> throwErr (getPosn e1) "Expression is expected to have type bool"
 -- Pairs
 evalcc (Tuple _ args) = do
-  vs <- mapM eval args
+  vs <- mapM evalcc args
   return $ VTuple vs
 evalcc (Proj _ i e1) = do
   v1 <- evalcc e1
@@ -404,5 +404,5 @@ evalcc e = throwErr (getPosn e) ("Evaluation of illegal expression " <> show e)
 evalccTop :: Exp -> Error (Value,Store)
 evalccTop e = do
   let initState = (M.empty, M.empty, 0)
-  (val, (_, store, _)) <- runStateT (eval e) initState
+  (val, (_, store, _)) <- runStateT (evalcc e) initState
   return (val, store)

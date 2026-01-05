@@ -44,7 +44,7 @@ Class Functor (F : Type -> Type) := {
 *)
 
 Program Instance List_Functor : Functor list :=
-  { fmap := map }.
+  { fmap := map; }.
 (** Proof of identity law *)
 Next Obligation.
 - induction x as [| x xs' IH].
@@ -66,12 +66,12 @@ Defined.
 
 (** fmap applies the function only if a value exists *)
 Program Instance Option_Functor : Functor option := {
-    fmap := fix fmap {A B} (f : A -> B) (xo : option A) :=
-        match xo with
-        | None => None
-        | Some x => Some (f x)
-        end
-}.
+    fmap := fun {A B} (f : A -> B) (xo : option A) =>
+              match xo with
+              | None => None
+              | Some x => Some (f x)
+              end
+  }.
 (** Proof of identity law *)
 Next Obligation.
 - destruct x as [ x |].
@@ -102,7 +102,7 @@ obligations one by one.
 (**
   ============================================================
   * Applicative Functors
-    ============================================================
+  ============================================================
 
   We saw that a functor allows the application of a *pure* function to a value
   wrapped inside the context of the functor.
@@ -163,12 +163,20 @@ Class Applicative (F : Type -> Type) := {
 }.
 
 
-(* Every applicative is also a functor, with fmap defined in terms of pure and
-  ap. *)
 
 Program Instance Applicative_Functor (F : Type -> Type) `{Applicative F} : Functor F := {
     fmap := fun {A B : Type} (f : A -> B) (x : F A) => ap (pure f) x
 }.
+
+Definition liftA2 {F A B C} `{Applicative F}
+  (f : A -> B -> C)
+  (fa : F A)
+  (fb : F B) : F C :=
+  ap (ap (pure f) fa) fb. 
+    
+
+(* Every applicative is also a functor, with fmap defined in terms of pure and
+  ap. *)
 Next Obligation.
 - rewrite ap_identity. reflexivity.
 Defined.
@@ -261,9 +269,9 @@ Defined.
 Program Instance Option_Applicative : Applicative option := {
     pure := fun {A} (x : A) => Some x;
     ap := fun {A B} (fo : option (A -> B)) (xo : option A) =>
-        match fo, xo with
-        | Some f, Some x => Some (f x)
-        | _, _ => None
+        match fo with
+        | Some f => fmap f xo
+        | None => None
         end
 }.
 Next Obligation.
@@ -272,9 +280,6 @@ Defined.
 Next Obligation.
 - destruct ff as [ f |];
   destruct fg as [ g |]; destruct x as [ a |]; simpl; reflexivity.
-Defined.
-Next Obligation.
-- destruct ff as [ f |]; reflexivity.
 Defined.
 
 
@@ -333,6 +338,7 @@ Notation "' pat <- c1 ;; c2" :=
         (at level 61, pat pattern, c1 at next level, right associativity).
 
 Notation "c >>= f" := (@bind _ _ _ _ c f) (at level 58, left associativity).
+
 
 (** Generic opperations over a monad *)
 Definition liftM {M : Type -> Type} `{Monad M} {A B : Type} (f : A -> B) (ma : M A) : M B :=
@@ -397,7 +403,7 @@ Defined.
 
 (**
   ------------------------------------------------------------
-  State Monad
+  List Monad
   ------------------------------------------------------------
 *)
 
@@ -456,15 +462,11 @@ Defined.
 
 Definition State (S A : Type) : Type := S -> (A * S).
 
-Definition get {S : Type} : State S S :=
-    fun s => (s, s).
-
-Definition put {S : Type} (s : S) : State S unit :=
-    fun _ => (tt, s).
-
 
 Program Instance state_Monad (S : Type) : Monad (fun A => S -> (A * S)) := {
     ret := fun {A : Type} (a : A) s => (a, s);
+
+    
     bind := fun {A B} (sa : S -> (A * S)) (f : A -> S -> (B * S)) =>
         fun s0 =>
             let (a, s1) := sa s0 in
@@ -476,6 +478,13 @@ Defined.
 Next Obligation.
 - extensionality s0. simpl. destruct (x s0). reflexivity.
 Defined.
+
+
+Definition get {S : Type} : State S S :=
+    fun s => (s, s).
+
+Definition put {S : Type} (s : S) : State S unit :=
+    fun _ => (tt, s).
 
 
 (**
@@ -642,13 +651,13 @@ Fixpoint eval (e : expr) : option nat :=
 *)
 
 Definition tick : State nat unit :=
-    n <- get;;
-    put (n + 1).
+  (* bind get (fun n =>  put (n + 1))  *)
+   n <- get;;
+   put (n + 1).
 
 Definition tick_twice : State nat unit :=
     tick;;
-    tick;;
-    ret tt.
+    tick.
 
 Definition get_and_tick : State nat nat :=
     n <- get;;
@@ -669,6 +678,68 @@ Eval compute in (get_and_tick 5).
 Definition Stack := list nat.
 
 Definition StackCalc := State Stack.
+
+
+Definition push (n : nat) : State Stack unit :=
+  stack <- get ;;
+  put (n::stack).
+ 
+
+Definition evalOp (f : nat -> nat -> nat) : State Stack unit :=
+  stack <- get ;;
+  match stack with
+    | x1 :: x2 :: stack' =>
+        put (f x2 x1 :: stack')
+    | _ => pure tt
+  end.
+            
+
+Fixpoint evalStack (e : expr) : State Stack () :=
+  match e with
+  | Const n => push n      
+  | Add e1 e2 =>
+      evalStack e1 ;;
+      evalStack e2 ;;
+      evalOp (fun x1 x2 => x1 + x2)      
+  | Mul e1 e2 =>
+      evalStack e1 ;;
+      evalStack e2 ;;
+      evalOp (fun x1 x2 => x1 * x2)      
+  | Div e1 e2 =>
+      evalStack e1 ;;
+      evalStack e2 ;;
+      evalOp (fun x1 x2 => div x1 x2)      
+  | Sub e1 e2 =>
+      evalStack e1 ;;
+      evalStack e2 ;;
+      evalOp (fun x1 x2 => x1 - x2)      
+  end.
+    
+
+Definition e1 :=
+  Mul (Const 6) (Add (Const 3) (Const 4)).
+
+
+Compute (snd (evalStack e1 [])).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 (* Push a value onto the stack *)
 Definition push (n : nat) : StackCalc unit :=

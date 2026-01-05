@@ -1,0 +1,7 @@
+let rec fold f = fun l -> fun acc ->
+  case l of 
+  | nil -> acc
+  | x::xs -> fold f l (f x acc)
+in
+let add = fun x -> fun y -> x + y in
+fold add (1::2::3::4::nil) 0

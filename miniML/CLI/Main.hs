@@ -4,11 +4,12 @@ import System.Environment (getArgs)
 
 import MiniML
 
-data Mode = Print | PrintCC | TypeCheck | Eval | EvalCC
+data Mode = Print | PrintCC | TypeCheck | Infer | Eval | EvalCC
 
 getArg :: [String] -> (Mode, String)
 getArg ("--pretty-print":f:_) = (Print,f)
 getArg ("--type-check":f:_) = (TypeCheck, f)
+getArg ("--infer":f:_) = (Infer, f)
 getArg ("--eval":f:_) = (Eval, f)
 getArg ("--eval-cc":f:_) = (EvalCC, f)
 getArg ("--pretty-print-cc":f:_) = (PrintCC,f)
@@ -33,6 +34,8 @@ main = do
                  proceed src (typeCheckTop e) (\_ -> printExp (closureConv $ implementLazy e)))
     TypeCheck -> proceed src (parse (lexer src)) (\e ->
                    proceed src (typeCheckTop e) printType)
+    Infer -> proceed src (parse (lexer src)) (\e ->
+                 proceed src (inferTypeTop e) printTypeScheme)
     Eval -> proceed src (parse $ lexer src) (\e ->
               -- proceed src (typeCheckTop e) (\_ -> 
                 proceed src (evalTop $ implementLazy e) $ printValue . fst)
