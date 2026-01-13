@@ -6,11 +6,12 @@ import qualified Data.Map as M
 
 import MiniML.Syntax
 
--- Generators for random programs
+-- * Generators for random programs
 
 -- Simple random generators of types and terms. No well-formedness invariant.
 -- Useful for testing the parser
 
+-- | Generate a type of a given size
 genTypeSize :: Int -> Gen Type
 genTypeSize 0 =
     elements [ TInt, TBool, TUnit ]
@@ -23,6 +24,7 @@ genTypeSize s =
     where
         genTypeS = genTypeSize (s-1)
 
+-- | Generate a type at most of size 10
 genType :: Gen Type
 genType = scale (min 10) $ sized genTypeSize
 
@@ -35,7 +37,7 @@ genVar = do
   x <- elements [ "x", "y", "z", "test_42", "foo_", "_bar", "z21", "f", "g", "lala"]
   return (x ++ show n)
 
--- Generate an expression of a given size
+-- | Generate an arbitrary expression of a given size
 genExpSize :: Int -> Gen Exp
 genExpSize s = case s of
     0 -> baseCases
@@ -70,10 +72,31 @@ genExpSize s = case s of
     baseCases = oneof [ return (Unit nowhere)
                       , liftM (NumLit nowhere) arbitrary
                       , liftM (BoolLit nowhere) arbitrary ]
-
+  
     genOptTypeS = oneof [ Just <$> genTypeS
                         , return Nothing ]
 
--- Generate an expression of an arbitrary
+-- | Generate an expression of an arbitrary size
 genExp :: Gen Exp
 genExp = scale (min 20) $ sized genExpSize
+
+
+-- | A generator for well-typed terms. You may use the generator for STLC
+-- programs provided in the course notes as a reference.
+genTExpSize :: M.Map Type [String]  -- a map from types to variables with the corresponding types
+            -> Int                  -- counter for generating fresh names
+            -> Type                 -- the type of the generated terms
+            -> Bool                 -- Type annotations?
+            -> Int                  -- The size of the term.
+            -> Gen Exp
+genTExpSize vmap next t annot sz = error "TODO: implement genTExpSize"
+
+
+-- Top-level function for generating well-typed expressions. You may tweak them
+-- if you wish, but do not change their types.
+
+-- Generate a well-typed term together with its type. You should first generate a random type, 
+-- and then generate a term of that type. It is parametrized by a Boolean indicating whether
+-- to include type annotations in terms.
+genExpType :: Bool -> Gen (Exp,Type)
+genExpType annot = error "TODO: implement genExpType"
