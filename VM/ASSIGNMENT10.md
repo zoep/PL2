@@ -297,7 +297,7 @@ Pointer
        └────────────────────────────────┘      └────────────────────────────────┘      └────────────────────────────────┘
 ```
 
-## Objectives (Total points: 150 bonus)
+## Objectives (Total points: 150)
 
 1. Write a bytecode interpreter for the virtual machine described here. This
    step does not require the implementation of a garbage collector. (60 points)
