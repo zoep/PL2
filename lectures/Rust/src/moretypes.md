@@ -75,6 +75,73 @@ fn main() {
 
 Structs are by default stack allocated.
 
+### Moving and Copying Structs
+
+By default, structs have move semantics in Rust. This means that when a struct
+value is bound to a variable (through let-binding or parameter passing)
+ownership is transferred and the pervious owner gets invalidated.
+
+Consider the following scenario:
+
+```rust, editable
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+fn distance(a: Point, b: Point) -> i32 {
+    return (a.x - b.x).abs() + (a.y - b.y).abs();
+}
+
+fn main() {
+    let point1 = Point { x: 1, y: 2 };
+    let point2 = Point { y: 4, x: 3 }; // fields don't have to be in order
+
+    let dist = distance(point1, point2);
+
+    println!("The distance is {}", dist);
+
+    println!("Point1 is at ({}, {})", point1.x, point1.y); // ERROR: borrow of moved value: `point1`
+
+}
+```
+Quiz: Make the above code compile and run successfully.
+
+
+However, if all fields of a struct implement the `Copy` trait, then the struct
+can also derive the `Copy` trait automatically. In this case, when a struct
+value is bound to a variable, a copy of the value is made and both the previous
+and new owners can use the value.
+
+```rust, editable
+#[derive(Copy, Clone)] // explicitly derive the Copy and Clone traits
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+fn distance(a: Point, b: Point) -> i32 {
+    return (a.x - b.x).abs() + (a.y - b.y).abs();
+}
+
+fn main() {
+    let point1 = Point { x: 1, y: 2 };
+    let point2 = Point { y: 4, x: 3 }; // fields don't have to be in order
+
+    let dist = distance(point1, point2);
+
+    println!("The distance is {}", dist);
+
+    println!("Point1 is at ({}, {})", point1.x, point1.y); // OK: Point implements Copy
+
+}
+```
+
+Note that we had to explicitly derive the `Clone` trait along with the `Copy`
+trait. This is because the `Copy` trait requires the ability to create copies of
+values, which is provided by the `Clone` trait.
+
+
 ### Struct Methods
 
 Structs in Rust can have associated functions, known as methods. These methods
@@ -83,8 +150,8 @@ in the context of a struct instance.
 
 The first parameter of a method is always named `self` and refers to the struct
 instance the method is called on. Methods can take ownership of the struct
-instance or a (mutable) reference to it, written `&self` (resp. `&mut self`)
-which is a shorthand for `self: &Self` (resp. `self: &mut self`).
+instance or a (possibly mutable) reference to it, written `&self` (resp. `&mut
+self`) which is a shorthand for `self: &Self` (resp. `self: &mut self`).
 
 Here’s an example illustrating struct methods:
 
@@ -224,7 +291,7 @@ provides the `Box` type to heap-allocate values.
 
 A type `Box<T>` represents a type `T` that is allocated on the heap of the
 program. Technically, a box is pointer type that uniquely owns a heap location
-storing a value og type `T`. A Box type can be used just as the underlying type.
+storing a value of type `T`. A Box type can be used just as the underlying type.
 
 A box can be created with its constructor `Box::new` that allocates memory on
 the heap and places the given value into it.
@@ -235,6 +302,23 @@ fn main() {
     println!("The number is {}", b);
 }
 ```
+
+```rust, editable
+fn main() {
+    let b : Box<u32> = Box::new(1);
+    let x : u32 = b; // Will this work? What do we need to do to make it work? 
+    println!("The number is {}", x);
+}
+```
+
+```rust, editable
+fn main() {
+    let mut b : Box<u32> = Box::new(1);
+    *b = 42;
+    println!("The number is {}", b);
+}
+```
+
 
 ### Recursive Types with Box Types
 
@@ -260,10 +344,10 @@ impl Exp {
     fn eval(&self) -> i64 {
         match self {
             // Literals
-            Exp::Lit(n) => *n, // TODO why is this &i64
+            Exp::Lit(n) => *n, // why is the type of n &i64?
             // Binary Operators
             Exp::Op {op, lhs, rhs} => {
-              let e1 = lhs.eval();
+              let e1 = lhs.eval(); // the type of lhs is &Box<Exp>. How can we call eval on it?
               let e2 = rhs.eval();
               match op {
                 Op::Add => e1 + e2,
@@ -287,3 +371,11 @@ fn main() {
   println!("The answer is {}", e.eval());
 }
 ```
+
+
+**Auto-deref**: Rust has a feature called auto-dereferencing (auto-deref) that
+automatically dereferences references and smart pointers (like `Box`) when
+accessing methods or fields. This means that when you call a method on a `Box<T>`,
+Rust automatically dereferences the box to get to the underlying `T` type,
+allowing you to call methods defined on `T` directly on the `Box<T>` without
+explicitly dereferencing it.
