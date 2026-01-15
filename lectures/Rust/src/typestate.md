@@ -85,5 +85,3 @@ fn main() {
      println!("{}", secret);
 }
 ```
-
-## A More Complex Example

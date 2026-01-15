@@ -1,10 +1,9 @@
 # Polymorphism
 
 Rust supports **parametric polymorphism** through _generics_. A generic type is
-an abstract type that can be instantiated with a concrete type later, when the
-generic functionality is used. Generics provide a powerful abstraction that
-allows you to write reusable and type-safe code, avoiding duplication of
-functionality that is common to all types.
+an abstract placeholder that gets instantiated with a concrete type when the
+generic functionality is used. Generics provide a powerful abstraction for
+writing reusable and type-safe code, eliminating duplication across types.
 
 A very simple example of a polymorphic function is the identity function.
 
@@ -19,11 +18,10 @@ fn main() {
 ```
 
 The syntax `<T>` indicates that the function is generic over type `T`, which can
-represent any type. Then, it takes an argument of type `T` and returns a result
+represent any type. It takes an argument of type `T` and returns a value
 of type `T`.
 
-Function can be generic over more than one types. This is illustrated in the
-following example.
+Functions can also be generic over multiple types. Here's an example:
 
 ```rust,editable
 fn make_tuple<T,R>(x:T, y:R) -> (T,R) {
@@ -39,7 +37,7 @@ fn main() {
 
 Structs and enums can also be generic over various types.
 
-Here's is an illustrative example of a generic enum that represents a cons list.
+Here's an illustrative example of a generic enum representing a cons list.
 The example also illustrates macros in Rust.
 
 ```rust, editable
@@ -76,22 +74,28 @@ impl<T> List<T> {
     fn head(&self) -> Option<&T> {
         match self {
             Nil => None,
-            Cons(x,_) =>   Some(x)
+            Cons(x, _) => Some(x)
         }
     }
 
-    // reverse a list in place
+    // Reverse a list in place
     fn rev(&mut self) {
         let mut rev: List<T> = List::Nil; // The reversed list
-        let mut current: List<T> = std::mem::replace(self, List::Nil); // Take ownership of the current list
+
+         // Take ownership of the list in self
+        let mut current: List<T> = std::mem::replace(self, List::Nil);
+
+        // Note that we could not pattern-match self by value (match *self) because that would move out of &mut self.
+        // Instead, we used std::mem::replace to swap self with an empty list, taking ownership of the original list.
+        // Replace is implemented using unsafe code, but it provides a safe abstraction for this common pattern.
 
         while let Cons(value, mut next) = current {
             current = *next; // Move to the next node
-            *next = rev ; // Reverse the link
+            *next = rev; // Reverse the link
             rev = Cons(value, next); // Update the reversed list
         }
 
-        *self = rev; // Assign the reversed list back to `self`
+        *self = rev; // Assign the reversed list back to self
     }
 
     fn new() -> List<T> {
@@ -101,38 +105,35 @@ impl<T> List<T> {
     fn length(&self) -> u64 {
         match self {
             Nil => 0,
-            Cons(_,l) => 1 + l.length()
+            Cons(_, l) => 1 + l.length()
         }
     }
 }
 
 fn main() {
-    let mut l = list![1,2,3];
+    let mut l = list![1, 2, 3];
 
     l.rev();
 
-    println!{"{:?}",l}
+    println!("{:?}", l);
 }
 ```
 
-For the most part, the code covers concepts we have already covered. However, it
-also introduces few Rust features that are worth more explanation:
+The code uses several concepts covered earlier, but also introduces key features
+worth explaining:
 
 - **Macros**
   We use the Rust [macro
-  system](https://doc.rust-lang.org/reference/macros.html) to define notations
-  for empty, singleton and nil list.
+  system](https://doc.rust-lang.org/reference/macros.html) to define convenient
+  syntax for empty, singleton, and multi-element lists.
 
 
 - **replace**
-  We use the function
-  [std::mem::replace](https://doc.rust-lang.org/std/mem/fn.replace.html) that
-  moves the second argument (`List::Nil`) into the location provided by the
-  first argument (`self`) and returns the original value of self. This allows us
-  to take ownership of the list stored in `self`, while leaving an empty list
-  (`Nil`) in its place.
+  We use [std::mem::replace](https://doc.rust-lang.org/std/mem/fn.replace.html)
+  to swap the second argument (`List::Nil`) into the first argument (`self`)
+  while returning the original value. This lets us take ownership of the list
+  in `self` while leaving it with an empty list (`Nil`).
 
 - **while let** syntax
-  This syntax combines pattern matching and while loops. The while loop will
-  continue its execution for as long as the pattern (here `Cons(value, mut
-  next)`) matches the value of the body.
+  This syntax combines pattern matching with while loops. The loop continues
+  as long as the pattern (here `Cons(value, mut next)`) matches the current value.

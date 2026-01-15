@@ -14,12 +14,12 @@ pub trait Iterator {
 }
 ```
 
-The iterator has a method called `next`, that when called return a value of type
-`Item`. This type is defined inside the trait. This is called an  _associated
-type_ and it is a placeholder that methods had use in the signatures.
-Implementations of the trait tie this type to a concrete definition.
+The `Iterator` trait has a method called `next` that, when called, returns a value
+of type `Item`. This type is defined as an associated type within the trait. An
+*associated type* is a placeholder that methods can use in their signatures.
+Implementations of the trait bind this type to a concrete type.
 
-Using the `Iterator trait`, we can define a simple counter. 
+Using the `Iterator` trait, we can define a simple counter: 
 
 ```rust, editable
 /// A Counter iterator that generates numbers in a range [start, end).
@@ -54,7 +54,7 @@ fn main() {
     // Create a Counter that generates numbers from 1 to 5 (exclusive).
     let counter = Counter::new(1, 5);
 
-    // the for ... in ... construct can be used to iterate over an iterator.
+    // The for ... in ... construct can be used to iterate over an iterator.
     for value in counter { 
         println!("{}", value);
     }
@@ -63,18 +63,17 @@ fn main() {
 
 ## Creating Iterators
 
-A collection for a type `T` typically provide three methods to create an
-iterator:
+A collection of type `T` typically provides three methods to create an iterator:
 
-- `iter()`, which iterates over `&T`. This iterator gives read-only access to
-  items. 
+- `iter()`, which iterates over `&T`. This iterator provides read-only access to
+  items.
 - `iter_mut()`, which iterates over `&mut T`. This iterator allows for in-place
-  modification of items. 
+  modification of items.
 - `into_iter()`, which iterates over `T`. This iterator consumes the collection
-   and yields owned values.
+  and yields owned values.
 
-The way in which a type is converted to an iterator is specified my implementing
-the `IntoIterator` trait for a type. This has the following definition.
+The way in which a type is converted to an iterator is specified by implementing
+the `IntoIterator` trait. This trait has the following definition:
 
 ```rust, ignore
 pub trait IntoIterator {
@@ -89,15 +88,16 @@ pub trait IntoIterator {
 ```
 
 Notice the syntax `<Item = Self::Item>`. This specifies that the associated type
-for the iterator is tied to `Self::Item`. 
+`Item` in the iterator is tied to `Self::Item`.
 
-The `Vec` implements three different `IntoIterator` traits, corresponding to the three methods for creating iterators:
+The `Vec` type implements three different `IntoIterator` implementations,
+corresponding to the three methods for creating iterators:
 
-- immutable borrow: `impl<'a, T> IntoIterator for &'a Vec<T>`
-- mutable borrow: `impl<'a, T> IntoIterator for &'a mut Vec<T>`
-- owned: `impl<T> IntoIterator for Vec<T>`
+- Immutable borrow: `impl<'a, T> IntoIterator for &'a Vec<T>`
+- Mutable borrow: `impl<'a, T> IntoIterator for &'a mut Vec<T>`
+- Owned: `impl<T> IntoIterator for Vec<T>`
 
-Below are some examples of usage of the three kinds of iterators. 
+Below are examples of using the three kinds of iterators. 
 
 ### Immutable Borrows
 
@@ -132,6 +132,7 @@ fn main() {
 ```
 
 ### Owned Values
+
 ```rust, editable
 fn main() {
     let names = vec!["alice".to_string(), "bob".to_string(), "charlie".to_string()];
@@ -151,15 +152,16 @@ fn main() {
 ```
 
 ## Closures
+
 Generally, functions in Rust written with `fn` cannot access their environment,
-even though they can be nested. Rust support writing anonymous functions that
-can captured their environment, i.e., closures. 
+even when nested. Rust supports anonymous functions that can capture their
+environment—these are called *closures*.
 
-For example, a closure with two parameters `x` and `y`, that adds the two
-parameters and a captured variable `z` is written `|x, y| x + y + z`. 
+For example, a closure with two parameters `x` and `y` that adds the two
+parameters and a captured variable `z` is written as `|x, y| x + y + z`. 
 
 
-```rust,editable
+```rust, editable
 fn main() {
     let outer_var = 42;
 
@@ -168,36 +170,33 @@ fn main() {
     let closure_inferred = |x, y| { x + y + outer_var };
 
     // Call the closures
-    println!("closure_annotated: {}", closure_annotated(1,2));
-    println!("closure_inferred: {}", closure_inferred(3,4));
-
+    println!("closure_annotated: {}", closure_annotated(1, 2));
+    println!("closure_inferred: {}", closure_inferred(3, 4));
 }
 ```
 
 Note that closures cannot be polymorphic. The following example fails.
 
-```rust,editable
+```rust, editable
 fn main() {
-
     let id = |x| { x };
 
     println!("Call 1: {}", id("hello"));
     println!("Call 2: {}", id(3));
-
 }
 ```
 
 Say that we want to write a higher-order function in Rust that takes a closure
-as a a parameter. What type shall we give it?
+as a parameter. What type should we give it?
 
-The type of closures in Rust is not expressible in source-level syntax. Think of
-it as a struct type of a closure, that explicitly contains the types of the
-captured variables. 
+The type of closures in Rust is not expressible using standard source-level
+syntax. Think of it as a compiler-generated struct type that explicitly contains
+the types of captured variables. 
 
 Using a closure as a function parameter requires generics. For example, we could
 do:
 
-```rust, editable 
+```rust, editable
 // `F` must be generic.
 fn apply<F>(f: F) {
     f();
@@ -212,40 +211,41 @@ fn main() {
 }
 ```
 
-However, the code still doesn't compile. We should declare that a generic type is
-callable. This is done via the traits `Fn`, `FnMut`, or `FnOnce`. These specify
-how can a closure be called and they differ on their  `self` type.
+However, the code still doesn't compile. We need to declare that a generic type
+is callable. This is done through the traits `Fn`, `FnMut`, or `FnOnce`. These
+traits specify how a closure can be called and differ in their `self` parameter.
 
-These trait put some restriction on how a closure can be called, depending on
-what environment variables it captures. This ensures that ownership and
-borrowing rules are not violated. The following table summarizes the differences
-of each trait. 
-
-
-| **Trait**         | **`self` Type**                     | **Code**                                     | **Call Site**                                |
-|--------------------|-------------------------------------|---------------------------------------------|---------------------------------------------|
-| `FnOnce`          | `self`                             | Can capture owned values and mutable references | Can only call the method once               |
-| `FnMut`           | `&mut self`                        | Can capture mutable references              | Can call many times, only with unique access |
-| `Fn`              | `&self`                            | Can capture immutable references            | Can call many times, with no restrictions    |
+These traits enforce restrictions on how a closure can be called based on what
+environment variables it captures. This ensures that ownership and borrowing
+rules are maintained. The following table summarizes the differences: 
 
 
+| **Trait**         | **`self` Type**                     | **Code**                                        | **Call Site**                                |
+|-------------------|-------------------------------------|-------------------------------------------------|----------------------------------------------|
+| `FnOnce`          | `self`                              | Can capture owned values and mutable references | Can only call the method once                |
+| `FnMut`           | `&mut self`                         | Can capture mutable references                  | Can call many times, only with unique access |
+| `Fn`              | `&self`                             | Can capture immutable references                | Can call many times, with no restrictions    |
 
-All of Rust's callable traits-—`Fn`, `FnMut`, and `FnOnce`-—have two associated
+
+
+All of Rust's callable traits—`Fn`, `FnMut`, and `FnOnce`—have two associated
 types: `Args`, which represents the types of arguments the callable takes
 (expressed as a tuple), and `Output`, which represents the return type of the
-callable. When writing trait bounds we can specify these with a special syntax
-that resembles function types: `Fn(i32) -> i32` denotes a closure that takes as
-input an `i32` and returns an `i32`.
+callable. When writing trait bounds, we can specify these using a special syntax
+that resembles function types: `Fn(i32) -> i32` denotes a closure that takes an
+`i32` as input and returns an `i32`.
 
-For a more in depth explanation of how closures work in rust you can read
-[this](https://huonw.github.io/blog/2015/05/finding-closure-in-rust/).
+For a more in-depth explanation of how closures work in Rust, you can read
+[this article](https://huonw.github.io/blog/2015/05/finding-closure-in-rust/).
 
-Here's the above example, adapted so that it compiles. 
+Here's the above example, adapted so that it compiles: 
 
-```rust, editable 
+```rust, editable
 // `F` must be generic.
-fn apply<F>(f: F) 
-where F : Fn() -> () {
+fn apply<F>(f: F)
+where
+    F: Fn() -> (),
+{
     f();
 }
 
@@ -259,54 +259,52 @@ fn main() {
 ```
 
 ### Higher-order Functions on Iterators
-The `Iterator` trait provides a few higher-order abstraction inspired from
-functional programming. Some common higher-order iterator methods are `map`,
-`filter` and `fold`. These are all default methods of the `Iterator` trait, so
-they are provided for free. Let's look at how the work. 
 
-Here's an example from the standard library 
+The `Iterator` trait provides several higher-order abstractions inspired by
+functional programming. Some common methods are `map`, `filter`, and `fold`.
+These are all default methods provided by the `Iterator` trait. Let's see how
+they work. 
 
-```rust, editable 
+Here's an example from the standard library:
+
+```rust, editable
 fn main() {
-  let a = vec![1, 2, 3];
+    let a = vec![1, 2, 3];
 
-  let doubled: Vec<i32> = a.iter()             // convert vec into an iterator
-                           .map(|&x| x * 2)   // call map
-                           .collect();        // reconstruct an iterator
-  
-  println!("{:?}", doubled)
+    let doubled: Vec<i32> = a.iter()             // convert vec into an iterator
+                              .map(|&x| x * 2)   // apply map transformation
+                              .collect();        // reconstruct a vector
+
+    println!("{:?}", doubled);
 }
 ```
 
-As an exercise try to change the `iter` method to `into_iter` to take ownership
-of the vector and `iter_mut` to modify the vector in place. 
+As an exercise, try changing the `iter()` method to `into_iter()` to take
+ownership of the vector, or to `iter_mut()` to modify the vector in place.
 
-Below are some more examples. 
-
-```rust, editable 
-fn main() {
-    let numbers = vec![1, 2, 3, 4, 5, 6];
-
-    // Use fold to calculate the sum of all elements
-    let sum = numbers.iter()
-                     .fold(0, |acc, &x| acc + x);
-
-    println!("Sum: {}", sum); // Output: Sum: 21
-}
-```
-
+Below are some more examples:
 
 ```rust, editable
 fn main() {
     let numbers = vec![1, 2, 3, 4, 5, 6];
 
-    // Filter out only even numbers and collect them into a new vector
+    // Use fold to calculate the sum of all elements
+    let sum = numbers.iter()
+                      .fold(0, |acc, &x| acc + x);
+
+    println!("Sum: {}", sum); // Output: Sum: 21
+}
+```
+
+```rust, editable
+fn main() {
+    let numbers = vec![1, 2, 3, 4, 5, 6];
+
+    // Filter to keep only even numbers and collect into a new vector
     let even_numbers: Vec<i32> = numbers.into_iter()
-                                        .filter(|&x| x % 2 == 0)
-                                        .collect();
+                                         .filter(|&x| x % 2 == 0)
+                                         .collect();
 
     println!("Even numbers: {:?}", even_numbers); // Output: [2, 4, 6]
 }
 ```
-
-## Iterators Example: Cons List

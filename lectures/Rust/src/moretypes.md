@@ -1,8 +1,8 @@
-# User Defined Types
+# User-Defined Types
 
-Rust type system has algebraic data types that allows constructing complex data
-types form simpler ones. Specifically, one can define new data types with
-structs (a generalization of product types) and enums (a generalization of sum
+Rust's type system includes algebraic data types that allow constructing complex
+data types from simpler ones. Specifically, you can define new types with
+structs (generalizations of product types) and enums (generalizations of sum
 types).
 
 
@@ -54,9 +54,9 @@ struct TwoPoints(Point, Point);
 fn add(ps: TwoPoints) -> Point {
     let TwoPoints(pA, pB) = ps; // tuple structs can be pattern matched
 
-    return (Point { x : pA.x + pB.x,
-                    y : pA.y + pA.y,  // dot notation also works
-                    z : pA.z + pB.z });
+    Point { x: pA.x + pB.x,
+            y: pA.y + pB.y,  // dot notation also works
+            z: pA.z + pB.z }
 }
 
 fn main() {
@@ -78,8 +78,8 @@ Structs are by default stack allocated.
 ### Moving and Copying Structs
 
 By default, structs have move semantics in Rust. This means that when a struct
-value is bound to a variable (through let-binding or parameter passing)
-ownership is transferred and the pervious owner gets invalidated.
+value is bound to a variable (through `let`-binding or parameter passing),
+ownership is transferred and the previous owner becomes invalidated.
 
 Consider the following scenario:
 
@@ -137,9 +137,9 @@ fn main() {
 }
 ```
 
-Note that we had to explicitly derive the `Clone` trait along with the `Copy`
-trait. This is because the `Copy` trait requires the ability to create copies of
-values, which is provided by the `Clone` trait.
+Note that we explicitly derived the `Clone` trait along with `Copy`. Types that
+implement `Copy` must also implement `Clone`; deriving `Copy` requires deriving
+`Clone` as well.
 
 
 ### Struct Methods
@@ -166,21 +166,21 @@ struct Point {
 impl Point {
     // distance from origin
     fn dist0(&self) -> f64 {
-        // converts to f64 and calculares the square root
+        // converts to f64 and calculates the square root
         ((self.x.pow(2) + self.y.pow(2)) as f64).sqrt()
     }
 
     // distance from any point
     fn dist(&self, p : Point) -> f64 {
-        // converts to f64 and calculares the square root
+        // converts to f64 and calculates the square root
         (((self.x - p.x).pow(2) + (self.y - p.y).pow(2)) as f64).sqrt()
     }
 
-    // add two points
-    fn add (&self, p : Point) -> Point {
-      Point { x : self.x + self.x,
-              y : self.y + self.y }
-    }
+        // add two points
+        fn add(&self, p: Point) -> Point {
+                Point { x: self.x + p.x,
+                        y: self.y + p.y }
+        }
 
     fn moveUp (&mut self) {
         self.y += 1
@@ -246,10 +246,11 @@ fn main() {
 ```
 
 ## Recursive Types
-Rust allows definition of recursive structs that can refer to themselves Recursive types have some restrictions:
+Rust allows recursive types that can refer to themselves. Such types have some
+restrictions:
 
-- They must be under some struct or enum.
-- They must be finite.
+- Self-referential fields must use indirection (e.g., `Box`).
+- Types must have a finite size known at compile time.
 
 ### The Problem with Infinite Size
 If we attempt to define a recursive enum like this:
@@ -270,8 +271,8 @@ enum Exp {
 }
 
 fn main() {
-  let e = Lit(42);
-  println!("{}", e);
+    let e = Exp::Lit(42);
+    println!("{:?}", e);
 }
 ```
 
@@ -289,9 +290,10 @@ provides the `Box` type to heap-allocate values.
 
 ### Box Types
 
-A type `Box<T>` represents a type `T` that is allocated on the heap of the
-program. Technically, a box is pointer type that uniquely owns a heap location
-storing a value of type `T`. A Box type can be used just as the underlying type.
+A `Box<T>` represents a `T` allocated on the heap.
+Technically, a box is a pointer type that uniquely owns a heap allocation
+holding a value of type `T`. Thanks to deref coercions, you can often use
+`Box<T>` much like the underlying `T`.
 
 A box can be created with its constructor `Box::new` that allocates memory on
 the heap and places the given value into it.

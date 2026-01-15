@@ -1,13 +1,13 @@
 # Lifetimes
 
-In Rust, references are valid for specific regions of code, known as lifetimes.
+In Rust, references are valid for specific regions of code, known as *lifetimes*.
 The borrow checker ensures that references do not outlive the lifetimes of their
-owners and that lifetimes mutable references do not overlap with the lifetimes
-any other references to the same value.
+owners and that lifetimes of mutable references do not overlap with any other
+references to the same value.
 
-Most of the time, lifetimes of references are implicit and inferred by the
-compiler. For example the following code fails to compile, as the lifetime of
-the borrow end before the lifetime of the variable `z`.
+Most of the time, lifetimes are implicit and inferred by the compiler. For example,
+the following code fails to compile because the lifetime of the borrow ends before
+the lifetime of the variable `z`.
 
 
 ```rust, editable
@@ -25,8 +25,8 @@ fn main() {
 }
 ```
 
-However, there are situations where lifetime annotations are necessary to
-clarify relationships between lifetimes. Consider the following scenario:
+However, there are situations where lifetime annotations are necessary to clarify
+the relationships between lifetimes. Consider the following scenario:
 
 ```rust, editable
 fn first<T>(a: &T, b: &T) -> &T {
@@ -51,20 +51,20 @@ fn main() {
 ```
 
 The function `first` takes two references and returns one of them. However, the
-compiler does not know whether the reference returned by first is valid beyond
-the lifetime of `y`. Since `z` is assigned the result of first, it could be
-referencing `x` (which is valid) or `y` (which is dropped). The compiler will
-return an error, because the type of the function `first` does not provide enough
-information about how the lifetimes of the inputs relate to the lifetime of the
-output.
-We can use _generic lifetimes_ to instruct the compiler that the returned
-lifetime is the same to some input lifetime.
+compiler does not know whether the returned reference remains valid beyond the
+lifetime of `y`. Since `z` is assigned the result of `first`, it could reference
+`x` (which is valid) or `y` (which is dropped). The compiler will return an error
+because the function type does not provide enough information about how the
+lifetimes of the inputs relate to the lifetime of the output.
+
+We can use *generic lifetimes* to instruct the compiler that the returned
+lifetime is the same as some input lifetime.
 
 ## Lifetime Annotations
 
-Rust's type systems allows us to give a more rich type to the function first
-using _generic lifetime annotations_. Such annotations explicitly define the
-relationships between the lifetimes of the function's inputs and output
+Rust's type system allows us to give a richer type to the function `first`
+using *generic lifetime annotations*. Such annotations explicitly define the
+relationships between the lifetimes of the function's inputs and outputs.
 
 
 ```rust, editable
@@ -94,32 +94,31 @@ generic lifetime parameters. In the example above, we introduce two lifetime
 parameters, `<'a, 'b>`, after the function name. These parameters represent the
 lifetimes of the references passed to the function.
 
-Next, we associate these lifetime parameters with the lifetimes of the
-references in the function signature. Writing `x: &'a T` (resp. `y: &'b T`)
-indicates that the reference `x` has the lifetime `'a` (resp. the reference `y`
-has the lifetime `'b`). Furthermore, we specify that the returned reference will
-have the same lifetime as `'a`, the lifetime of reference `x.
+Next, we associate these lifetime parameters with the references in the function
+signature. Writing `x: &'a T` indicates that the reference `x` has lifetime
+`'a`, and `y: &'b T` indicates that `y` has lifetime `'b`. Furthermore, we
+specify that the returned reference has the same lifetime as `'a`, the lifetime
+of `x`.
 
-The function type checks as the borrow checker can verify that the returned
-reference has the expected lifetime. The usage of `z` now typechecks as the type
-of `first` now carries enough information for the compiler to deduce that the
-reference held in `z` after the return is valid at the time of printing it.
+The function now type checks because the borrow checker can verify that the
+returned reference has the expected lifetime. The usage of `z` now type checks
+because the type of `first` carries enough information for the compiler to deduce
+that the reference in `z` is valid when it is printed.
 
-The function `first` could have been also given the following type:
+The function `first` could also be given the following type:
 
 ```rust, ignore
-fn first<'a,T>(x: &'a T, y: &'a T) -> &'a T {
+fn first<'a, T>(x: &'a T, y: &'a T) -> &'a T {
     x
 }
 ```
 
-But in this case, we wouldn't have been able to use the the variable `z` outside
-of `y`'s scope.
+However, with this signature, we would not be able to use the variable `z`
+outside of `y`'s scope.
 
-
-Let's see a more complicated example that involves vectors. This time the
-function `longer` can return either of the the two vectors. Therefore the
-lifetime of the returned reference must be the smaller of the two lifetimes.
+Let's look at a more complex example involving vectors. This time the function
+`longer` can return either of the two vectors. Therefore, the lifetime of the
+returned reference must be the smaller of the two lifetimes.
 
 As an exercise, try to fill in the lifetimes in the example below.
 
@@ -145,21 +144,44 @@ fn main() {
 }
 ```
 
-The reason why the call to `longer` type checks is that Rust does something
-called _lifetime coercion_. That means that a longer lifetime can be coerced
-into a shorter one.
+The call to `longer` type checks because Rust performs *lifetime coercion*,
+which allows a longer lifetime to be coerced into a shorter one.
+
+
+Note that we could also use slices (`&[T]`) instead of vectors (`&Vec<T>`) in
+the above example. Slices are more general as they can represent views into
+arrays, vectors, or other sequences of `T`s.  
+
+```rust, editable
+fn longer<'a, T>(v1: &'a [T], v2: &'a [T]) -> &'a [T] {
+    if v1.len() >= v2.len() { v1 } else { v2 }
+}
+
+fn main() {
+    let x: Vec<u32> = vec![1, 2, 3, 4];
+
+    {
+        let y: Vec<u32> = vec![1, 2, 3];
+
+        let z = longer(&x, &y);   // &Vec<T> coerces to &[T] automatically
+        println!("{:?}", z);
+    }
+
+    // println!("{:?}", z); // still not allowed (same reason as before)
+}
+```
 
 ## Lifetimes in Structs and Enums
 
-When structs or enums hold references, then they also need lifetime annotations
-for every reference inside their definition. This ensures that the lifetime of
-any field of the struct or enum is at least as long as the lifetime of the
-struct itself.
+When structs or enums hold references, they must also include lifetime annotations
+for every reference field in their definition. This ensures that the lifetime of
+each reference field is at least as long as the lifetime of the struct or enum
+itself.
 
-Here's an example that uses Rust
+Here's an example that uses the
 [`slice`](https://doc.rust-lang.org/std/primitive.slice.html) data type. The
 slice data type is a view into a contiguous block of memory, which is part of a
-larger collection like an array or a `Vec`. It is a reference to a segment of
+larger collection like an array or a vector. It is a reference to a segment of
 the collection, without owning the data.
 
 
@@ -202,7 +224,7 @@ fn main() {
 }
 ```
 
-Here is an example where it is useful for struct fields to have distinct lifetimes.
+Here is an example where distinct lifetimes for struct fields are useful:
 
 ```rust, editable
 struct Chunks<'a,'b, T> {
@@ -241,21 +263,19 @@ fn main() {
 }
 ```
 
-## Elision
+## Lifetime Elision
 
 In Rust, the borrow checker can infer elided lifetimes in specific cases,
 enabling more concise code. These inference rules allow developers to omit
 explicit lifetime annotations in many scenarios. The rules are as follows:
 
 - Each elided input lifetime becomes a distinct lifetime parameter.
-
-- If there is exactly one input lifetime position (whether elided or explicitly
-  stated), that lifetime is applied to all elided output lifetimes.
-
+- If there is exactly one input lifetime position (whether elided or explicit),
+  that lifetime is applied to all elided output lifetimes.
 - If there are multiple input lifetime positions, but one of them is `&self` or
   `&mut self`, the lifetime of `self` is applied to all elided output lifetimes.
 
-If the borrow checker cannot infer the lifetime relationships using these rules,
+If the borrow checker cannot infer lifetime relationships using these rules,
 explicit lifetime annotations are required.
 
 ```rust, editable
@@ -264,9 +284,10 @@ struct Example {
 }
 
 impl Example {
-    // The method get_value borrows self and returns a reference to its value.
+    // The method borrows self and returns a reference to its value.
     // The lifetime of &self is inferred to be the same as the returned reference.
-    fn get_value(&self) -> &i32 { // same as get_value<'a>(&'a self) -> &'a i32
+    // Equivalent to: fn get_value<'a>(&'a self) -> &'a i32
+    fn get_value(&self) -> &i32 {
         &self.value
     }
 }
@@ -278,19 +299,18 @@ fn main() {
 }
 ```
 
-The signature of `longest` above requires explicit lifetime annotation as
-lifetimes cannot be inferred with the above rules.
+The signature of `longer` above requires explicit lifetime annotation because
+lifetimes cannot be inferred using the above rules.
 
 ## Static
 
-Rust has special lifetime called `'static`. This lifetime represents memory that
+Rust has a special lifetime called `'static`. This lifetime represents memory that
 lasts for the entire duration of the program's execution.
 
-A reference `&'static T` is an immutable reference to some data that is
-guaranteed to be valid and safely accessible for the program's lifetime.
+A reference `&'static T` is an immutable reference to data that is guaranteed
+to be valid and safely accessible throughout the program's lifetime.
 
-
-This can typically happen in two ways:
+This can typically occur in two ways:
 
 1. The value is hardcoded into the executable.
 2. The value is a reference to leaked memory.
@@ -301,7 +321,7 @@ Here is an example of the first case:
 
 ```rust, editable
 fn main() {
-    // A string with a 'static lifetime (lives for the program's duration)
+    // A slice with a 'static lifetime (valid for the program's duration)
     let data: &'static [u32] = &[10, 20, 30];
 
     // The slice can be used throughout the program
@@ -309,13 +329,12 @@ fn main() {
 }
 ```
 
-In this example, the slice `&[10, 20, 30]` has a 'static lifetime because it
+In this example, the slice `&[10, 20, 30]` has a `'static` lifetime because it
 refers to a constant array embedded in the program's binary. The data remains
 valid and accessible for the entire duration of the program.
 
 Rust can promote the lifetime of a temporary value to `'static` under certain
-conditions. This happens when the value is constant, immutable, and never
-mutated.
+conditions. This happens when the value is constant and immutable.
 
 ```rust, editable
 fn foo() -> &'static [u32] {
@@ -323,7 +342,7 @@ fn foo() -> &'static [u32] {
 }
 
 fn main() {
-    // A string with a 'static lifetime (lives for the program's duration)
+    // A slice with a 'static lifetime (valid for the program's duration)
     let data = foo();
 
     // The slice can be used throughout the program
@@ -334,8 +353,8 @@ fn main() {
 ### Leak
 
 The second way to create a `'static` lifetime is by leaking memory. When memory
-is "leaked," it is never deallocated, making it safe to use for the program's
-entire execution.
+is "leaked," it is never deallocated, making it safe to use for the entire
+program's execution.
 
 ```rust, editable
 fn foo() -> &'static [u32] {
@@ -353,5 +372,4 @@ fn main() {
     // The slice can be used throughout the program
     println!("Static slice from leak: {:?}", data);
 }
-
 ```
