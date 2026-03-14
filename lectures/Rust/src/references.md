@@ -5,15 +5,15 @@ ownership of it. Reference types are denoted as `&T`, where `T` is the type
 being referenced. References can also be mutable, written as `&mut T`.
 References are created using the `&` and `&mut` operators.
 
-References are like pointers in C/C++, but unlike these, a reference is
+References are like pointers in C/C++, but unlike pointers, a reference is
 guaranteed to point to a valid value of a particular type throughout its
-lifetime, preventing dangling references. 
+lifetime, preventing dangling references.
 
-That is, references cannot outlive the lifetime of the original value they are
-referring to. Rust ensures this statically using the _borrow checker_.
+That is, references cannot outlive the lifetime of the original value they
+refer to. Rust ensures this statically using the _borrow checker_.
 
 For the most part, references can be used as values of the referenced type.
-However, when a reference goes out-of-scope, is not dropped. The original owner
+However, when a reference goes out of scope, it is not dropped. The original owner
 retains responsibility for managing the value's lifecycle.
 
 ## Simple Examples
@@ -43,10 +43,10 @@ fn main () {
     println!("Hello, it is {} again.", r2);
 }
 ```
-We can change the value that the reference points to with a dereferencing
+We can change the value that the reference points to using the dereference
 operator, similar to C/C++. For example, we can write `*r1 = 41;`.
 
-To do this, we have to declare the reference as mutable (otherwise the compiler will complain).
+To do this, we must declare the reference as mutable (otherwise the compiler will complain).
 
 ```rust, editable
 fn main () {
@@ -123,7 +123,7 @@ fn main () {
 }
 ```
 
-The lifetime of a borrow ends then the borrow is last used. In this example, this is right after line 4.
+The lifetime of a borrow ends when the borrow is last used. In this example, that is right after line 4.
 
 Similarly, the following examples work fine.
 
@@ -141,7 +141,7 @@ fn main () {
 }
 ```
 
-In the above the lifetimes of `r1` and `r2` do not overlap. The following example is also similar.
+In the above example, the lifetimes of `r1` and `r2` do not overlap. The following example is similar.
 
 
 ```rust, editable
@@ -165,8 +165,8 @@ guarantee memory safety and prevent common bugs like data races or dangling
 pointers. Here are the rules:
 
 
-- No borrow can outlive the scope of of the owner.
-- At any given time, You can have either
+- No borrow can outlive the scope of the owner.
+- At any given time, you can have either
   - one mutable reference OR
   - any number of immutable references
 - A borrow's lifetime ends when it is last used.
@@ -174,7 +174,7 @@ pointers. Here are the rules:
 
 ## More examples
 
-Here's an example of trying to create a reference whose lifetime would outlive the lifetime of the owner.
+Here's an example of trying to create a reference whose lifetime would outlive that of its owner.
 
 ```rust, editable
 fn dangling<'a>() -> &'a Vec<u32> { // 'a is a lifetime variable. We'll discuss this later in detail. You may ignore it for now.
@@ -189,13 +189,13 @@ fn main() {
 }
 ```
 
-The variable `xvec` is owned by the `dangling` function. When the function
-returns, its stack frame is deallocated, and all local variables, including
-`vec`, are dropped. Returning a reference to `vec` means returning a reference
-to invalid memory, which would lead to undefined behavior.
+The variable `vec` is owned by the `dangling` function. When the function
+returns, its stack frame is deallocated and all local variables, including
+`vec`, are dropped. Returning a reference to `vec` would mean returning a
+reference to invalid memory, which would lead to undefined behavior.
 
-The Rust's borrow checker detects that the reference to `vec` would outlive its
-owner (`vec`), so it prevents the code from compiling.
+Rust's borrow checker detects that the reference to `vec` would outlive its
+owner, so it prevents the code from compiling.
 
 ## Creating Scopes
 
@@ -217,8 +217,8 @@ fn main() {
 }
 ```
 
-Nothing too fancy here. In the next example, notice how the borrow checker will
-prevent borrows that outlive the scope of the owner
+Nothing too fancy here. In the next example, notice how the borrow checker
+prevents borrows that outlive the scope of the owner.
 
 ```rust, editable
 fn main() {
@@ -256,10 +256,10 @@ fn main() {
 
 ## Vectors, again
 
-Let's now go back to our vector example. Recall that to call a function to sum
-the elements of a vector and be able to reuse the vector after this we had to
-pass the ownership around. This can become very tedious but thankfully we can
-use reference to make it easier.
+Let's now go back to our vector example. Recall that to call a function that
+sums the elements of a vector and still reuse the vector afterward, we had to
+pass ownership around. This can become very tedious, but thankfully we can
+use references to make it easier.
 
 
 ```rust, editable
@@ -323,7 +323,7 @@ fn main() {
     let mut x = &data[0];
 
     println!("{}", x);
-    
+
     data.push(4);
 
     x = &data[3];

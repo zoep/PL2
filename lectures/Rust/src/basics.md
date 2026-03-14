@@ -10,9 +10,9 @@ fn main() {
 }
 ```
 
-First we declare a main function, which is the entry point in every Rust program.
+First, we declare a main function, which is the entry point of every Rust program.
 
-The `println!` macro is used to print text to the console. The exclamation mark (!) indicates that `println!` is a macro, not a function.
+The `println!` macro is used to print text to the console. The exclamation mark (`!`) indicates that `println!` is a macro, not a function.
 
 
 We can compile and execute this program from the terminal using the Rust compiler.
@@ -36,7 +36,7 @@ fn main() {
 }
 ```
 
-The variable answer has a _strong_, _static_ type `u64` (denoting an unsigned
+The variable `answer` has a _strong_, _static_ type `u64` (denoting an unsigned
 integer with 64 bits). Rust has type inference, so the type annotation could
 have been omitted.
 
@@ -81,20 +81,20 @@ types are denoted as `uN` and `iN`, for unsigned and signed integers
 respectively, where N represents the bit width and can be one of 8, 16, 32, 64,
 or 128.
 
-For example, `u16` is an 16-bit unsigned integer, holding values from 0 to
-2^16-1 and `i64` is a 64-bit integer holding values from -2^63 to 2^63-1.
+For example, `u16` is a 16-bit unsigned integer holding values from 0 to
+2^16-1, and `i64` is a 64-bit integer holding values from -2^63 to 2^63-1.
 
-The overflow behavior is different depending on compiler flags. When compiling
-in debug mode, Rust will trap overflows throwing an unrecoverable error
-(_panic_). Then compiling release mode, there are no runtime checks for
-overflows and they will wrap around.
+The overflow behavior depends on compiler flags. When compiling
+in debug mode, Rust traps overflows by throwing an unrecoverable error
+(_panic_). When compiling in release mode, there are no runtime checks for
+overflows and they wrap around.
 
-Additionally, Rust has the `isize` and `usize` types that depend on the machines
-architecture.
+Additionally, Rust has the `isize` and `usize` types whose size depends on the
+machine's architecture.
 
 #### Floating Point Numbers
 
-The `f32` type is a single-precision float, and `f64` is a double precision
+The `f32` type is a single-precision float, and `f64` is a double-precision
 float.
 
 #### Booleans
@@ -138,14 +138,14 @@ fn main() {
 ```
 
 Notice that we use the `{:?}` format specifier instead of `{}`. The reason is
-that tuple does not implement the `Display` trait, required to print a value
-with `{}`, but it does implement the `Debug` trait witch is what the `{:?}`
+that a tuple does not implement the `Display` trait, required to print a value
+with `{}`, but it does implement the `Debug` trait, which is what the `{:?}`
 specifier calls.
 
 
 #### Arrays
 
-Arrays are similar to tuples, but all elements must have the same type. It's
+Arrays are similar to tuples, but all elements must have the same type. Their
 type is fixed and statically known. Arrays are allocated on the stack.
 
 ```rust,editable
@@ -158,13 +158,13 @@ fn main() {
 
 Play around to see what happens when you try to access the array out of bounds.
 
-When the compiler can statically determine that the array will be accessed out of bounds it will throw a compile time error.
+When the compiler can statically determine that an array will be accessed out of bounds, it will produce a compile-time error.
 
 However, conservatively detecting all accesses that cannot be guaranteed to be
 within the array bounds would be too restrictive.
 
 The following program compiles fine and throws an error at runtime. You can also
-see an example of Rust function (yes, arrows again).
+see an example of a Rust function (yes, arrows again).
 
 ```rust,editable
 fn access(a : [u32;5], n : usize) -> u32{
@@ -178,13 +178,13 @@ fn main() {
 }
 ```
 
-Notice, that accessing an array out of bound throws is a _trapped_ error (unlike
+Note that accessing an array out of bounds is a _trapped_ error (unlike
 C and C++). The program will panic at runtime, throwing an unrecoverable error.
 This ensures that a program can never access invalid memory.
 
 ## Functions
 
-We just saw an example of a Rust function. In Rust functions can have zero or more parameters, and optionally a return type.
+We just saw an example of a Rust function. In Rust, functions can have zero or more parameters and an optional return type.
 
 Here are some examples of Rust functions.
 
@@ -231,8 +231,8 @@ fn main() {
 
 ## Control Flow
 
-We will see some of Rust control flow constructs using a Fibonacci example. For
-more control flow constructs refer to [the Rust
+We will see some of Rust's control flow constructs using a Fibonacci example. For
+more control flow constructs, refer to [the Rust
 Book](https://doc.rust-lang.org/book/ch03-05-control-flow.html).
 
 

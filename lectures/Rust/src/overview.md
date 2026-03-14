@@ -8,7 +8,7 @@ with low-level control over system resources. Its most distinctive feature is
 its ability to guarantee memory safety without a garbage collector, achieved
 through its advanced type system.
 
-Rust design principles emphasize zero-cost abstractions that allow for writing
+Rust's design principles emphasize zero-cost abstractions that allow for writing
 high-level, expressive, and safe code without sacrificing performance.
 
 ## Getting Started
@@ -23,7 +23,7 @@ high-level, expressive, and safe code without sacrificing performance.
 
 - [Rust By Example](https://doc.rust-lang.org/rust-by-example/).
 
-    A Collection of examples that illustrate various Rust concepts.
+    A collection of examples that illustrate various Rust concepts.
 
 - [Rustlings](https://github.com/rust-lang/rustlings/)
 
@@ -45,6 +45,6 @@ high-level, expressive, and safe code without sacrificing performance.
 
 This book is created with
 [mdBook](https://rust-lang.github.io/mdBook/index.html), an awesome tool
-(written in Rust) for creating books using Markdown. To view it the book in html form, install
+(written in Rust) for creating books using Markdown. To view the book in HTML form, install
 [mdBook](https://rust-lang.github.io/mdBook/guide/installation.html) and run
 `mdbook serve --open` in the root directory of the book.

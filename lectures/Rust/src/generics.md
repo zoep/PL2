@@ -119,7 +119,7 @@ fn main() {
 }
 ```
 
-The code uses several concepts covered earlier, but also introduces key features
+The code uses several concepts covered earlier, and also introduces key features
 worth explaining:
 
 - **Macros**

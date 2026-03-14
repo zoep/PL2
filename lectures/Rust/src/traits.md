@@ -1,7 +1,7 @@
 # Traits
 
-In Rust, traits are a way to define shared functionality across different types.
-A trait specifies a set of methods that the implementing type must provide. They
+In Rust, traits define shared functionality across different types.
+A trait specifies a set of methods that the implementing type must provide. Traits
 are similar, but not identical, to interfaces in languages like Java and type
 classes in Haskell.
 
@@ -182,13 +182,12 @@ default behavior.
 
 ## Standard Library Traits
 
-Here is a brief description of the most important traits in the Rust standard library.
+Here is a brief overview of the most important traits in the Rust standard library.
 
 ### [`Display`](https://doc.rust-lang.org/std/fmt/trait.Display.html)
 
-The `Display` trait provides an implementation for formatting a type with the `{}`
-specifier. It is intended to produce user-facing output and typically implements
-a clean, human-readable format.
+The `Display` trait provides formatting for a type with the `{}`
+specifier. It is intended to produce user-facing output in a clean, human-readable format.
 
 Implementing the `Display` trait automatically provides an implementation of the
 `ToString` trait for free.
@@ -229,7 +228,7 @@ fn main() {
 ### [`Debug`](https://doc.rust-lang.org/std/fmt/trait.Debug.html)
 
 The `Debug` trait is similar to `Display` but is intended for debugging purposes.
-It typically implements a detailed, developer-oriented output.
+It typically produces detailed, developer-oriented output.
 
 The definition of the trait in the standard library is the following.
 
@@ -276,10 +275,9 @@ fn main() {
 ### Deriving Traits
 
 Some traits in Rust are **automatically derivable** using the `#[derive]`
-attribute. The `#[derive]` attribute can be applied to a struct or enum to
-automatically generate default implementations of certain traits. This is done
-through **metaprogramming** provided by the Rust compiler, which reduces
-boilerplate code.
+attribute. This attribute can be applied to a struct or enum to automatically
+generate default implementations of certain traits via **metaprogramming**
+provided by the Rust compiler, reducing boilerplate code.
 
 For example, traits like `Debug`, `Clone`, `PartialEq`, and `Eq` are
 derivable. This allows developers to quickly add functionality like formatting,
@@ -328,11 +326,11 @@ They are all similar in nature and defined in the standard library module
 ### [`Clone`](https://doc.rust-lang.org/std/clone/trait.Clone.html)
 
 The `Clone` trait provides a way to explicitly create a duplicate of a value,
-allowing for deep copies of heap-allocated data. A type can implement `Clone`
+enabling deep copies of heap-allocated data. A type can implement `Clone`
 if all of its components implement `Clone`. `Clone` can be implemented manually
-or derived automatically. Note that automatic derivation will place `Clone` bounds
-on all generic types, even though this may not be necessary (e.g., a `&T` is
-`Clone` even if `T` is not).
+or derived automatically. Note that automatic derivation places `Clone` bounds
+on all generic type parameters, even when this is not strictly necessary
+(e.g., `&T` is `Clone` even if `T` is not).
 
 
 ```rust, editable
@@ -399,8 +397,8 @@ impl<T: Clone> Clone for List<T> {
 ### [`Copy`](https://doc.rust-lang.org/std/marker/trait.Copy.html)
 
 We have already seen that some types behave differently with respect to ownership
-rules. For example, the following snippet works just fine, even though it appears
-to violate ownership rules.
+rules. For example, the following snippet works fine even though it appears
+to violate them.
 
 ```rust, editable
 fn main() {
@@ -414,8 +412,8 @@ fn main() {
 ```
 
 This works because the value of `x.1` (an `i32`) is **copied**, not moved, into
-`x1`. Types like `i32` implement the `Copy` trait, which means they can be
-duplicated without invalidating the original value. Types that have copy
+`x1`. Types like `i32` implement the `Copy` trait, meaning they can be
+duplicated without invalidating the original value. Types with copy
 semantics instead of move semantics are called **Copy types**.
 
 The `Copy` trait performs a **bitwise copy** of a value into a new location in
@@ -430,9 +428,9 @@ original value:
 - In a **copy**, the original value remains valid and accessible, allowing
   multiple independent owners of the same value.
 
-Note that copies occur implicitly when a type implements the `Copy` trait.
+Copies occur implicitly whenever a type implements the `Copy` trait.
 There is no explicit method to call; the duplication is handled automatically
-by the compiler whenever a value is assigned or passed.
+by the compiler whenever such a value is assigned or passed.
 
 In fact, the `Copy` trait itself does not define any methods. Its definition is:
 
@@ -440,10 +438,10 @@ In fact, the `Copy` trait itself does not define any methods. Its definition is:
 pub trait Copy: Clone { }
 ```
 
-This means that any type implementing `Copy` must also implement the `Clone`
-trait, which is a **supertrait** of `Copy`. A type that implements `Clone` can
+This means that any type implementing `Copy` must also implement `Clone`,
+which is a **supertrait** of `Copy`. A type that implements `Clone` can
 also implement `Copy` if the cloning operation performs a bitwise copy rather
-than a deep copy. In other words, the `Clone` implementation only needs to return
+than a deep copy—in other words, if the `Clone` implementation simply returns
 `*self`.
 
 Types that can implement `Copy` are those whose components are all `Copy`.
@@ -454,8 +452,8 @@ Some types cannot implement `Copy` safely, including heap-allocated types
 (like `Vec<T>` and `String`) and mutable references (`&mut T`).
 
 Types can implement `Copy` either manually or by deriving. The default `#[derive]`
-implementation will place bounds on all generic types, even though this may not
-be necessary.
+implementation places bounds on all generic type parameters, even when this is not
+strictly necessary.
 
 Notice the difference in the following snippets; the second fails to compile.
 
@@ -517,22 +515,22 @@ fn main() {
 
 ### [`Drop`](https://doc.rust-lang.org/std/ops/trait.Drop.html)
 
-When a value is no longer needed (e.g., it goes out of scope), Rust will
-deallocate it by calling a destructor. Rust calls the `drop` method automatically
+When a value is no longer needed (e.g., it goes out of scope), Rust
+deallocates it by calling a destructor. Rust calls the `drop` method automatically
 when a value goes out of scope. The `drop` method cannot be called manually
-(however, [`std::mem::drop`](https://doc.rust-lang.org/std/mem/fn.drop.html)
+(though [`std::mem::drop`](https://doc.rust-lang.org/std/mem/fn.drop.html)
 exists for explicitly dropping values early).
 
 In most cases, `Drop` does not need to be implemented because Rust automatically
 calls destructors on all fields of a value. It is useful for defining custom
-logic that will be executed when a value is no longer needed and is about to be
-deallocated. Some use cases for `Drop` include:
+logic to run when a value is no longer needed and is about to be deallocated.
+Some use cases for `Drop` include:
 
 - Manually managing memory
 - Managing OS-native resources (e.g., file handles, network sockets) with a
   Rust interface
 
-Note that the destructor runs at the end of the scope: 
+Note that the destructor runs at the end of the scope:
 
 ```rust, editable
 #[derive(Debug)]
@@ -552,7 +550,7 @@ fn main() {
 
 ### [`From`](https://doc.rust-lang.org/std/convert/trait.From.html) and [`Into`](https://doc.rust-lang.org/std/convert/trait.Into.html)
 
-The `From` and `Into` traits in Rust are used for type conversions. Both traits
+The `From` and `Into` traits are used for type conversions. Both traits
 provide a way to convert one type into another, consuming the original value.
-Implementing `From` for a type automatically provides the inverse `Into`
+Implementing `From` for a type automatically provides the corresponding `Into`
 implementation.

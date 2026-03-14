@@ -31,6 +31,6 @@ main = do
 -- foreign import capi my_add :: CInt -> CInt -> CInt
 
 
--- main :: IO () 
--- main = 
+-- main :: IO ()
+-- main =
 --   putStrLn . show $ my_add 21 21

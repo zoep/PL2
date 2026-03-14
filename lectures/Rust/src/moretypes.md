@@ -1,7 +1,7 @@
 # User-Defined Types
 
-Rust's type system includes algebraic data types that allow constructing complex
-data types from simpler ones. Specifically, you can define new types with
+Rust's type system includes algebraic data types for constructing complex
+types from simpler ones. Specifically, you can define new types with
 structs (generalizations of product types) and enums (generalizations of sum
 types).
 
@@ -105,13 +105,14 @@ fn main() {
 
 }
 ```
+
 Quiz: Make the above code compile and run successfully.
 
 
-However, if all fields of a struct implement the `Copy` trait, then the struct
-can also derive the `Copy` trait automatically. In this case, when a struct
-value is bound to a variable, a copy of the value is made and both the previous
-and new owners can use the value.
+However, if all fields of a struct implement the `Copy` trait, the struct
+can also derive `Copy` automatically. In this case, when a struct
+value is bound to a variable, a copy is made and both the previous
+and new owner can use the value.
 
 ```rust, editable
 #[derive(Copy, Clone)] // explicitly derive the Copy and Clone traits
@@ -151,7 +152,7 @@ in the context of a struct instance.
 The first parameter of a method is always named `self` and refers to the struct
 instance the method is called on. Methods can take ownership of the struct
 instance or a (possibly mutable) reference to it, written `&self` (resp. `&mut
-self`) which is a shorthand for `self: &Self` (resp. `self: &mut self`).
+self`), which is shorthand for `self: &Self` (resp. `self: &mut Self`).
 
 Here’s an example illustrating struct methods:
 
@@ -200,12 +201,12 @@ fn main() {
 
 ## Enums
 
-Enums in Rust enable you to define types that represent one of several possible
+Enums in Rust let you define types that represent one of several possible
 variants. Each variant can optionally carry associated data, which can be a
 single value, a tuple, or a struct.
 
-Enum types can be pattern matched to handle their different variants. They can
-also have associated methods in `impl` blocks just like structs.
+Enum types can be pattern-matched to handle their different variants. They can
+also have associated methods in `impl` blocks, just like structs.
 
 Here's an illustrative example.
 
@@ -246,7 +247,7 @@ fn main() {
 ```
 
 ## Recursive Types
-Rust allows recursive types that can refer to themselves. Such types have some
+Rust allows recursive types that refer to themselves, subject to some
 restrictions:
 
 - Self-referential fields must use indirection (e.g., `Box`).
@@ -281,22 +282,21 @@ size`.
 
 This happens because, by default, Rust stores data on the stack, which requires
 the size of all types to be statically known. A recursive type like `Exp` would
-require an infinitely large amount of stack memory, as it contains itself
-directly.
+require an infinite amount of stack memory, since it contains itself directly.
 
 To resolve this, we can use heap allocation. Instead of storing the recursive
-value directly, we store a pointer to the heap where the value resides. Rust
-provides the `Box` type to heap-allocate values.
+value directly, we store a pointer to a heap-allocated copy of it. Rust
+provides the `Box` type for this purpose.
 
 ### Box Types
 
 A `Box<T>` represents a `T` allocated on the heap.
 Technically, a box is a pointer type that uniquely owns a heap allocation
-holding a value of type `T`. Thanks to deref coercions, you can often use
-`Box<T>` much like the underlying `T`.
+holding a value of type `T`. Thanks to deref coercions, `Box<T>` can often be
+used much like the underlying `T`.
 
-A box can be created with its constructor `Box::new` that allocates memory on
-the heap and places the given value into it.
+A box is created with `Box::new`, which allocates memory on the heap and places
+the given value into it.
 
 ```rust, editable
 fn main() {
@@ -308,7 +308,7 @@ fn main() {
 ```rust, editable
 fn main() {
     let b : Box<u32> = Box::new(1);
-    let x : u32 = b; // Will this work? What do we need to do to make it work? 
+    let x : u32 = b; // Will this work? What do we need to do to make it work?
     println!("The number is {}", x);
 }
 ```

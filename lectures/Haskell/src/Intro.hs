@@ -41,7 +41,7 @@ absolutely necessary, avoiding redundant work. Also, lazy evaluation enables
 working with infinite data structures (like streams), by computing only the
 required portion of the structure on demand.
 
-However, reasoning about performance become much harder as computation is
+However, reasoning about performance becomes much harder as computation is
 nonlocal. Also, suspended computations (known as thunks) may accumulate in
 memory if not carefully managed, leading to unexpected memory consumption.
 
@@ -55,15 +55,15 @@ Type classes: A way to define an interface (set of functions/constraints) that
 work for multiple types. Type classes provide a principled way to define
 overloaded operators.
 
-Higher-rank polymorphism: Haskell allows polymorphism over type operators which
-is a feature that allows expressive and reusable abstractions.
+Higher-kinded polymorphism: Haskell allows polymorphism over type constructors,
+which enables expressive and reusable abstractions.
 
 Higher-rank polymorphism: By default, Haskell's type system only allows prenex
 polymorphism (a.k.a. let-polymorphism). This means that type quantification in
-polymorphic types can only happen at the outermost of the type.
+polymorphic types can only appear at the outermost position of the type.
 
 Higher-rank polymorphism allows function arguments to be polymorphic as well. A
-rank-N type is type in which a universal quantifier can be at most N level deep
+rank-N type is a type in which a universal quantifier can be at most N levels deep
 inside a function argument. For example, the following type is a rank-2 type:
 
 (forall b, b -> (b, b)) -> Int -> Bool -> ((Int, Int), (Bool, Bool))
@@ -88,7 +88,7 @@ cabal : Haskell's package manager and build system for managing project
 dependencies.
 
 Core  : GHC "desugars" Haskell into Core, a typed intermediate representation
-which is a superset of System F
+that is a superset of System F
 https://gitlab.haskell.org/ghc/ghc/-/wikis/commentary/compiler/hsc-main
 
 Lazy evaluation : Expressions in Haskell are evaluated when needed and at most
@@ -179,7 +179,7 @@ Functions
 
 -}
 
--- In Haskell, functions is just a regular definition
+-- In Haskell, a function is just a regular definition
 add :: Integer -> Integer -> Integer
 add = \x y -> x + y  -- This is an anonymous function
 
@@ -187,7 +187,7 @@ add = \x y -> x + y  -- This is an anonymous function
 add' :: Num a => a -> a -> a
 add' x y = x + y
 
--- We may also define this function as follows (This is a very Haskellish thing to do)
+-- We may also define this function as follows (this is a very Haskell-idiomatic thing to do)
 add'' :: Integer -> Integer -> Integer
 add'' = (+)
 
@@ -196,11 +196,11 @@ add'' = (+)
 
 {- Infix and Prefix notations
 
-In Haskell we can define infix operators, like +, -, etc. We defined them as
-ordinary functions but their symbol is put in parentheses.
+In Haskell we can define infix operators, such as +, -, etc. We define them as
+ordinary functions but enclose their symbol in parentheses.
 
 Generally, if we put an infix operator in parentheses, it becomes prefix. If we
-put an prefix operator inside backticks then it becomes infix.
+put a prefix operator inside backticks, it becomes infix.
 -}
 
 -- Example: Lexicographic comparison of pairs
@@ -213,7 +213,7 @@ put an prefix operator inside backticks then it becomes infix.
 -- >>> (2,3) <=| (1, 4)
 -- False
 
--- Every infix operator can be used as prefix and vise versa.
+-- Every infix operator can be used as prefix and vice versa.
 
 -- >>> (<=|) (1,3) (1, 4)
 -- True
@@ -329,8 +329,8 @@ test2 x y =
 -- >>> test2 3 1
 -- /Users/zoo/Repos/PL2/lectures/Haskell/src/Intro.hs:(239,3)-(243,16): Non-exhaustive patterns in case
 
--- Note, that both of these functions are partial, i.e., they are not defined for
--- all the values of their domain.
+-- Note that both of these functions are partial, i.e., they are not defined for
+-- all values of their domain.
 
 -- As a general guideline, all grouped expressions must be exactly aligned. This
 -- includes cases and other constructs like let, where, and do blocks that we
@@ -343,10 +343,10 @@ Laziness
 --------
 
 Haskell is a lazy language. It has call-by-need semantics and arguments to
-functions are evaluated at most once, and only when its needed.
+functions are evaluated at most once, and only when they are needed.
 
-In Haskell, it is easy to define short-circuit operators, that only evaluate their
-second argument, unless it's value is needed.
+In Haskell, it is easy to define short-circuit operators that only evaluate their
+second argument when its value is needed.
 
 For example:
 -}
@@ -378,7 +378,7 @@ and' True y = y
 -- A non terminating function.
 
 -- We can define such a function and pass it around without observing any
--- non termination, as long as its value is not explicitly needed
+-- non-termination, as long as its value is not explicitly needed
 loop :: () -> a
 loop _ = loop ()
 
@@ -424,13 +424,6 @@ fst' (x, _) = x
 -- pitfalls: unevaluated thunks may accumulate and consume memory, leading to
 -- space leaks (we will illustrate this later with an example).
 
--- Laziness  avoids unnecessary computation by evaluating only what is required,
--- and it enables working with infinite data structures such as streams.
--- However, laziness can also introduce performance pitfalls: unevaluated thunks
--- may accumulate and consume memory, leading to space leaks (we will illustrate
--- this later with an example).
-
-
 -- Sometimes, it is useful to control evaluation with one of the following operations.
 
 -- seq: The seq operator forces evaluation of its first argument before returning the second
@@ -442,10 +435,10 @@ fst' (x, _) = x
 -- >>> (error "boom") `seq` 42
 -- boom
 
--- Once the evaluation of the outermost constructor of the thunk is forced,
--- which usually happens through pattern matching, the outermost constructor of
--- the thunk will be evaluated.  (unless they have been evaluated by some earlier use). We say the
--- expression is evaluated in _weak head normal form_.
+-- Once the outermost constructor of a thunk is forced — which usually happens
+-- through pattern matching — the thunk is evaluated to its outermost constructor
+-- (unless it has already been evaluated by an earlier use). We say the
+-- expression is evaluated to _weak head normal form_.
 
 {-
 
@@ -697,7 +690,7 @@ filter' p xs = [ x | x <- xs, p x ]
 -- >>> filter' (> 42) [1..50]
 -- [43,44,45,46,47,48,49,50]
 
--- finds all Pythagorian triples up to n
+-- finds all Pythagorean triples up to n
 pythag :: Integer -> [(Integer,Integer,Integer)]
 pythag n =
   [(x,y,z) | x <- [1..n], y <- [x..n],
@@ -819,7 +812,7 @@ many = do
   putStr " World!" -- must be an IO action
   putStr "\n"
 
--- Note that actions is a do block must be correctly indented.
+-- Note that actions in a do block must be correctly indented.
 
 query :: IO ()
 query = do
@@ -841,7 +834,7 @@ readSomeLines f = do
 
 
 -- Haskell offers an escape mechanism from the IO monad. This is not a safe
--- feature, as it brakes encapsulation of side effects.
+-- feature, as it breaks the encapsulation of side effects.
 
 -- unsafePerformIO :: IO a -> a
 
@@ -858,14 +851,14 @@ can be helpful with debugging. Some useful functions are below.
 -- before returning the second argument as its result
 trace     :: String -> a -> a
 
--- Note that trace is not a pure functional program: it has a side-effect (and
+-- Note that trace is not a pure function: it has a side effect (and
 -- it is not even defined inside IO!) However it is very useful for debugging.
 
 
 -- Like trace, but uses show on the argument to convert it to a String.
 traceShow :: Show a => a -> b -> b
 
-The monadic counterparts of the above functions.
+The monadic counterparts of the above functions are:
 
 traceM     :: Monad m => String -> m ()
 traceShowM :: (Monad m, Show a) => a -> m ()

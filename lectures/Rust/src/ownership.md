@@ -37,11 +37,11 @@ given time. In other words, there is exactly one variable that “owns” (or
 “holds”) a pointer to the heap-allocated data structure at any point during a
 program's execution.
 
-When a variable that has a type that is heap allocated gets reassigned or passed
-as an argument, then the pointer to the heap allocated object will be copied,
-but not the data itself. In such cases we say that the ownership of the value
-has been _moved_. Once the ownership is moved then the old owner becomes
-_invalidated_ and cannot be used anymore.
+When a variable of a heap-allocated type is reassigned or passed as an argument,
+the pointer to the heap-allocated object is copied, but not the data itself.
+In such cases we say that ownership of the value has been _moved_. Once
+ownership is moved, the old owner becomes _invalidated_ and can no longer be
+used.
 
 Since a value has only one owner, Rust knows exactly when the object is no
 longer in use (when it goes out of scope). At that point, the memory can be
@@ -49,7 +49,7 @@ safely deallocated without the risk of dangling pointers or memory leaks.
 
 In programming language theory, Rust’s ownership model is referred to as an
 affine type system, a specialized form of substructural type systems. Such
-systems constrain how resources (like memory) are accessed. In particular,
+systems constrain how resources (like memory) may be accessed. In particular,
 affine types limit each resource to a single “use” (or owner) at a time, which
 guarantees memory safety without requiring a garbage collector.
 
@@ -111,10 +111,10 @@ fn main () {
 }
 ```
 
-In the above code, ownership of vec is moved to the function parameter `v` in
-`sum`. After this move, the original `vec` in `main `is invalidated and can no
+In the above code, ownership of `vec` is moved to the function parameter `v` in
+`sum`. After this move, the original `vec` in `main` is invalidated and can no
 longer be used. Rust’s ownership rules ensure that once `v` goes out of scope
-inside sum, the memory can be deallocated safely—-or dropped, in Rust
+inside `sum`, the memory can be safely deallocated—or dropped, in Rust
 terminology.
 
 
@@ -149,14 +149,14 @@ fn main () {
 
 When you compile this, you’ll see an error indicating that `vec` has been moved
 and is no longer valid. This error occurs because Rust prevents any further
-usage of the vector after its ownership has been transferred to sum.
+use of the vector after its ownership has been transferred to `sum`.
 
 When ownership is transferred, a _shallow copy_ of the data is performed. This
 means that only the pointer to the heap-allocated data is copied, not the actual
 data itself. In Rust, this process is referred to as a _move_.
 
 In contrast, a deep copy would clone the entire data structure on the heap. Rust
-does not perform deep copies of heap allocated objects automatically, ensuring
+does not perform deep copies of heap-allocated objects automatically, ensuring
 efficiency and avoiding unintentional performance overhead.
 
 Likewise, if you assign `vec` to another variable, the same move semantics
@@ -183,7 +183,7 @@ has been moved, there is no longer any valid reference (or owner) left behind to
 access the original data.
 
 To work around this, the function receiving ownership could simply return it
-back to the caller. This way, once the function completes, the caller regains
+to the caller. This way, once the function completes, the caller regains
 ownership of the value and can continue using it.
 
 
@@ -219,7 +219,7 @@ fn main () {
 ```
 
 
-Note that in order for the function parameter to take ownership of a vector and
+Note that for a function parameter to take ownership of a vector and
 mutate it, we must declare the function parameter as mutable.
 
 ```rust, editable
@@ -246,9 +246,8 @@ fn main () {
 
 Returning ownership on every function call would be cumbersome and non-idiomatic
 in Rust. Instead, Rust provides references, which let you borrow a value without
-transferring ownership. This borrowing mechanism keeps the compiler’s guarantees
-about safety and ensures that you can still access the data without having to
-move or clone it every time a function needs to look at it.
+transferring ownership. This borrowing mechanism preserves the compiler’s safety
+guarantees while allowing functions to access data without moving or cloning it.
 
 
 ### Bounds checking
@@ -270,7 +269,7 @@ unnecessary.
 
 ## Strings
 
-Another common heap allocated type in Rust is strings.
+Another common heap-allocated type in Rust is strings.
 
 Rust has a type `str` that is a growable, mutable, owned, UTF-8 encoded string
 type

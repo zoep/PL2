@@ -14,12 +14,12 @@ pub trait Iterator {
 }
 ```
 
-The `Iterator` trait has a method called `next` that, when called, returns a value
+The `Iterator` trait has a method `next` that, when called, returns a value
 of type `Item`. This type is defined as an associated type within the trait. An
-*associated type* is a placeholder that methods can use in their signatures.
-Implementations of the trait bind this type to a concrete type.
+*associated type* is a placeholder that methods can use in their signatures;
+implementations of the trait bind it to a concrete type.
 
-Using the `Iterator` trait, we can define a simple counter: 
+Using the `Iterator` trait, we can define a simple counter:
 
 ```rust, editable
 /// A Counter iterator that generates numbers in a range [start, end).
@@ -55,7 +55,7 @@ fn main() {
     let counter = Counter::new(1, 5);
 
     // The for ... in ... construct can be used to iterate over an iterator.
-    for value in counter { 
+    for value in counter {
         println!("{}", value);
     }
 }
@@ -65,19 +65,16 @@ fn main() {
 
 A collection of type `T` typically provides three methods to create an iterator:
 
-- `iter()`, which iterates over `&T`. This iterator provides read-only access to
-  items.
-- `iter_mut()`, which iterates over `&mut T`. This iterator allows for in-place
-  modification of items.
-- `into_iter()`, which iterates over `T`. This iterator consumes the collection
-  and yields owned values.
+- `iter()`, which iterates over `&T`, providing read-only access to items.
+- `iter_mut()`, which iterates over `&mut T`, allowing in-place modification of items.
+- `into_iter()`, which iterates over `T`, consuming the collection and yielding owned values.
 
 The way in which a type is converted to an iterator is specified by implementing
 the `IntoIterator` trait. This trait has the following definition:
 
 ```rust, ignore
 pub trait IntoIterator {
-    
+
     type Item; // associated types for iterator item
 
     type IntoIter: Iterator<Item = Self::Item>; // associated iterator type
@@ -97,7 +94,7 @@ corresponding to the three methods for creating iterators:
 - Mutable borrow: `impl<'a, T> IntoIterator for &'a mut Vec<T>`
 - Owned: `impl<T> IntoIterator for Vec<T>`
 
-Below are examples of using the three kinds of iterators. 
+Below are examples of using the three kinds of iterators.
 
 ### Immutable Borrows
 
@@ -122,7 +119,7 @@ fn main() {
     let mut numbers = vec![1, 2, 3];
 
     // Using IntoIterator for &mut Vec<T>
-    let iter_mut = numbers.iter_mut(); // Equivalent to (&mut numbers).into_iter(); 
+    let iter_mut = numbers.iter_mut(); // Equivalent to (&mut numbers).into_iter();
     for num in iter_mut {
         *num += 1;
     }
@@ -153,12 +150,12 @@ fn main() {
 
 ## Closures
 
-Generally, functions in Rust written with `fn` cannot access their environment,
+Functions in Rust written with `fn` cannot access their surrounding environment,
 even when nested. Rust supports anonymous functions that can capture their
 environment—these are called *closures*.
 
-For example, a closure with two parameters `x` and `y` that adds the two
-parameters and a captured variable `z` is written as `|x, y| x + y + z`. 
+For example, a closure with two parameters `x` and `y` that adds both
+parameters and a captured variable `z` is written as `|x, y| x + y + z`.
 
 
 ```rust, editable
@@ -186,15 +183,14 @@ fn main() {
 }
 ```
 
-Say that we want to write a higher-order function in Rust that takes a closure
+Suppose we want to write a higher-order function in Rust that takes a closure
 as a parameter. What type should we give it?
 
-The type of closures in Rust is not expressible using standard source-level
-syntax. Think of it as a compiler-generated struct type that explicitly contains
-the types of captured variables. 
+The type of a closure in Rust is not expressible using standard source-level
+syntax. Think of it as a compiler-generated struct type that captures the types
+of all closed-over variables.
 
-Using a closure as a function parameter requires generics. For example, we could
-do:
+Using a closure as a function parameter requires generics. For example:
 
 ```rust, editable
 // `F` must be generic.
@@ -211,13 +207,13 @@ fn main() {
 }
 ```
 
-However, the code still doesn't compile. We need to declare that a generic type
+However, the code still doesn't compile. We need to declare that the generic type
 is callable. This is done through the traits `Fn`, `FnMut`, or `FnOnce`. These
-traits specify how a closure can be called and differ in their `self` parameter.
+traits specify how a closure can be called and differ in how they receive `self`.
 
 These traits enforce restrictions on how a closure can be called based on what
-environment variables it captures. This ensures that ownership and borrowing
-rules are maintained. The following table summarizes the differences: 
+it captures from its environment, ensuring that ownership and borrowing
+rules are upheld. The following table summarizes the differences:
 
 
 | **Trait**         | **`self` Type**                     | **Code**                                        | **Call Site**                                |
@@ -229,16 +225,15 @@ rules are maintained. The following table summarizes the differences:
 
 
 All of Rust's callable traits—`Fn`, `FnMut`, and `FnOnce`—have two associated
-types: `Args`, which represents the types of arguments the callable takes
-(expressed as a tuple), and `Output`, which represents the return type of the
-callable. When writing trait bounds, we can specify these using a special syntax
-that resembles function types: `Fn(i32) -> i32` denotes a closure that takes an
-`i32` as input and returns an `i32`.
+types: `Args`, which represents the argument types (as a tuple), and `Output`,
+which represents the return type. When writing trait bounds, these are expressed
+with a syntax resembling function types: `Fn(i32) -> i32` denotes a callable
+that takes an `i32` and returns an `i32`.
 
-For a more in-depth explanation of how closures work in Rust, you can read
+For a more in-depth explanation of how closures work in Rust, see
 [this article](https://huonw.github.io/blog/2015/05/finding-closure-in-rust/).
 
-Here's the above example, adapted so that it compiles: 
+Here's the above example adapted so that it compiles:
 
 ```rust, editable
 // `F` must be generic.
@@ -261,9 +256,9 @@ fn main() {
 ### Higher-order Functions on Iterators
 
 The `Iterator` trait provides several higher-order abstractions inspired by
-functional programming. Some common methods are `map`, `filter`, and `fold`.
-These are all default methods provided by the `Iterator` trait. Let's see how
-they work. 
+functional programming. Common methods include `map`, `filter`, and `fold`,
+all provided as default methods by the `Iterator` trait. Let's see how
+they work.
 
 Here's an example from the standard library:
 
@@ -282,7 +277,7 @@ fn main() {
 As an exercise, try changing the `iter()` method to `into_iter()` to take
 ownership of the vector, or to `iter_mut()` to modify the vector in place.
 
-Below are some more examples:
+Here are some more examples:
 
 ```rust, editable
 fn main() {

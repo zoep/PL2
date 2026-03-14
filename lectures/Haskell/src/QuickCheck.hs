@@ -31,7 +31,7 @@ specification, it is highly effective at exposing flaws, enhancing software
 quality, and accelerating the development process.
 
 Property-based random testing was introduced and popularized by QuickCheck [1],
-a Haskell library and testing framework that provides combinator for writing
+a Haskell library and testing framework that provides combinators for writing
 properties and random input generators. Since then, QuickCheck has been ported
 to many other languages.
 
@@ -102,8 +102,8 @@ It has one function:
 
 property :: prop -> Property
 
-Which test something testable and turns it into the Testable type. Testable is
-the type of testable properties in QC.
+which tests something testable and turns it into a Property. Testable is
+the type class of testable properties in QC.
 
 Let's look at some instances:
 
@@ -114,16 +114,16 @@ Testable Property
 Testable Bool
 
 -- If a property is Testable, then a -> prop is testable, provided that the
-   input satisfies -- some type class constraints, in particular Show and
-   Arbitrary. Show will let QuickCheck print -- counterexamples, if any, and
-   Arbitrary is QC's type class for types for which there are random generators.
+   input satisfies some type class constraints, in particular Show and
+   Arbitrary. Show lets QuickCheck print counterexamples, if any, and
+   Arbitrary is QC's type class for types that have random generators.
 
 --  (Arbitrary a, Show a, Testable prop) => Testable (a -> prop)
 
-Internally what this instance does is to generate random inputs for the argument a,
-and pass them to the property so that it can be tested.
+Internally, this instance generates random inputs for the argument a and passes
+them to the property so that it can be tested.
 
-QC derived properties for all of the function above using the second and third instance.
+QC derived properties for all of the functions above using the second and third instances.
 
 This can be done with the forAll combinator, as we will see later.
 
@@ -133,7 +133,7 @@ This can be done with the forAll combinator, as we will see later.
 {- More Properties
    ---------------
 
-Let's now try to write more convoluted properties that test an insertion sort implementation.
+Let's now try to write more involved properties that test an insertion sort implementation.
 -}
 
 insert :: Integer -> [Integer] -> [Integer]
@@ -149,8 +149,8 @@ insertionSort (x:xs) = insert x (insertionSort xs)
 -- >>> insertionSort [7,5,1,4,3,4]
 -- [1,3,4,4,5,7]
 
--- We will define and test the properties that our implementation needs to
--- satisfy. One obvious one is that the output of insertionSort must be sorted.
+-- We will define and test the properties that our implementation should
+-- satisfy. One obvious property is that the output of insertionSort must be sorted.
 
 -- We define an isSorted predicate that we use to test the implementation of insertionSort
 
@@ -184,7 +184,7 @@ lengthProp f xs = length xs == length (f xs)
 ghci> quickCheck $ lengthProp insertionSort
 +++ OK, passed 100 tests.
 
-That's better but we can still find a wrong implementation that passes all of this tests.
+That's better, but we can still find a wrong implementation that passes all of these tests.
 
 
 ghci> quickCheck $ sortedProp (\xs -> replicate (length xs) 1)
@@ -212,8 +212,8 @@ ghci> quickCheck $ lengthProp bogusSort
 {-
 
 We need an even more precise property here. We need to test that the output
-list, in addition to being sorted,  must contain exactly the same elements as
-the input list, including their frequencies
+list, in addition to being sorted, must contain exactly the same elements as
+the input list, including their frequencies.
 
 Exercise: Write a property that states that the output of insertionSort is a
 permutation of the input. Think about how you can do this efficiently.
@@ -224,15 +224,14 @@ permutation of the input. Think about how you can do this efficiently.
    -----------------------
 
 It is a good idea to also check correctness properties for the insert function.
-After all, if we find a bug in insertionSort it may very well be that it is a
-bug in the implementation of insert.
+After all, if we find a bug in insertionSort it may well be a bug in the
+implementation of insert.
 
 We will test that insert preserves the "sortedness" of a list:
-if the input list is sorted then the output list after the insertion should also
+if the input list is sorted, then the output list after the insertion should also
 be sorted.
 
-To do this we must write a conditional property. To do this we uses QC's ==>
-combinator.
+To write a conditional property we use QC's ==> combinator.
 
 (==>) :: Testable prop => Bool -> prop -> Property
 
@@ -274,27 +273,26 @@ Then we test the property.
 ghci> quickCheckN 100000 $ insertPreservesSorted *** Gave up! Passed only 55173
 tests; 1000000 discarded tests. (13.83 secs, 17,899,048,256 bytes)
 
-This is somewhat better than above, but still very inefficient. It takes almost
-14 seconds and tests only the ~5% of the generated tests.
+This is somewhat better than before, but still very inefficient. It takes almost
+14 seconds and tests only ~5% of the generated inputs.
 
-This makes sense, as sorted is a scarce property. Only a small fraction of
-randomly generated inputs will naturally have this characteristic. To make
-things worse, most of the 55173 tests that are sorted will be very small, as the
-probability of generating a sorted list decreases significantly as the list size
-increases.
+This makes sense, as sortedness is a scarce property: only a small fraction of
+randomly generated inputs will naturally satisfy it. To make things worse, most
+of the 55173 passing tests will involve very short lists, since the probability
+of generating a sorted list decreases significantly as the list size increases.
 
 QuickCheck lets us peek at the distribution of various properties of test cases
 by providing a combinator called collect.
 
-Collect will gather all values that are being passed to it and will print out
-a histogram of the distribution of the values.
+Collect gathers all values passed to it and prints a histogram of their
+distribution.
 
 collect :: (Show a, Testable prop) => a -> prop -> Property collect
 
 By using collect, we can group test cases based on a specific property (e.g.,
-whether the list is sorted, its size, etc.) and observe their frequency during
-testing. This helps identify potential biases in the test input distribution and
-ensures that critical edge cases are adequately represented.
+list size) and observe their frequency during testing. This helps identify
+biases in the test input distribution and ensures that critical edge cases are
+adequately represented.
 
 -}
 
@@ -359,14 +357,14 @@ shrink :: a -> [a]
 
 What does the second method do?
 
-Once a counterexample is found, QC can try to shrink the counterexample in order to return a simpler
-and more readable counterexample to the reader. It does so using the shrink function.
+Once a counterexample is found, QC can try to shrink it in order to return a
+simpler and more readable counterexample. It does so using the shrink function.
 
 The default implementation returns the empty list, so will not try to shrink the value.
 
-The Arbitrary type class is useful to write general functions over all types that have random generators.
+The Arbitrary type class is useful for writing generic functions over all types that have random generators.
 
-For example we can write a naive generator for lists of type a.
+For example, we can write a naive generator for lists of type a.
 
 -}
 
@@ -391,9 +389,9 @@ the size of the generated elements.
 
 When running tests, QC will use increasingly larger size parameters.
 
-In practice, it is very common to write a generator that generates elements of
-or up to a given size parameter, by recursion on the size, and then use the
-combinator [sized] internalize the size parameter.
+In practice, it is very common to write a generator that produces elements of
+size up to the size parameter by recursing on it, and then use the combinator
+[sized] to internalize the size parameter.
 
 Using sized, we can write a primitive generator for list of a given type a:
 
@@ -413,12 +411,12 @@ genList' = sized genListSize
       return $ x:xs
 
 
--- Note: List has already an arbitrary instance defined in QuickCheck. This is
+-- Note: List already has an Arbitrary instance defined in QuickCheck. This is
 -- just for demonstration purposes.
 
 {-
 
-Now we have all the necessary knowledge to define a generator for sorted lists.
+Now we have all the tools needed to define a generator for sorted lists.
 
 We will use a couple more useful combinators.
 
@@ -489,15 +487,14 @@ ghci> sample genSorted
 
 {-
 
-Let's use it to test insert. We write a new property that uses the property
-combinator forAll.
+Let's use it to test insert. We write a new property using the combinator forAll.
 
 -- uses an explicitly given test case generator to test a property of type a -> prop
 forAll :: (Show a, Testable prop) => Gen a -> (a -> prop) -> Property
 
 You can find more useful property combinators here: https://hackage.haskell.org/package/QuickCheck-2.15.0.1/docs/Test-QuickCheck.html
 
-We will also collect information about the "sortedness" and the length of test data.
+We will also collect information about the length of test data.
 
 -}
 
@@ -525,7 +522,7 @@ ghci> quickCheck insertPreservesSorted''
  1% 98
  1% 99
 
-Now, not only our test cases are all sorted lists, but each one has a different length. We have achieved way better
+Now, not only are all our test cases sorted lists, but each one has a different length. We have achieved much better
 test coverage than the previous property.
 
 -}
@@ -589,7 +586,7 @@ insertRB x t = makeBlack $ insert' x t
 
 -- Testing functions
 
--- Returns a black height, if the tree is back balanced
+-- Returns the black height if the tree is black-balanced
 blackHeight :: Tree a -> Maybe Integer
 blackHeight Leaf = return 0
 blackHeight (Node c _ t1 t2) = do
@@ -635,7 +632,7 @@ genRBTreeHeight Black  h = do
     Red -> liftM3 (Node Red) arbitrary (genRBTreeHeight Red h) (genRBTreeHeight Red h)
 
 genRBTree :: Arbitrary a => Gen (Tree a)
--- do not generate trees with black height greater than 10 (i.e, at most 1048576 nodes)
+-- do not generate trees with black height greater than 10 (i.e., at most 1048576 nodes)
 genRBTree = scale (min 10) $ sized (genRBTreeHeight Red)
 
 genMakesSense :: Property
@@ -658,7 +655,7 @@ ghci> quickCheck insertPreservesRedBlack
    ---------------------------
 
 
-The code indludes:
+The code includes:
 
 - Definitions of abstract syntax for simply-typed lambda calculus with numbers and addition
 - Typechecker for STLC
@@ -681,7 +678,7 @@ data Exp = Var String
          | Add Exp Exp
    deriving (Eq, Show)
 
--- Simple typechecker that returns the type of a type-annotated term
+-- Simple type checker that returns the type of a type-annotated term
 getType :: M.Map String Typ -> Exp -> Maybe Typ
 getType env (Var x) = M.lookup x env
 getType env (App e1 e2) =  do
@@ -701,7 +698,7 @@ getType env (Add e1 e2) = do
   if t1 == TInt && t2 == TInt then return TInt else Nothing
 
 
--- Type generator. Generates types up to a given size, where size is the number of arrows.
+-- Type generator: generates types up to a given size, where size is the number of arrows.
 genTypeSize :: Int -> Gen Typ
 genTypeSize n | n <= 0 = return TInt
 genTypeSize n =
@@ -728,12 +725,12 @@ genTermSize :: M.Map Typ [String]  -- a map from types to variables with the cor
             -> Gen Exp
 genTermSize map next t sz =
   case t of
-    -- generate a tern of type TInt
+    -- generate a term of type TInt
     TInt ->
       frequency $ [ (3, genNat) ]
                   ++ if sz == 0 then [] else [ (2, genAdd) , (1, genApp) ]
                   ++ zip [1..] genVar
-    -- generate a tern of type TArrow
+    -- generate a term of type TArrow
     TArrow t1 t2 ->
       frequency $ [ (2, genAbs t1 t2) ]
                   ++ if sz == 0 then [] else [(1, genApp)]
@@ -748,7 +745,7 @@ genTermSize map next t sz =
     genVar = case M.lookup t map of
       Just xs -> [elements (fmap Var xs)]
       Nothing -> []
-    -- A term of type t can alway be an application of a term of type (t -> t2) to a term of type t
+    -- A term of type t can always be an application of a term of type (t1 -> t) to a term of type t1
     genApp = do
       -- generate a random type for the input up to the given size
       t1 <- genTypeSize sz
@@ -766,18 +763,18 @@ genTermSize map next t sz =
     -- add a variable x with type t to the map
     addVar x typ env = M.insertWith (++) typ [x] env
 
--- Generate a well-type term
+-- Generate a well-typed term
 genTerm :: Gen Exp
 genTerm = do
   size <- arbitrary
   t <- genType
   genTermSize M.empty 1 t size
 
--- Generate a well-type term of a certain type
+-- Generate a well-typed term of a given type
 genTermOfType :: Typ -> Gen Exp
 genTermOfType t = genTermSize M.empty 1 t 3
 
--- Generate a well-type term with its type
+-- Generate a well-typed term together with its type
 genTermType :: Gen (Exp,Typ)
 genTermType = do
   -- size <- arbitrary
@@ -806,9 +803,9 @@ ghci> genTermType
 -}
 
 
--- We can now fuzz the typechecker with the well-typed term generator (or, put
--- it differently, test that the generator returns a well typed term according
--- to the typechecker).
+-- We can now fuzz the type checker with the well-typed term generator (or, put
+-- differently, test that the generator returns a well-typed term according
+-- to the type checker).
 
 
 typechecksProp :: Property
@@ -825,7 +822,7 @@ ghci> quickCheck $ forAll genTermType (\(e,t) -> getType M.empty e == Just t)
    ----------
 
 [1]: Koen Claessen and John Hughes. 2000. QuickCheck: a lightweight tool for
-     random testing of Haskell programs.  ICFP '00. ttps://dl.acm.org/doi/10.1145/351240.351266
+     random testing of Haskell programs. ICFP '00. https://dl.acm.org/doi/10.1145/351240.351266
 
 [2]: https://github.com/upenn-cis5520/05-quickcheck/blob/main/QuickCheck.hs
 

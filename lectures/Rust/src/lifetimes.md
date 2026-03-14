@@ -52,12 +52,12 @@ fn main() {
 
 The function `first` takes two references and returns one of them. However, the
 compiler does not know whether the returned reference remains valid beyond the
-lifetime of `y`. Since `z` is assigned the result of `first`, it could reference
-`x` (which is valid) or `y` (which is dropped). The compiler will return an error
+lifetime of `y`. Since `z` is assigned the result of `first`, it could refer to
+`x` (which is valid) or `y` (which is dropped). The compiler reports an error
 because the function type does not provide enough information about how the
 lifetimes of the inputs relate to the lifetime of the output.
 
-We can use *generic lifetimes* to instruct the compiler that the returned
+We can use *generic lifetimes* to tell the compiler that the returned
 lifetime is the same as some input lifetime.
 
 ## Lifetime Annotations
@@ -117,8 +117,8 @@ However, with this signature, we would not be able to use the variable `z`
 outside of `y`'s scope.
 
 Let's look at a more complex example involving vectors. This time the function
-`longer` can return either of the two vectors. Therefore, the lifetime of the
-returned reference must be the smaller of the two lifetimes.
+`longer` can return either of the two vectors, so the lifetime of the
+returned reference must be the shorter of the two lifetimes.
 
 As an exercise, try to fill in the lifetimes in the example below.
 
@@ -149,8 +149,8 @@ which allows a longer lifetime to be coerced into a shorter one.
 
 
 Note that we could also use slices (`&[T]`) instead of vectors (`&Vec<T>`) in
-the above example. Slices are more general as they can represent views into
-arrays, vectors, or other sequences of `T`s.  
+the above example. Slices are more general, as they can represent views into
+arrays, vectors, or other sequences of `T`s.
 
 ```rust, editable
 fn longer<'a, T>(v1: &'a [T], v2: &'a [T]) -> &'a [T] {
@@ -173,7 +173,7 @@ fn main() {
 
 ## Lifetimes in Structs and Enums
 
-When structs or enums hold references, they must also include lifetime annotations
+When structs or enums hold references, they must include lifetime annotations
 for every reference field in their definition. This ensures that the lifetime of
 each reference field is at least as long as the lifetime of the struct or enum
 itself.
@@ -267,7 +267,7 @@ fn main() {
 
 In Rust, the borrow checker can infer elided lifetimes in specific cases,
 enabling more concise code. These inference rules allow developers to omit
-explicit lifetime annotations in many scenarios. The rules are as follows:
+explicit lifetime annotations in many situations. The rules are as follows:
 
 - Each elided input lifetime becomes a distinct lifetime parameter.
 - If there is exactly one input lifetime position (whether elided or explicit),
@@ -304,11 +304,11 @@ lifetimes cannot be inferred using the above rules.
 
 ## Static
 
-Rust has a special lifetime called `'static`. This lifetime represents memory that
-lasts for the entire duration of the program's execution.
+Rust has a special lifetime called `'static`. This lifetime represents memory
+that lasts for the entire duration of the program's execution.
 
 A reference `&'static T` is an immutable reference to data that is guaranteed
-to be valid and safely accessible throughout the program's lifetime.
+to be valid and safely accessible for the entire lifetime of the program.
 
 This can typically occur in two ways:
 
@@ -352,9 +352,9 @@ fn main() {
 
 ### Leak
 
-The second way to create a `'static` lifetime is by leaking memory. When memory
+The second way to obtain a `'static` lifetime is by leaking memory. When memory
 is "leaked," it is never deallocated, making it safe to use for the entire
-program's execution.
+duration of the program.
 
 ```rust, editable
 fn foo() -> &'static [u32] {

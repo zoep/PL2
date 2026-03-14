@@ -1,6 +1,6 @@
 module SymbDiff where
 
--- A simple symbolic differentiation module in Haskell
+-- A simple symbolic differentiation module
 
 data Expr
   = Const Double
@@ -24,7 +24,7 @@ diff (Pow e1 n) x = Mul (Const (fromIntegral n)) (Mul (Pow e1 (n-1)) (diff e1 x)
 
 eval :: Expr -> [(String, Double)] -> Double
 eval (Const n) _ = n
-eval (Var x) env = 
+eval (Var x) env =
     case lookup x env of
         Just v -> v
         Nothing -> error $ "Variable " <> x <> " not found"
@@ -52,7 +52,7 @@ sqroot y = head $ dropWhile cond (approxRoot f "x" 1)
 
 
 
-{- 
+{-
 
 -- Alternative implementation with iteration limit and error threshold, without an infinite list:
 

@@ -8,12 +8,12 @@ function fib(n: nat) : nat
 
 // Imperative computation of nth Fibonacci
 method ComputeFib(n: nat) returns (b: nat)
-requires true // can be ommited
+requires true // can be omitted
 ensures (b == fib(n)) // functional specification for the imperative Fibonacci computation
 {
   if n == 0 { return 0; }
   var i := 1;
-  
+
   var a := 0;
   b := 1;
   while i != n

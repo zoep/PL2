@@ -29,13 +29,13 @@ implements the [Num] type class.
 
 What is a type class?
 
-A type class is a set of operations (functions and constants), that must be
+A type class is a set of operations (functions and constants) that must be
 implemented by any type that is an _instance_ of the type class. A type class
-defines a common interface
+defines a common interface.
 
-Then when writing polymorphic functions, one can put constraints on
-polymorphic types that they should implement a particular type class. This is
-called a type class constraint. Then the function can access all the
+When writing polymorphic functions, one can impose constraints on polymorphic
+type variables requiring them to implement a particular type class. These are
+called type class constraints, and they grant the function access to all
 operations of the type class.
 
 Haskell implements overloading, which is the ability to define an operation
@@ -45,7 +45,7 @@ The Num type class defines operations like +, -, * for numeric types. Every
 type that implements the type class (i.e. provides an instance of the type
 class) should define these operations.
 
-Another useful class is Eq, that defines equality and inequality.
+Another useful class is Eq, which defines equality and inequality.
 Its definition in Haskell library is the following:
 
 
@@ -59,9 +59,8 @@ class Eq a where
 The definition of inequality has a default implementation that
 will be used if the instance does not redefine the operation.
 
-Most built-in datatypes in Haskell provide instances for Eq but when we are
-defining our own types, we may want to provide instances of such
-classes.
+Most built-in datatypes in Haskell provide instances for Eq, but when we are
+defining our own types we may want to provide instances of such classes.
 
 -}
 
@@ -154,7 +153,7 @@ instance Eq Exp where
 -- Another common typeclass is the Ord typeclass that provides comparison
 -- operations.
 
--- Using Ord we can write a generic quicksort functionz
+-- Using Ord we can write a generic quicksort function
 
 qsort :: Ord a => [a] -> [a] -- What is Ord?
 qsort [] = []
@@ -223,20 +222,19 @@ Monads
 ------
 
 Monads are a very important type class in Haskell and functional programming in
-general. They provide a way to sequence computation that take place inside the
+general. They provide a way to sequence computations that take place inside the
 context of a type constructor m.
 
 A monad is more powerful than a functor, as it provides not only a way to map
 functions over values inside the context, but also a way to sequence
 computations that produce values inside the context.
 
-Monads can be seen as programmable semicolons, that let us define how to
-sequence computations. Thus, monads
+Monads can be seen as programmable semicolons that let us define how to
+sequence computations.
 
-
-The interface of a monad can be used to simulate an imperative programming style
+The monadic interface can be used to simulate an imperative programming style
 in purely functional languages by hiding a lot of boilerplate code under the
-hood (i.e., the monadic interface).
+hood.
 
 Thus, it is easier to write code that manipulates state, throws errors, models
 nondeterminism, etc.
@@ -278,7 +276,7 @@ The monad laws ensure that the sequencing of computations behaves in a canonical
   can group computations in any way we like without changing the result.
 
 
-Note: As of 2017, Haskell require every Monad to also be an Applicative
+Note: As of 2017, Haskell requires every Monad to also be an Applicative
 instance, and every Applicative to also have a Functor instance. So in the code
 below, we also provide these instances.
 
@@ -306,9 +304,9 @@ fail = Nothing
 -- We can use the Maybe monad to avoid boilerplate code when writing recursive
 -- functions that return optional types.
 
--- For example we can write an interpreter for a simple arithmetic language with
+-- For example, we can write an interpreter for a simple arithmetic language with
 -- runtime errors (e.g., division by zero) without having to check for errors at
--- each step. The monadic bind operator will take care of propagating errors for us.
+-- each step. The monadic bind operator takes care of propagating errors for us.
 
 
 eval :: Exp -> Maybe Int
@@ -345,8 +343,8 @@ exp1 = Mul (0,0) (Num (0,0) 6) (Add (0,0) (Num (0,0) 4) (Num (0,0) 3))
 Do notation
 -----------
 
-This already feels all lot like sequencing imperative code. Haskell provides a
-"do notation" to makes this sequencing feel even more natural.
+This already feels a lot like sequencing imperative code. Haskell provides
+"do notation" to make this sequencing feel even more natural.
 
 A monadic bind operation
 
@@ -398,7 +396,7 @@ eval' (Div _ t1 t2) = do
 Generic Monad Functions
 ------------------------
 
-There are several monadic combinators that let us manipulate and sequence monadic computation.
+There are several monadic combinators that let us manipulate and sequence monadic computations.
 Some examples are:
 
 -- Map each element of a structure to a monadic action, evaluate these actions from left to
@@ -418,7 +416,7 @@ You can find more monadic combinators here: https://hackage.haskell.org/package/
 -}
 
 
--- As an excercise, you can try to implement some of these combinators yourself.
+-- As an exercise, you can try to implement some of these combinators yourself.
 
 -- Here is the implementation of sequence (without using Traversable, just list):
 
@@ -436,10 +434,9 @@ The Reader Monad
 ----------------
 
 The Reader monad (also called the Environment monad) encapsulates a computation
-that reads values from a shared environment. Essentially a Reader monad, is a
-function from the type of environment to the result type. The computation can
-ask for the value of the environment and execute subcomputations in a modified
-environment.
+that reads values from a shared environment. Essentially, a Reader monad is a
+function from the environment type to the result type. The computation can
+query the environment and execute subcomputations in a modified environment.
 -}
 
 newtype Reader env a = Reader { runReader :: env -> a }
@@ -467,7 +464,7 @@ local :: (env -> env) -> Reader env a -> Reader env a
 local f (Reader m) = Reader (m . f)
 
 
--- For example, we can write an interepreter for a simple lambda calculus
+-- For example, we can write an interpreter for a simple lambda calculus
 -- with variables and function application using the Reader monad to model
 -- the environment.
 
@@ -527,10 +524,10 @@ term = TApp (0,0)
 The State Monad
 ----------------
 
-The State monad encapsulates computations that read and write from a shared
-state. Essentially a state monad is a computation that is written in state
-passing style, i.e., state -> (state, a) for some result type a, and hides th
-explicit state threading under the monadic operations.
+The State monad encapsulates computations that read and write a shared state.
+Essentially, a State monad is a computation written in state-passing style,
+i.e., state -> (state, a) for some result type a, and hides the explicit state
+threading under the monadic operations.
 
 -}
 
@@ -685,17 +682,17 @@ evalStackTop exp =
 {- Monad Transformers -}
 
 -- Often, it is useful to combine two monads together. For example, in the
--- environment based interpreter we might want to use a Maybe monad inside the
--- state in order to do error handling.
+-- environment-based interpreter we might want to use a Maybe monad inside the
+-- state for error handling.
 
 -- One option is to build a new type, encapsulating a computation with type
--- `state -> (state, Maybe a)` and make it and instance of Monad.
+-- `state -> (state, Maybe a)`, and make it an instance of Monad.
 
--- One other option, is to make monad definitions parametric an another
--- underlying monad, and make them add functionality on top of it. These
--- constructions are called monad transformers.
+-- Another option is to make monad definitions parametric over an underlying
+-- monad, adding functionality on top of it. These constructions are called
+-- monad transformers.
 
--- The simple non-transformer versions can be then be obtain by using the Id
+-- The simple non-transformer versions can then be obtained by using the Id
 -- (identity) monad as the base monad.
 
 
