@@ -18,7 +18,7 @@ Notation "g '∘' f" := (compose g f) (at level 40, left associativity).
   ============================================================
 
   A functor is a type constructor F : Type -> Type that supports mapping a
-  function over value contained in the functor, such that function composition
+  function over values contained in the functor, such that function composition
   and identity are preserved.
 
 *)
@@ -51,7 +51,7 @@ Next Obligation.
   + reflexivity.
   + simpl. rewrite IH. reflexivity.
 Defined.
-(** Proof of identity law *)
+(** Proof of composition law *)
 Next Obligation.
 - induction x as [| x xs' IH].
   + reflexivity.
@@ -78,7 +78,7 @@ Next Obligation.
   + reflexivity.
   + simpl. reflexivity.
 Defined.
-(** Proof of identity law *)
+(** Proof of composition law *)
 Next Obligation.
   destruct x as [ x |]; reflexivity.
 Defined.
@@ -86,12 +86,12 @@ Defined.
 
 (** Notes about Rocq syntax:
 
-The [Program] command before the instance declaration allows us to defines
-without having to provide all the fields upfront. For the fields that are
-missing Rocq then will generate proof obligations that need to be discharged
-after the declaration of the instance.
+The [Program] command before the instance declaration allows us to define
+instances without having to provide all the fields upfront. For the fields
+that are missing, Rocq will then generate proof obligations that need to be
+discharged after the declaration of the instance.
 
-This is particularly useful for type classes fields that are propositions (such
+This is particularly useful for type class fields that are propositions (such
 as the laws of functors, applicatives, monads, etc). In the above, each
 obligation corresponds to a property that must be proven for the instance to be
 valid. The [Next Obligation] command is used to provide proofs for these
@@ -172,8 +172,8 @@ Definition liftA2 {F A B C} `{Applicative F}
   (f : A -> B -> C)
   (fa : F A)
   (fb : F B) : F C :=
-  ap (ap (pure f) fa) fb. 
-    
+  ap (ap (pure f) fa) fb.
+
 
 (* Every applicative is also a functor, with fmap defined in terms of pure and
   ap. *)
@@ -340,7 +340,7 @@ Notation "' pat <- c1 ;; c2" :=
 Notation "c >>= f" := (@bind _ _ _ _ c f) (at level 58, left associativity).
 
 
-(** Generic opperations over a monad *)
+(** Generic operations over a monad *)
 Definition liftM {M : Type -> Type} `{Monad M} {A B : Type} (f : A -> B) (ma : M A) : M B :=
     ma >>= (fun a => ret (f a)).
 
@@ -466,7 +466,7 @@ Definition State (S A : Type) : Type := S -> (A * S).
 Program Instance state_Monad (S : Type) : Monad (fun A => S -> (A * S)) := {
     ret := fun {A : Type} (a : A) s => (a, s);
 
-    
+
     bind := fun {A B} (sa : S -> (A * S)) (f : A -> S -> (B * S)) =>
         fun s0 =>
             let (a, s1) := sa s0 in
@@ -683,7 +683,7 @@ Definition StackCalc := State Stack.
 Definition push (n : nat) : State Stack unit :=
   stack <- get ;;
   put (n::stack).
- 
+
 
 Definition evalOp (f : nat -> nat -> nat) : State Stack unit :=
   stack <- get ;;
@@ -692,29 +692,29 @@ Definition evalOp (f : nat -> nat -> nat) : State Stack unit :=
         put (f x2 x1 :: stack')
     | _ => pure tt
   end.
-            
+
 
 Fixpoint evalStack (e : expr) : State Stack () :=
   match e with
-  | Const n => push n      
+  | Const n => push n
   | Add e1 e2 =>
       evalStack e1 ;;
       evalStack e2 ;;
-      evalOp (fun x1 x2 => x1 + x2)      
+      evalOp (fun x1 x2 => x1 + x2)
   | Mul e1 e2 =>
       evalStack e1 ;;
       evalStack e2 ;;
-      evalOp (fun x1 x2 => x1 * x2)      
+      evalOp (fun x1 x2 => x1 * x2)
   | Div e1 e2 =>
       evalStack e1 ;;
       evalStack e2 ;;
-      evalOp (fun x1 x2 => div x1 x2)      
+      evalOp (fun x1 x2 => div x1 x2)
   | Sub e1 e2 =>
       evalStack e1 ;;
       evalStack e2 ;;
-      evalOp (fun x1 x2 => x1 - x2)      
+      evalOp (fun x1 x2 => x1 - x2)
   end.
-    
+
 
 Definition e1 :=
   Mul (Const 6) (Add (Const 3) (Const 4)).
@@ -722,8 +722,7 @@ Definition e1 :=
 
 Compute (snd (evalStack e1 [])).
 
-
-
+Module StackCalcV2.
 
 
 
@@ -815,6 +814,7 @@ Fixpoint eval_stack_calc (e : expr): StackCalc unit :=
         end
     end.
 
+End StackCalcV2.
 
 (* Stateful Fibonacci
    -----------------

@@ -1,12 +1,12 @@
 Require Import Coq.Init.Nat Coq.Arith.Arith Lia Coq.Lists.List.
 Import ListNotations.
 
-(** * A Small Introduction to The Coq Proof Assistant (II): Logic **)
+(** * A Small Introduction to The Rocq Proof Assistant (II): Logic **)
 
 
 (** In Part 1, we worked with stating and proving logical
     propositions. Logical propositions are themselves part of the same
-    functional programming language. Since Coq is typed, logical
+    functional programming language. Since Rocq is typed, logical
     propositions must also have a type. Their type is called [Prop].
     Everything that we have put inside a [Lemma] declaration is in
     fact an expression of type [Prop].
@@ -45,7 +45,7 @@ Qed.
     arguments. Such properties, of course, may or may not be provable
     for every element of the domain of the function.
 
-    [is_even] is a predicates that holds when a number is even. *)
+    [is_even] is a predicate that holds when a number is even. *)
 
 Fixpoint is_even (n : nat) : Prop :=
   match n with
@@ -119,7 +119,7 @@ Qed.
 
 (** Rocq's language can express logical connectives and quantifiers.
     Most of these definitions are not primitives. They are all defined
-    in terms of the core functional language in the Rocq's standard
+    in terms of the core functional language in Rocq's standard
     library.
 
     We have already used some of them extensively: [->] (implication)
@@ -135,7 +135,7 @@ Qed.
 
     - [<->] : equivalence
 
-    - [forall _, _] : universal quantification forall exists
+    - [forall _, _] : universal quantification
 
     - [exists _, _] : existential quantification
 
@@ -175,7 +175,7 @@ Qed.
             Q
 >>
 
-  This kind of reasoning can be performed in Coq with the [apply]
+  This kind of reasoning can be performed in Rocq with the [apply]
   tactic. In essence, [apply] is the elimination rule for implication
   and [intros] the introduction rule for implication.
 
@@ -273,7 +273,7 @@ Qed.
      Proof automation synthesizes automatically the proof of a goal
      and allows us to prove theorems using smaller proof scripts.
 
-     Coq has powerful automation facilities that allow the user to
+     Rocq has powerful automation facilities that allow the user to
      build custom tactics to solve goals. It also has some built-in
      automation tactics (e.g., decision procedures for arithmetic).
 
@@ -304,10 +304,10 @@ Qed.
 
     If we have a proof of [forall (x : A), P x] then we can derive [P
     a] for any [a]. There are multiple ways we can do this in
-    Coq. Here we review [apply] and [specialize]. *)
+    Rocq. Here we review [apply] and [specialize]. *)
 
 (** Different kinds of logical systems allow for quantification over
-    different objects. This affects the expressively of the logic.
+    different objects. This affects the expressiveness of the logic.
     For example:
 
     (0th order) predicate logic: no quantification
@@ -327,7 +327,7 @@ Qed.
     higher-order logic: quantification over arbitrary predicates and
     relations (or arbitrary sets)
 
-    Notice the direct correspondence with order of a function. Coq
+    Notice the direct correspondence with the order of a function. Rocq
     encodes a higher-order logic, making it a very expressive logical
     system. *)
 
@@ -362,11 +362,11 @@ Lemma forall_example_3 :
     P 42.
 Proof.
   intros P HP.
-  (* In this case, Coq does not need the annotation [with] because
+  (* In this case, Rocq does not need the annotation [with] because
      when we do [apply] it tries to unify the conclusion of the
      hypothesis with the goal. From this unification it can figure out
      that [x := 42]. Note that this is not always possible (see
-     [forall_example_5]. *)
+     [forall_example_5]). *)
   apply HP.
 Qed.
 
@@ -391,7 +391,7 @@ Lemma forall_example_5 :
 Proof.
   intros P Q HPQ HQ.
   Fail apply HPQ.
-  (* Here the [with] annotation is necessary, because Coq cannot
+  (* Here the [with] annotation is necessary, because Rocq cannot
      figure out [y] using unification on the conclusion. *)
   apply HPQ with (y := 25).
   simpl.
@@ -411,8 +411,8 @@ Qed.
 
     In the usual mathematical notation of formal logic, these
     constructions are commonly represented by inference rules (we will
-    see quite a few of these when we get to programming languages
-    theory in the next lectures.  *)
+    see quite a few of these when we get to programming language
+    theory in the next lectures).  *)
 
 (** Inference rules have the form
 <<
@@ -451,9 +451,9 @@ Qed.
                          Even 4
 >>
 
-   This, in fact, is quite similar to proofs in Coq.
+   This, in fact, is quite similar to proofs in Rocq.
 
-   We can mechanize all of the above in Coq.*)
+   We can mechanize all of the above in Rocq.*)
 
 
 Inductive Even : nat -> Prop :=
@@ -483,12 +483,12 @@ Example Even4' : Even 4.
 Proof.
   (* The [constructor] tactic will apply the first constructor of an
      inductive proposition that matches the goal (warning: this might
-     now always be the desired one! *)
+     not always be the desired one!) *)
   constructor.
   constructor.
   constructor.
   (* Sometimes in class, we will be very explicit about the
-     constructors we are applying, for the shake of clarity and
+     constructors we are applying, for the sake of clarity and
      understanding. *)
 Qed.
 
@@ -575,7 +575,7 @@ Proof.
 
 Qed.
 
-(** Now let's move on to see some common inductive propositions in Coq. *)
+(** Now let's move on to see some common inductive propositions in Rocq. *)
 
 (** *** [True] and [False] *)
 
@@ -603,7 +603,7 @@ Module TrueFalse.
   Inductive False1 : Prop :=
   | Absurd : Even 1 -> False1.
 
-  (** We could never build a proof of such proposition: *)
+  (** We could never build a proof of such a proposition: *)
   Lemma false_proof1:
     False1.
   Proof.
@@ -632,7 +632,7 @@ Module TrueFalse.
   Inductive False : Prop := .
 
   (** This is an inductive proposition with _no_ constructors. We
-      obviously have no way of providing evidence of such
+      obviously have no way of providing evidence of such a
       proposition. *)
 
 
@@ -726,7 +726,7 @@ Proof.
   intros P HP.
   unfold not. (* optional *)
   intros HnotP.
-  (* now, we have to _contradicting_ hypotheses, [P] and [~P] we have
+  (* Now, we have two _contradicting_ hypotheses, [P] and [~P]. We have
      a number of tactics at hand to prove this. The following all
      work. *)
 
@@ -752,7 +752,7 @@ Abort.
     In fact, to proceed, we would have to do a proof _by
     contradiction_.  A proof by contradiction (not to be confused with
     the tactic [contradiction]) is a form of proof that establishes a
-    claim by by showing that assuming the claim to be false leads to a
+    claim by showing that assuming the claim to be false leads to a
     contradiction.
 
     Here's a handwritten proof by contradiction of the above claim:
@@ -765,18 +765,18 @@ Abort.
     proposition [P], either [P] or [~ P]. This is known as law of
     excluded middle.
 
-    This is not directly provable in Coq. If we want to extend the
+    This is not directly provable in Rocq. If we want to extend the
     reasoning to include this law, we must add it as a logical
     axiom. This is a logically consistent axiom: the resulting logical
     system will be sound (meaning we wouldn't be able to derive a
     proof of a false proposition). In fact, standard mathematical
-    proofs very often use proofs by contraction. A logic that assumes
+    proofs very often use proofs by contradiction. A logic that assumes
     the law of excluded middle is called _classical_.
 
-    A logic like Coq's that does not assume the principle of excluded
+    A logic like Rocq's that does not assume the principle of excluded
     middle is called _constructive_. The advantage of not adding the
-    axiom of excluded is that proofs carry _evidence_ of the fact that
-    we are proving.
+    axiom of excluded middle is that proofs carry _evidence_ of the
+    fact that we are proving.
 
     For example, with the law of excluded middle we could prove that
     for any program [p], [p] either terminates or not:
@@ -784,7 +784,7 @@ Abort.
                    [halts p \/ ~ halts p]
 
     It is perfectly reasonable to expect this from any program, but
-    the proof itself cannot be used to provide evidence as to weather
+    the proof itself cannot be used to provide evidence as to whether
     a particular program [p] terminates or not. Formalizing the [or]
     connective will make this clearer. *)
 
@@ -851,10 +851,10 @@ Proof.
       left. constructor.
 
     + (* case [m = S m'] *)
-      (* The hypothesis [Hth] is absurd *)
+      (* The hypothesis [Hlt] is absurd *)
 
       (* [<=] is an inductive proposition.  We can use inversion to
-         invert it. Since there is no possible way to obtain it, we
+         invert it. Since there is no possible way to obtain it, the
          proof is done *)
       Print le. (* [<=] is notation for [leq] *)
       inversion Hlt.
@@ -922,7 +922,7 @@ Compute (even_or_odd 8).
    the left constructor was used to prove the disjunction. *)
 Compute (even_or_odd 7).
 (* We can see the exact proof derivation that 7 is odd, and also that
-   the right constructor was used to prove the dis junction. *)
+   the right constructor was used to prove the disjunction. *)
 
 
 (** **** Excluded middle *)
@@ -954,13 +954,13 @@ Module EM.
       right; auto.
   Qed.
 
-  (** This means, that in the constructive logic of Coq, one can prove
+  (** This means that in the constructive logic of Rocq, one can prove
       the excluded middle only for propositions that are
-      decidable. That is, we must know which which side of the
+      decidable. That is, we must know which side of the
       disjunction holds in order to prove it. The benefit of
       constructive logic is that we can extract evidence from our
       proofs, or in other words that proofs have a so-called
-      _computational interpretation_ of proofs.
+      _computational interpretation_.
 
       Constructive logic has, however, limitations. There are
       statements that can easily be proven in classical logic but have
@@ -972,13 +972,13 @@ Module EM.
   Axiom EM: forall P, P \/ ~ P.
 
     (** This is a sound thing to do. That is, it doesn't lead to
-      contradictions. Proving that the logical system of Coq together
+      contradictions. Proving that the logical system of Rocq together
       with the law of excluded middle is consistent is a
       metatheoretical property of the system that cannot be carried
-      out in the system itself. We can however prove that the excluded
-      middle is irrefutable: [(forall P, ~~ P \/ ~ P)]. That is, the
-      negation of excluded middle is contradictory. Hence, assuming
-      the excluded middle as an axiom is safe. *)
+      out in the system itself. We can, however, prove that the
+      excluded middle is irrefutable: [(forall P, ~~ P \/ ~ P)]. That
+      is, the negation of excluded middle is contradictory. Hence,
+      assuming the excluded middle as an axiom is safe. *)
 
 End EM.
 
@@ -1065,7 +1065,7 @@ Lemma iff_example3 :
   forall P Q, (P -> Q) -> (Q -> P) -> P <-> Q.
 Proof.
   intros  P Q H1 H2.
-  (*to prove an equivalence can use [split] since it is a conjunction. *)
+  (* To prove an equivalence we can use [split] since it is a conjunction. *)
   split; eauto.
 Qed.
 
@@ -1101,7 +1101,7 @@ Module Eq.
 
 End Eq.
 
-(** Coq has tactics to deal with equality.
+(** Rocq has tactics to deal with equality.
 
     We have already seen [rewrite H] and [rewrite H in H'] that
     rewrite the hypothesis [H] in the goal or the hypothesis [H']
@@ -1135,8 +1135,8 @@ Qed.
     - [~ (C1 x1 ... xn = C2 y1 ... ym)] when [C1 <> C2]
 
     - If [C x1 ... xn = C y1 ... yn] then [x1 = y1] ... [xn = yn] (injectivity of constructors)
-*)                       
-                       
+*)
+
 Lemma congruence_example_1 :
   forall n m p, S n = S m -> n + p = m + p.
 Proof.
@@ -1160,13 +1160,13 @@ Module Exists.
 
   (** To prove that [exists x, P x] for a predicate [P : A -> Prop],
       we must provide an [x] and a proof of [P x]. *)
-  
+
   Inductive ex (A : Type) (P : A -> Prop) : Prop :=
     ex_intro : forall a : A, P a -> ex A P.
 
 
   (** Some convenient notation. *)
-  
+
   Notation "'exists' x , p" :=
     (ex _ (fun x => p))
       (at level 200, x binder, right associativity) : type_scope.
@@ -1176,9 +1176,9 @@ End Exists.
 Lemma fourtytwo_is_even_1 :
   exists (n : nat), 42 = n + n.
 Proof.
-  
+
   apply ex_intro with (x := 21).
-  
+
   reflexivity.
 Qed.
 
@@ -1186,8 +1186,8 @@ Lemma fourtytwo_is_even_2 :
   exists (n : nat), 42 = n + n.
 Proof.
   (* There is a more intuitive way to prove this *)
-  
-  (* Use the tactic [exist] to provide the evidence *)
+
+  (* Use the tactic [exists] to provide the evidence *)
   exists 21. (* This is equivalent to [apply ex_intro with (x := 21).] *)
 
   (* prove the proposition about the evidence *)
@@ -1201,22 +1201,22 @@ Lemma exists_inv :
     (exists (n : nat), m = n + 1).
 Proof.
   intros m H1.
-  (* if we have an hypothesis with an existential quantifier
+  (* if we have a hypothesis with an existential quantifier
      we can use [inversion] to obtain the evidence and a proof
-     that the predicates holds on the evidence. *)
+     that the predicate holds on the evidence. *)
   destruct H1 as [n Hn].
 
-  exists n. congruence. 
+  exists n. congruence.
 Qed.
 
 
 (** *** Existential Variables *)
 
-(** Earlier, we used specialize to provide explicitly the quantifiers
+(** Earlier, we used [specialize] to explicitly provide the quantifiers
     of hypotheses and lemmas in order to apply them to a specific
     goal.
 
-    Coq allows us avoid doing this with a number of helpful tactics
+    Rocq allows us to avoid doing this with a number of helpful tactics
     that let us delay instantiation of quantified variables. These
     tactics are [eapply], [eauto], [eexists] and [econstructor]. Let's
     see how they work in practice.
@@ -1239,7 +1239,7 @@ Proof.
 
       [forall n m : nat, m <= n -> Even m \/ Odd m]
 
-      There is no way for Coq to know with what we want to instantiate
+      There is no way for Rocq to know what we want to instantiate
       [n] with.
 
       We can use [eapply].  *)
@@ -1274,12 +1274,12 @@ Proof.
   Fail apply Hyp. (* Fails with: Unable to find an instance for the variable m. *)
 
   eapply Hyp.
-  
-  (* Now it's easier to solve the goal 2 first, so we can unify
-     [?m]. Coq lets us select the goal we want to work with with the
+
+  (* Now it's easier to solve goal 2 first, so we can unify
+     [?m]. Rocq lets us select the goal we want to work with using the
      syntax [N:{ ... }]. Inside the braces we put the proof of the
      goal. *)
- 
+
   2:{ Fail assumption. eassumption. (* [eassumption] can deal with existential variables. *) }
   simpl.
   assumption.
@@ -1296,12 +1296,12 @@ Proof.
   intros P Q R Hyp HP HQ.
   (* The proof of this lemma consists only of [eapply] and
     [eassumption]. We want to use [auto] to solve this, but [auto]
-    does not deal with existential variables. Coq provides [eauto]
+    does not deal with existential variables. Rocq provides [eauto]
     that will try to solve a goal using [eapply], [reflexivity],
     [eexists], [split], [left], [right]. *)
-  
+
   auto. (* Does nothing *)
-  
+
   eauto. (* Solves the goal *)
 Qed.
 
@@ -1369,15 +1369,15 @@ Qed.
 >>
 
        - assume that [H1], ..., [Hm]
-       - for each [Hi] that is a is subderivation showing [Q w1 ... wn]
+       - for each [Hi] that is a subderivation showing [Q w1 ... wn]
          also assume that [P w1 ... wn] (inductive hypotheses)
        - prove [P t1 ... tn]
 *)
 
 (** Induction over derivations will be better understood with an
     example. We write an inductive relation [le : nat -> nat -> Prop]
-    that is true if and only iff the first natural number is less than
-    or equal to the second. *)
+    that holds if and only if the first natural number is less than or
+    equal to the second. *)
 
 Module le.
   Inductive le : nat -> nat -> Prop :=
@@ -1410,7 +1410,7 @@ Module le.
     inversion Habsurd'''.
   Qed.
 
-  (** Coq has generated an induction principle for this inductive
+  (** Rocq has generated an induction principle for this inductive
       relation. *)
 
   Check le_ind.
@@ -1421,7 +1421,7 @@ Module le.
     forall P : nat -> nat -> Prop,
 
       (* Premise (base case):
-         If [le n m] is derived with [leO], therefore [n = 0]),
+         If [le n m] is derived with [leO] (therefore [n = 0]),
          then show [P 0 m].  *)
       (forall m : nat, P 0 m) ->
 
@@ -1433,9 +1433,9 @@ Module le.
           --------------------(leS)
              le (S n') (S m')
          >>
-         then assuming that [le n' m'], [P n' m'] (inductive hypothesis), [n = S n'], [m = S n']
+         then assuming that [le n' m'], [P n' m'] (inductive hypothesis), [n = S n'], [m = S m']
 
-         show [le (S n') (S m')]. *)
+         show [P (S n') (S m')]. *)
     (forall n' m' : nat, le n' m' -> P n' m' -> P (S n') (S m')) ->
 
     (* Conclusion: for all [n] [m], [le n m] implies [P n m] *)
@@ -1455,7 +1455,7 @@ Module le.
     - apply leO.
     - inversion Hle'.
       subst. (* [Hle'] can only be derived by [leS] *)
-      
+
        apply leS.
        apply IHHle. assumption.
   Qed.

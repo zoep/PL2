@@ -11,7 +11,7 @@ Import ListNotations.
     language with inductive types. This small but expressive language
     can be used to write purely functional programs, using a syntax
     similar to the ML family, express logical propositions, and write
-    proofs. Coq can be used for:
+    proofs. Rocq can be used for:
 
     - Developing functional programs.
 
@@ -21,7 +21,7 @@ Import ListNotations.
       in the same language.
 
     The proofs can be developed interactively and they are checked for
-    validity by Coq's built-in proof checker.
+    validity by Rocq's built-in proof checker.
 
     The core features of the language include:
 
@@ -37,7 +37,7 @@ Import ListNotations.
 
     - Coinductive types
 
-    In this course we will use Coq extensively to model programming
+    In this course we will use Rocq extensively to model programming
     languages and study their properties. But before delving into
     this, we will first learn some basic usage.  *)
 
@@ -48,9 +48,8 @@ Import ListNotations.
     the lectures. For this it is imperative to have an IDE with
     support for interactive Rocq development.
 
-    Rocq also support batch compilation with the `coqc` command
-    file `file.v` can also be compiled from the command line, using
-    the command `coqc file.v`. This produces
+    Rocq also supports batch compilation. A file `file.v` can be
+    compiled from the command line using the command `coqc file.v`.
 
     To execute Rocq code, the Rocq system provides extraction commands,
     that translate Rocq code to a functional language (OCaml, Haskell
@@ -78,7 +77,7 @@ Import ListNotations.
     these in this lecture.
 
     Note: "Primitive Objects" including 63-bit machine integers and
-    persistent arrays, have been added to recent versions Rocq, but we
+    persistent arrays, have been added to recent versions of Rocq, but we
     will not cover them in this class. *)
 
 
@@ -146,7 +145,7 @@ Check id.
 (** The above type has a *for all quantifier*.
 
     This is similar to the type constructor [->], but allows us to
-    find the type to a name (here [Type] is bound to [A] and use it
+    bind a type to a name (here [Type] is bound to [A]) and use it
     in the rest of the type.
 
 *)
@@ -491,7 +490,7 @@ Proof.
      computation steps *)
   simpl.
 
-  (* The reflexivity tacric proves an equality that has the same term on
+  (* The reflexivity tactic proves an equality that has the same term on
      both sides *)
   reflexivity.
 Qed.
@@ -704,9 +703,9 @@ Print add.
 
 Search nat.
 
-(** Coq has defined notation for natural numbers that lets us use
-    ordinary decimal notation for natural numbers and also notation
-    for arithmetic operations. *)
+(** Rocq defines notation for natural numbers that lets us use
+    ordinary decimal notation and also notation for arithmetic
+    operations. *)
 
 Check 5.
 
@@ -787,8 +786,8 @@ Qed.
     equal numbers. *)
 
 Lemma add_eq_example:
-  (* Coq has type inference. Therefore, it can figure out the types of the
-     variables [n1], [n2], [n3] and [n4] qwithout us providing annotations. *)
+  (* Rocq has type inference. Therefore, it can figure out the types of the
+     variables [n1], [n2], [n3] and [n4] without us providing annotations. *)
   forall n1 n2 n3 n4,
     n1 = n2 ->
     n3 = n4 ->
@@ -813,8 +812,8 @@ Qed.
 
 Check eqb.
 
-(** [n =? m] is a convenient notation for [eqb n m]. We can use Coq's
-    locate command to print information about a notation. *)
+(** [n =? m] is a convenient notation for [eqb n m]. We can use Rocq's
+    [Locate] command to print information about a notation. *)
 
 Locate "=?".
 
@@ -835,7 +834,7 @@ Compute (4 =? 2).
 Lemma succ_not_zero:
     forall n, 1 + n =? 0 = false.
 Proof.
-  (* Note: writing [1 + n] is the same (up to simplification) with writing [S n] *)
+  (* Note: writing [1 + n] is the same (up to simplification) as writing [S n] *)
   intros n.
   simpl. (* The expression [1 + n =? 0] directly simplifies to [false]. (Why?) *)
   reflexivity.
@@ -876,7 +875,7 @@ Abort. (* This command abandons the current proof *)
 
     These principles apply to all inductively defined types: all
     constructors are injective, and the values built from distinct
-    constructors are never equal. Coq provides tactics that let us
+    constructors are never equal. Rocq provides tactics that let us
     reason about these two facts.
 *)
 
@@ -901,8 +900,8 @@ Qed.
     using the properties of equality.
 
     We could prove the above lemma primitively, without using
-    injectivity, as shown below. The [injectivity] tactic does this
-    for us so that we don't have prove a separate lemma for each
+    injectivity, as shown below. The [injection] tactic does this
+    for us so that we don't have to prove a separate lemma for each
     constructor. *)
 
 Lemma S_injective_prim :
@@ -997,7 +996,7 @@ Qed.
     Each variable list [l_i] specifies the names of the constructor
     arguments that correspond to this case.
 
-    If we don't specify any variable names, Coq will automatically
+    If we don't specify any variable names, Rocq will automatically
     pick some for us (that may not be the best choices). It is
     generally a good practice to give explicit names.
 
@@ -1008,13 +1007,13 @@ Qed.
 
     The annotation [eqn:H] tells [destruct] to remember the equalities
     [n = 0] and [n = S n'] and put them in the context with the name
-    [H]. In the first case, Coq will add [Heq : n = 0] to the proof
+    [H]. In the first case, Rocq will add [Heq : n = 0] to the proof
     context and in the second case it will add [Heq : n = S n'].  *)
 
 
 
-(** In the previous proof we observe that [0 + 1] directly simplifies
-    to [n].
+(** In the previous proof we observe that [1 + n] directly simplifies
+    to [S n].
 
     However the same does not happen for expressions like [n + 0]. Can
     you see why?
@@ -1038,7 +1037,7 @@ Proof.
 
     (* [assert] lets us prove individual statements within a proof,
        and then puts the statement in the proof context with the
-       chosen name, here [Heq']. It can be very handy as it allows as
+       chosen name, here [Heq']. It can be very handy as it allows us
        to prove intermediate results during a proof. *)
     assert (Heq' : n' + 0 = n').
     { (* How do we prove this? *)
@@ -1078,7 +1077,7 @@ Abort. (* The keyword [Abort] aborts the current proof. *)
 
     If
 
-     (1) [P(0)] holds (**base case***)
+     (1) [P(0)] holds (**base case**)
 
      (2) For any [n], if [P(n)] holds then so does [P(n+1)] (**inductive case**)
 
@@ -1129,7 +1128,7 @@ Qed.
 
 Module Pairs.
 
-  (** In Coq, and type theory in general, the type of a pair is called
+  (** In Rocq, and type theory in general, the type of a pair is called
       a "product". We can define a type for product that is parametric
       (i.e., polymorphic) on the type of the elements. This is written
       as: *)
@@ -1235,7 +1234,7 @@ Proof.
      state (goal and hypotheses) and will remove the equality from the
      context.
 
-     We could as well use use [rewrite Heq1. rewrite Heq2.]  or the
+     We could also use [rewrite Heq1. rewrite Heq2.]  or the
      equivalent, but more concise [rewrite Heq1, Heq2.]  *)
   subst.
 
@@ -1496,8 +1495,8 @@ Proof.
     (* [app] is an associative operator, meaning that [(rev l' ++
        [x]) ++ acc = rev l' ++ ([x] ++ acc)] *)
 
-    (* But we to prove this as a lemma in order to use it. Luckily
-       we can search in the Rocq data base that contains all known
+    (* But we need to prove this as a lemma in order to use it. Luckily
+       we can search in the Rocq database that contains all known
        definitions and theorems to see if we can find something. *)
 
     (* We can search a definition and find all the relevant

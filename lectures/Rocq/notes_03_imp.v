@@ -99,7 +99,7 @@ Notation "e '==>' n" := (eval_exp e n) (at level 40).
 Example eval_example:
   answer ==> 42.
 Proof.
-  (* The following to tactics fails, as Rocq cannot unify 42 with [n1 * n2].
+  (* The following two tactics fail, as Rocq cannot unify 42 with [n1 * n2].
      It cannot find the factors by itself. *)
   unfold answer.
 
@@ -137,7 +137,7 @@ Qed.
 (** Often it is useful to define shorthand for tactics that we use
     often by combining several tactics into one. We can do this with
     the [Ltac] command. [Ltac] provides powerful facilities to inspect
-    the proof context and goal and automate proofs. We wil see only a
+    the proof context and goal and automate proofs. We will see only a
     few of its capabilities.
 
     We will define a tactic that inverts a hypothesis (that should be
@@ -147,11 +147,11 @@ Qed.
     proofs.
 
     Recall that inverting a proof of an inductive proposition
-    considers all cases by which a proof of the proposition can be
-    derived. For each of these cases, Rocq will generate equalities
-    for the arguments of the relation that enforce that they unify
-    with the arguments of the relation in the conclusion of the
-    case we are considering. *)
+    considers all cases by which the proposition can be derived. For
+    each of these cases, Rocq will generate equalities for the
+    arguments of the relation that enforce that they unify with the
+    arguments of the relation in the conclusion of the case we are
+    considering. *)
 
 
 Ltac inv H :=
@@ -310,11 +310,11 @@ Qed.
     by performing one step of computation.
 
     The expression that is reduced, which is called a _redex_, is
-    always of the form [n1 + n1], [n1 * n2], [n1 - n2] where [n1],
+    always of the form [n1 + n2], [n1 * n2], [n1 - n2] where [n1],
     [n2] are numbers (rules [step_Plus], [step_Minus],
     [step_Mult]). The redex can be at an arbitrary depth inside the
     expression (rules [step_Plus_l], [step_Plus_r], [step_Minus_l],
-    [step_Minus_r], [step_Mult_l], [step_Mult_r].  *)
+    [step_Minus_r], [step_Mult_l], [step_Mult_r]).  *)
 
 Inductive step_exp : exp -> exp -> Prop :=
 | step_Plus :
@@ -385,7 +385,7 @@ Inductive multi {A : Type} (R : relation A) : relation A :=
     multi R x z.
 
 (** We can prove that [multi R] is indeed transitive. To do this we do
-    induction on the derivation of [R]. Informally:
+    induction on the derivation of (H1). Informally:
 
     If [multi R x y] (H1) and [multi R y z] (H2) then [multi R x z].
     We do induction on the derivation of (H1).
@@ -394,11 +394,11 @@ Inductive multi {A : Type} (R : relation A) : relation A :=
       and we derive [multi R x z] from (H2).
 
     - Inductive case: If (H1) is derived by a [multi_step] step then
-      we know there exists some x' such that [R x x'] (H3) and [multi R x'
-      z].
+      we know there exists some x' such that [R x x'] (H3) and
+      [multi R x' y] (H4).
 
-      We have [multi R x' z] and [multi R y z] which by the inductive
-      hypothesis gives us [multi R x' z] (H5).
+      By the inductive hypothesis applied to (H4) and (H2) we get
+      [multi R x' z] (H5).
 
       By (H3) and (H5) and rule [multi_step] we get [multi R x z]. *)
 
@@ -547,8 +547,9 @@ Qed.
 (** ****  Big-step -> Small-step *)
 
 (** We start by proving a series of useful lemmas. The following
-    lemmas state that the reductions in the left or right operands,
-    then these reductions can also be performed under the operand.
+    lemmas state that if reductions occur in the left or right
+    operands, then those reductions can also be performed inside the
+    larger expression.
 
     In other words, if [e1] can transition to [e1'] through multiple
     small steps, then the entire [Plus e1 e2] expression can also
@@ -708,7 +709,7 @@ Qed.
 
 
 (** The above proof is verbose and repetitive. We can write a shorter
-    proof using the tacticals we learn. Warning: shorter proofs may
+    proof using the tacticals we learned. Warning: shorter proofs may
     not always be good for readability. *)
 Theorem eval_exp_step_exp' :
   forall (e : exp) (n : nat),
@@ -797,19 +798,20 @@ Qed.
 >>
 *)
 
-(** where <var> are variables, <aexp> arithmetic expressions, similar to those
-    we saw above, and <bexp> is a boolean expression which we will examine next.
+(** where <var> are variables, <aexp> are arithmetic expressions, similar to
+    those we saw above, and <bexp> is a boolean expression which we will
+    examine next.
 
-The difference is that now <aexp>s and <bexp>s can contain variables. To write
-an interpreter or give semantics to such a program, we will need an environment
-mapping variables to their value during execution. We pass this mapping as an
-extra parameter. This environment will be created and maintained during the
-execution of the <com> command.
+    The difference is that now <aexp>s and <bexp>s can contain variables. To
+    write an interpreter or give semantics to such a program, we will need an
+    environment mapping variables to their values during execution. We pass
+    this mapping as an extra parameter. This environment will be created and
+    maintained during the execution of the <com> command.
 
-In this simple language, variables can only have values that are natural
-numbers. In this language, variables don't need to be explicitly declared and
-have a default value of [0]. Therefore, we will model this environment as a
-total function from variable names to natural numbers. *)
+    In this simple language, variables can only hold natural numbers. Variables
+    don't need to be explicitly declared and have a default value of [0].
+    Therefore, we will model this environment as a total function from variable
+    names to natural numbers. *)
 
 (** A map from variable names to their values *)
 
@@ -883,7 +885,7 @@ Declare Custom Entry com. (* declare the scope of the new syntax. *)
 Declare Scope com_scope.
 Declare Custom Entry com_aux.
 
-(* we enter the scope and use its notation we must write inside [<{] [}>] . *)
+(* To enter the scope and use its notation, we must write inside [<{] [}>] . *)
 Notation "<{ e }>" := e (e custom com_aux) : com_scope.
 
 Notation "'true'" := true (at level 1).
@@ -1042,11 +1044,11 @@ Unset Printing Coercions.
 (** Let's now move on to defining the semantics of [com] programs.
     We will start with big-step semantics.
 
-    We chose the notation [st =[ c ]=> st'] to write that program [c]
-    when starting from an initial state [st] evaluates to a final
-    state [st']. In contrast to [aexp] and [bexp] that evaluated to a
+    We use the notation [st =[ c ]=> st'] to express that program [c],
+    when starting from an initial state [st], evaluates to a final
+    state [st']. In contrast to [aexp] and [bexp] that evaluate to a
     value, a [com] program's behaviour is defined as the effect it has
-    on state. *)
+    on the state. *)
 
 (** Here are the big-step semantics presented as inference rules:
 
@@ -1176,7 +1178,7 @@ Proof.
       * apply E_Asgn.
       * eapply E_Asgn.
 
-  - (* proof that in the final state the variable [RES] has the expected value . *)
+  - (* proof that in the final state the variable [RES] has the expected value. *)
     unfold update_st. simpl. reflexivity.
 
 Qed.
@@ -1234,16 +1236,16 @@ Proof.
 Qed.
 
 (** Note that induction over the program here wouldn't work. When
-    reasoning about the execution we want an inductive hypothesis that
-    tells us what happens about smaller parts of the execution. When
-    the language has loops this is not possible by simply doing
-    induction over the terms. *)
+    reasoning about execution we want an inductive hypothesis that
+    tells us what happens in smaller parts of the execution. When the
+    language has loops, this is not possible by simply doing induction
+    over the terms. *)
 
 (** *** Writing an Interpreter *)
 
 (** This language has unbounded loops, which means that execution can
     diverge (i.e., a program doesn't terminate). Therefore we cannot
-    define a Rocq function to interpret this language as this could
+    define a Rocq function to interpret this language, as it could
     never terminate.
 
     A "standard" trick to define computational definitions of the
@@ -1278,12 +1280,12 @@ Fixpoint cinterp (fuel : nat) (st : imp_state) (c : com) : option imp_state :=
     fuel to run the program. Otherwise, it will not return a result. *)
 
 Compute (match cinterp 2 (_ !-> 0) (add 21 21) with
-         | Some st => Some (st RES) (* Get the value if variable [RES] in the state *)
+         | Some st => Some (st RES) (* Get the value of variable [RES] in the state *)
          | None => None
          end).
 
 Compute (match cinterp 3 (_ !-> 0) (add 21 21) with
-         | Some st => Some (st RES) (* Get the value if variable [RES] in the state *)
+         | Some st => Some (st RES) (* Get the value of variable [RES] in the state *)
          | None => None
          end).
 

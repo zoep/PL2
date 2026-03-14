@@ -5,7 +5,7 @@ Parameter (Prog : Type)
 
 
 (* Definition: the transformation comp is correct *)
-Definition correct := 
+Definition correct :=
   forall p v, sem p v <-> sem (comp p) v.
 
 (* We assume that for the language in question if there is no result
@@ -18,7 +18,7 @@ Definition div (p : Prog) := ~ exists x, sem p x.
 
 (* We want to know that the [p] diverges if and only if the [comp p]
    diverges. *)
-Definition div_preserved := 
+Definition div_preserved :=
   forall p, div p <-> div (comp p).
 
 (* We show that it suffices to prove [correct] in order to show
@@ -33,24 +33,24 @@ Qed.
 (* Definition: [sem] is deterministic *)
 Definition deterministic := forall x y z, sem x y -> sem x z -> y = z.
 
-(* How a deterministic program we can prove the following in order to
+(* For a deterministic program, we can prove the following in order to
    derive [correct]. *)
-Definition det_correct := 
+Definition det_correct :=
   (forall p v, sem p v -> sem (comp p) v) /\
     (forall p, div p -> div (comp p)).
 
 Axiom EM : forall P, P \/ ~ P.
 
 Theorem det_correct_correct :
-  deterministic -> det_correct -> correct. 
+  deterministic -> det_correct -> correct.
 Proof.
   intros Hdet [Heval Hdiv] p v. split; intros Heval'; eauto.
-  
+
   destruct (EM (exists v, sem p v)) as [[v' Hevalp] | Hnot].
 
   - assert (Heq : v = v').
     { apply Heval in Hevalp. eapply Hdet; eauto. }
-    subst; eauto. 
+    subst; eauto.
 
   - apply Hdiv in Hnot. exfalso; eauto.
 Qed.

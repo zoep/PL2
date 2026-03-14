@@ -4,7 +4,7 @@ From PL2 Require Import notes_03_imp.
 
 
 (** Axiomatic semantics is an approach that defines the semantics of a
-    language as set of inference rules that capture the intended
+    language as a set of inference rules that capture the intended
     behaviour of each command. These rules can be glued together to
     construct a formal derivation (i.e., a proof) of a program's
     specification.
@@ -12,7 +12,7 @@ From PL2 Require Import notes_03_imp.
     In this sense, axiomatic semantics is similar to proof systems
     like natural deduction. Just as natural deduction provides a
     syntactic way of constructing formal proofs in first-order logic,
-    axiomatic semantics allows as to construct formal proofs of
+    axiomatic semantics allows us to construct formal proofs of
     program specifications by purely syntactic means.
 
     In this section we study Hoare logic (or Floyd-Hoare logic) which
@@ -37,9 +37,9 @@ From PL2 Require Import notes_03_imp.
    express logical properties about the state of a program.
 
    A Hoare triple informally means that
-   - if a program [c] starts executing in a program state that satisfies  [P]
+   - if a program [c] starts executing in a program state that satisfies [P]
    - and if the execution terminates
-   - then the postcondition must satisfy [Q]
+   - then the final state must satisfy [Q]
 
    Note that this is a "weak" definition of correctness meaning that it
    only specifies what happens if the program terminates, but such a
@@ -47,7 +47,7 @@ From PL2 Require Import notes_03_imp.
    variants of Hoare logic that also specify that the execution of a
    program terminates, but we will not examine them here. *)
 
-(**  Let's formally define the type of assertions in Coq. *)
+(**  Let's formally define the type of assertions in Rocq. *)
 
 Definition assertion := imp_state -> Prop.
 
@@ -91,7 +91,7 @@ Open Scope hoare_spec_scope.
 (** In order to derive a Hoare triple, Hoare logic provides a number
     of inference rules that provide a way of establishing a triple for
     a particular command of the program. There is an inference rule
-    for each type.  *)
+    for each command type.  *)
 
 
 (** **** Skip *)
@@ -99,7 +99,7 @@ Open Scope hoare_spec_scope.
 (** The proof rule for the command [skip] says that any precondition
     that holds on the state before the command executes, it also holds
     on the state after the command executes. This makes sense, as [skip]
-    has not effect on the program's state.
+    has no effect on the program's state.
 
 <<
         ---------------------- (H_Skip)
@@ -121,7 +121,7 @@ Open Scope hoare_spec_scope.
     side of the assignment.
 
     That is, the postcondition holds for the variable [X] after the
-    assignment, if before the assignment is was true for the value we
+    assignment, if before the assignment it was true for the value we
     are assigning to it.
 
     Let's use the notation [Q[X |-> a]] for this substitution
@@ -206,8 +206,8 @@ Notation "P [ X |-> a ]" := (assertion_sub P X a)
                       {{ P AND (TRUE b) }} c1 {{ Q }}
 
                       {{ P AND (FALSE b) }} c2 {{ Q }}
-        ------------------------------------------------------------- (H_Seq)
-                     {{ P }} if b the c1 else c2 {{ Q }}
+        ------------------------------------------------------------- (H_If)
+                     {{ P }} if b then c1 else c2 {{ Q }}
 >>
 
 Note that according to our definitions above, [P AND (TRUE b)]
@@ -273,7 +273,7 @@ is just notation for the assertion [fun st => P st /\ binterp st b = true]. *)
     {{ fun st => st Y = 42 }} X := Y + 1 {{ fun st => 42 < st X }}
 >>
 
-     While we would expect such specification to be provable, we cannot directly
+     While we would expect such a specification to be provable, we cannot directly
      prove it.
 
      Keeping the postcondition the same, this is a specification that we can derive
@@ -368,12 +368,12 @@ Inductive triple : assertion -> com -> assertion -> Prop :=
   | H_PostWeakening :
     forall (P Q Q' : assertion) (c : com),
       {{ P }} c {{ Q' }} ->
-      (Q' ->> Q) -> (* weakening of the postcondintion *)
+      (Q' ->> Q) -> (* weakening of the postcondition *)
       {{ P }} c {{ Q }}
   | H_PreStrengthening :
     forall (P Q P' : assertion) (c : com),
       {{ P' }} c {{ Q }} ->
-      (P ->> P') -> (* strengthening of the precondintion *)
+      (P ->> P') -> (* strengthening of the precondition *)
       {{ P }} c {{ Q }}
 
 where "{{ P }} c {{ Q }}" := (triple P c Q) : hoare_spec_scope.
@@ -389,9 +389,9 @@ Example hoare_asgn_example :
   {{ fun st => st X = 11 /\ st Y = 42 }}.
 Proof.
   eapply H_Seq.
-  
+
   - apply H_Asgn.
-  - 
+  -
 
 
     Fail eapply H_Asgn.
@@ -415,7 +415,7 @@ Proof.
   apply H_If.
   - eapply H_PreStrengthening.
     + apply H_Asgn.
-      
+
     + unfold assert_and, TRUE,
         assert_implies, assertion_sub, update_st. simpl.
 
@@ -426,7 +426,7 @@ Proof.
 
   - eapply H_PreStrengthening.
     + apply H_Asgn.
-      
+
     + unfold assert_and, FALSE, TRUE, assert_implies, assertion_sub, update_st. simpl.
 
       intros st [_ Heqb]. apply Compare_dec.leb_complete_conv in Heqb.
@@ -463,7 +463,7 @@ Qed.
     can extend [auto] so that it applies all the lemmas available in
     the database. By default [auto] uses the database [core], but we
     can create a new database [my_db] and use it with the tactic [auto
-    with my_db]. Coq's standard library provides a few hint
+    with my_db]. Rocq's standard library provides a few hint
     databases.*)
 
 Create HintDb hoareDB.
@@ -586,7 +586,7 @@ Print if_minus_plus_auto.
 Fixpoint fib (n : nat) : nat :=
   match n with
   | 0 => 0
-  | S n' =>    
+  | S n' =>
       match n' with
       | 0 => 1
       | S n'' => fib n' + fib n''
@@ -631,7 +631,7 @@ Proof.
     (*                   st PREV = fib (st X)). *)
 
     (* eapply H_PostWeakening. *)
-    
+
     (* + eapply H_While with (P := INV). *)
     (*   { repeat eapply H_Seq. *)
     (*     * apply H_Asgn. *)
@@ -647,7 +647,7 @@ Proof.
     (*         rewrite PeanoNat.Nat.add_1_r. *)
     (*       simpl. lia. *)
     (*   } *)
-    
+
   - (* Loop invariant. Find an assertion that
         1. If it holds before the execution of the loop body,
            then it also holds after the execution of the loop body
@@ -655,7 +655,7 @@ Proof.
             it implies the final postcondition.
         Here the invariant we pick is that [PREV] will contain
         the value [fib X] and that [CURR] will contain the value
-        [fib (X + 1)]. When the loop end [X] will be equal to [n]
+        [fib (X + 1)]. When the loop ends, [X] will be equal to [n]
         and [PREV] will hold the desired result. *)
     set (INV := fun st =>
                   st CURR = fib (st X + 1) /\
@@ -719,7 +719,7 @@ Proof.
   induction Htriple; intros st1 st2 Heval HP.
   - inv Heval. auto.
   - inv Heval. assumption.
-  - inv Heval. 
+  - inv Heval.
     eapply IHHtriple1.
     eassumption.
     eapply IHHtriple2.
@@ -731,14 +731,14 @@ Proof.
       hoare_auto.
     + (* binterp st1 b = false *)
       eapply IHHtriple2; hoare_auto.
-  - 
- 
+  -
+
     remember <{ while b do c }> as loop eqn:Heq.
-    
+
     induction Heval; try congruence; inv Heq.
     + (* E_WhileFalse *)
       split; eauto.
-    + (* E_WhileTrue *) clear IHHeval1. 
+    + (* E_WhileTrue *) clear IHHeval1.
       apply IHHeval2. reflexivity.
       eapply IHHtriple; hoare_auto.
   - hoare_auto.
@@ -753,15 +753,15 @@ Qed.
     operational semantics, but also expressive enough to allow us to
     prove all triples that are valid for the operational semantics of
     Imp.
-    This proof due to Cook (1974), is more challenging. It uses a
+    This proof, due to Cook (1974), is more challenging. It uses a
     technical device called _weakest precondition_.
-    A weakest precondition for a program [c] and an postcondition [Q],
+    A weakest precondition for a program [c] and a postcondition [Q],
     written [wp c Q] is an assertion such that [{{ P }} c {{ Q }}] is
     derivable and furthermore for any [P'], such that [{{ P' }} c {{ Q }}],
     we have [P' ->> P]. *)
 
 
-(** We can express such assertion in the following way: [wp c Q] holds
+(** We can express such an assertion in the following way: [wp c Q] holds
     for any state [st] for which the execution of [c] on [st] produces
     a state [st'] that satisfies [Q]. *)
 
@@ -848,7 +848,7 @@ Qed.
     Therefore, if we could prove either [{{ TRUE }} c {{ TRUE }}] or
     [{{ TRUE }} c {{ FALSE }}] for any program [c], we could also
     prove (constructively) that [c] terminates or doesn't terminate.
-    This is equivalent to having a algorithm that decides whether or
+    This is equivalent to having an algorithm that decides whether or
     not [c] terminates. *)
 
 
@@ -860,7 +860,7 @@ Qed.
     If we could automatically compute the weakest precondition [wp c
     Q], then proving the desired triple would amount to proving that
     [P ->> wp c Q]. That could be done manually or (semi)automatically
-    (e.g., using tactics or SMT solvers)
+    (e.g., using tactics or SMT solvers).
     It turns out that computation of weakest preconditions is not
     generally possible. The culprit is, unsurprisingly, the while
     loop.  However, if the programmer provides the invariant of every
@@ -927,7 +927,7 @@ Open Scope acom_scope.
     computes the _weakest liberal precondition_ for this program and
     postcondition.
 
-    All cases other than while loops, follow directly from the rules
+    All cases other than while loops follow directly from the rules
     of Hoare logic.
 
     For a while loop [DCWhile b INV c], the weakest precondition is
@@ -948,7 +948,7 @@ Open Scope acom_scope.
 
     The second condition ensures that the assertion [INV] together
     with the assertion that the loop condition is false, imply the
-    desired post condition.
+    desired postcondition.
 
     We write two functions:
 
@@ -972,7 +972,7 @@ Fixpoint wlp (ac : acom) (Q : assertion) : assertion :=
 
 Fixpoint vc (ac : acom) (Q : assertion) : Prop :=
   match ac with
-  | DCSkip => True 
+  | DCSkip => True
   | DCAsgn X a => True
   | DCSeq c1 c2 => vc c1 (wlp c2 Q) /\ vc c2 Q
   | DCIf b c1 c2 => vc c1 Q /\ vc c2 Q

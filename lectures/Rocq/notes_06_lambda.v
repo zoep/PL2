@@ -23,7 +23,7 @@ Require Import Coq.Strings.String Coq.Init.Nat Lia.
     - Functions (or _lambda abstractions_): Functions are written as
       "λx. e", where "x" is a variable that is bound within the
       function body "e". A more familiar syntax for functions is ML's
-      "fun x -> e"
+      "fun x -> e".
 
     - Function Applications: Function application is written as "e1
       e2", where "e1" is applied to "e2".
@@ -43,7 +43,7 @@ Require Import Coq.Strings.String Coq.Init.Nat Lia.
 
   Here we formalize the call-by-value and call-by-name semantics of
   lambda calculus, and we provide a proved-correct interpreter.
-  Lastly, we build the AST of an untyped (for now) MiniML and we build
+  Lastly, we build the AST of an untyped (for now) MiniML and construct
   an interpreter for it. *)
 
 (** ** Pure Lambda Calculus: Syntax **)
@@ -63,7 +63,7 @@ Definition id : term := Lambda "x" (Var "x").
 Definition app_id_id : term := App id id.
 
 (** As usual, to make our lives slightly easier, we define some
-    concrete syntax for lambda terms, using Coq's notations. *)
+    concrete syntax for lambda terms, using Rocq's notations. *)
 
 Declare Custom Entry LC.
 
@@ -97,7 +97,7 @@ Definition app_id' : term := <{ id id }>.
 
 (** To define the semantics we first formally define the substitution
     operation. We do not need to worry about making it explicitly
-    capture avoiding: We only apply it to closed terms. Since CBV and
+    capture-avoiding: we only apply it to closed terms. Since CBV and
     CBN semantics do not evaluate under lambdas, and we only care
     about evaluating closed terms, substitution will never substitute
     open terms.
@@ -115,8 +115,8 @@ Fixpoint subst (x : string) (t' : term) (t : term) : term :=
 
 Notation "'[' x ':=' s ']' t" := (subst x s t) (in custom LC at level 20, x constr).
 
-(** The reflexive transitive closure of a binary relation. Same with
-    the definition we have used in Imp.v. *)
+(** The reflexive transitive closure of a binary relation, same as
+    the definition used in Imp.v. *)
 
 Inductive multi {A} (R : A -> A -> Prop) : A -> A -> Prop :=
   | multi_refl : forall a, multi R a a
@@ -128,7 +128,7 @@ Inductive multi {A} (R : A -> A -> Prop) : A -> A -> Prop :=
 (** *** Values **)
 
 (** To define the evaluation strategy we need some notions of _value_.
-    Value is a term that cannot be reduced any further. *)
+    A value is a term that cannot be reduced any further. *)
 
 Definition value (t : term) : bool :=
   match t with
@@ -432,7 +432,7 @@ Module MiniML.
   | T_Bool : bool -> term
   (* Binary Operators *)
   | T_BOp : bop -> term -> term -> term
-  (* Unary Operatos *)
+  (* Unary Operators *)
   | T_UOp : uop -> term -> term
   (* Pairs *)
   | T_Pair : term -> term -> term
@@ -624,7 +624,7 @@ Module MiniML.
             | Some v1, Some v2 => Some (T_Pair v1 v2)
             | _, _ => None
             end
-        (* Values*)
+        (* Values *)
         | <[ fun x -> t ]> => Some <[ fun x -> t ]>
         | T_Nat n => Some (T_Nat n)
         | T_Bool b => Some (T_Bool b)
