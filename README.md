@@ -1,5 +1,5 @@
 # Programming Languages II
-Material for the course _Programming Languages II_
+Material for the course _Programming Languages II_ ([course website](https://github.com/zoep/PL2)).
 
 Institution: National Technical University of Athens
 
