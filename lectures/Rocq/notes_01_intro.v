@@ -182,7 +182,6 @@ Fail Check (id _ (* ? *) id).
 Compute (id (forall A : Type, A -> A) id).
 
 (** Prints:
-
 [fun (A : Type) (x : A) => x : forall A : Type, A -> A] *)
 
 
@@ -314,6 +313,16 @@ Print Assumptions id_equality_admitted.
     other false statements when using it. *)
 
 (** ** Inductive Types *)
+
+(** Note: Remember the definition of an inductively defined set. 
+
+    An inductively defined set is the smallest set containing a finite set of
+    base elements and closed under specific rules that generate new elements
+    from existing ones. 
+
+    The "smallest set" condition ensures that we only include elements that can
+    be generated from the base elements using the specified rules.
+*)
 
 (** *** The Structure of an Inductive Type *)
 
