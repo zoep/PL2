@@ -1,4 +1,4 @@
-Require Import Coq.Init.Nat Coq.Arith.Arith Lia Coq.Lists.List.
+From Stdlib Require Import Init.Nat Arith.Arith Lia Lists.List.
 Import ListNotations.
 
 (** * A Small Introduction to The Rocq Proof Assistant (II): Logic **)
