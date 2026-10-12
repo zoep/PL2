@@ -14,7 +14,7 @@ clean: Makefile.coq
 	@rm -f $(COQMAKEFILE) $(COQMAKEFILE).conf
 
 Makefile.coq: _CoqProject
-	$(COQBIN)coq_makefile -f _CoqProject -o $(COQMAKEFILE)
+	$(COQBIN)rocq makefile -f _CoqProject -o $(COQMAKEFILE)
 
 invoke-coqmakefile: $(COQMAKEFILE)
 	$(MAKE) -f $^
