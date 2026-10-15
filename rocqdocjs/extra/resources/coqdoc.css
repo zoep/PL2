@@ -2,7 +2,7 @@
 
 body{
     font-family: 'Open Sans', sans-serif;
-    font-size: 14px;
+    font-size: 15px;
     color: #2D2D2D
 }
 
@@ -64,6 +64,7 @@ div:empty{ display: none;}
 #main .doc {
     margin: 0;
     text-align: justify;
+    max-width: 40em;
 }
 
 .inlinecode, .code, #main pre {
@@ -88,6 +89,10 @@ div:empty{ display: none;}
 
 .block img{
     margin: 15px;
+}
+
+.paragraph {
+    height: 0.75em;
 }
 
 table.infrule {

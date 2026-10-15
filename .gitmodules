@@ -1,3 +1,0 @@
-[submodule "coqdocjs"]
-	path = coqdocjs
-	url = git@github.com:zoep/coqdocjs.git
