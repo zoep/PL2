@@ -15,6 +15,6 @@ advances, content will be added, restructured, and updated.
 - Types and Programming Languages, Benjamin C. Pierce
 
 # Installation Instructions
-For instructions on installing the Coq proof assistant, refer to
+For instructions on installing the Rocq proof assistant, refer to
 [INSTALL.md](https://github.com/zoep/PL2/blob/main/INSTALL.md) (in Greek).
 

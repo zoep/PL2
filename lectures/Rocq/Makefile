@@ -1,31 +1,35 @@
-COQDOCJS_DIR ?= ../../coqdocjs
-EXTRA_DIR = $(COQDOCJS_DIR)/extra
-COQDOCFLAGS ?= \
-  --toc --toc-depth 4 --html --interpolate \
+ROCQDOCJS_DIR ?= ../../rocqdocjs
+EXTRA_DIR = $(ROCQDOCJS_DIR)/extra
+
+COQDOCEXTRAFLAGS ?= \
+  --table-of-contents --toc-depth 4 \
   --index indexpage --no-lib-name --parse-comments \
-  --with-header $(EXTRA_DIR)/header.html --with-footer $(EXTRA_DIR)/footer.html
-export COQDOCFLAGS
-COQMAKEFILE ?= Makefile.coq
-COQDOCJS_LN ?= false
+  --with-header $(abspath $(EXTRA_DIR)/header.html) \
+  --with-footer $(abspath $(EXTRA_DIR)/footer.html)
+export COQDOCEXTRAFLAGS
+
+ROCQMAKEFILE ?= RocqMakefile
+ROCQDOCJS_LN ?= false
+
 .DEFAULT_GOAL := invoke-coqmakefile
 
-clean: Makefile.coq
-	@+$(MAKE) -f $(COQMAKEFILE) cleanall
-	@rm -f $(COQMAKEFILE) $(COQMAKEFILE).conf
+clean: $(ROCQMAKEFILE)
+	@+$(MAKE) -f $(ROCQMAKEFILE) cleanall
+	@rm -f $(ROCQMAKEFILE) $(ROCQMAKEFILE).conf
 
-Makefile.coq: _CoqProject
-	$(COQBIN)rocq makefile -f _CoqProject -o $(COQMAKEFILE)
+$(ROCQMAKEFILE): _RocqProject
+	rocq makefile -f _RocqProject -o $(ROCQMAKEFILE)
 
-invoke-coqmakefile: $(COQMAKEFILE)
+invoke-coqmakefile: $(ROCQMAKEFILE)
 	$(MAKE) -f $^
 
-coqdoc: $(COQMAKEFILE)
+coqdoc: $(ROCQMAKEFILE)
 	$(MAKE) -f $^ html
-
-ifeq ($(COQDOCJS_LN),true)
-	ln -sf ../$(EXTRA_DIR)/resources html
+	@rm -rf html/resources
+ifeq ($(ROCQDOCJS_LN),true)
+	ln -s "$(abspath $(EXTRA_DIR)/resources)" html/resources
 else
-	cp -R $(EXTRA_DIR)/resources html
+	cp -R $(EXTRA_DIR)/resources html/
 endif
 
-.PHONY: invoke-coqmakefile
+.PHONY: invoke-coqmakefile coqdoc clean

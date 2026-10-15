@@ -1,4 +1,4 @@
-Require Import Coq.Strings.String Coq.Init.Nat Lia.
+From Stdlib Require Import Strings.String Init.Nat Lia.
 
 (** * Simply Typed Lambda Calculus **)
 
@@ -1189,7 +1189,7 @@ Qed.
    be more cumbersome and tedious. By using this axiom, we streamline
    the process while maintaining the rigor of our reasoning. *)
 
-Require Import Coq.Logic.FunctionalExtensionality.
+From Stdlib Require Import Logic.FunctionalExtensionality.
 
 Check functional_extensionality.
 

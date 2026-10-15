@@ -365,7 +365,7 @@ Fixpoint sequence {M : Type -> Type} `{Monad M} {A : Type} (xs : list (M A)) : M
         ret (a :: as')
     end.
 
-Require Import Program.
+From Stdlib Require Import Program.
 
 Program Fixpoint forM {M : Type -> Type} `{Monad M} (l h : nat) (f : nat -> M unit) {measure (h - l)} : M unit :=
   match h - l with

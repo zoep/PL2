@@ -1,4 +1,4 @@
-Require Import Coq.Strings.String Coq.Init.Nat Lia.
+From Stdlib Require Import Strings.String Init.Nat Lia.
 
 
 (** * Pure Lambda Calculus **)
