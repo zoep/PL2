@@ -325,9 +325,9 @@ Inductive step_exp : exp -> exp -> Prop :=
     step_exp e1 e1' ->
     step_exp (Plus e1 e2) (Plus e1' e2)
 | step_Plus_r :
-  forall e1 e2 e2',
+  forall n1 e2 e2',
     step_exp e2 e2' ->
-    step_exp (Plus e1 e2) (Plus e1 e2')
+    step_exp (Plus (Num n1) e2) (Plus (Num n1) e2')
 | step_Minus :
   forall n1 n2,
     step_exp (Minus (Num n1) (Num n2)) (Num (n1 - n2))
@@ -336,9 +336,9 @@ Inductive step_exp : exp -> exp -> Prop :=
     step_exp e1 e1' ->
     step_exp (Minus e1 e2) (Minus e1' e2)
 | step_Minus_r :
-  forall e1 e2 e2',
+  forall n1 e2 e2',
     step_exp e2 e2' ->
-    step_exp (Minus e1 e2) (Minus e1 e2')
+    step_exp (Minus (Num n1) e2) (Minus (Num n1) e2')
 | step_Mult :
   forall n1 n2,
     step_exp (Mult (Num n1) (Num n2)) (Num (n1 * n2))
@@ -347,16 +347,17 @@ Inductive step_exp : exp -> exp -> Prop :=
     step_exp e1 e1' ->
     step_exp (Mult e1 e2) (Mult e1' e2)
 | step_Mult_r :
-  forall e1 e2 e2',
+  forall n1 e2 e2',
     step_exp e2 e2' ->
-    step_exp (Mult e1 e2) (Mult e1 e2').
+    step_exp (Mult (Num n1) e2) (Mult (Num n1) e2').
 
 (** Again, we define a pretty notation. *)
 Notation "e '-->' e'" := (step_exp e e') (at level 39).
 
-(** Note that this relation does not enforce any particular order of evaluation:
-    any redex can be reduced at any time. This is a deliberate choice. We could
-    have also enforced an order (e.g. left-to-right). Can you see how? *)
+(** Note that this relation enforces a left-to-right order of evaluation:
+    the right operand is reduced only after the left one has become a value.
+    This is a deliberate choice. We could have also allowed any redex to be
+    reduced at any time. Can you see how? *)
 
 (** We want a way to compose multiple of these steps together.  That
     is, a relation [e -->* e'] that says that [e] takes multiple steps
@@ -586,11 +587,11 @@ Proof.
 Qed.
 
 Lemma multi_Plus_compose_r :
-  forall e1 e2 e2',
+  forall n1 e2 e2',
     e2 -->* e2' ->
-    Plus e1 e2 -->* Plus e1 e2'.
+    Plus (Num n1) e2 -->* Plus (Num n1) e2'.
 Proof.
-  intros e1 e2 e2' Hs1. induction Hs1.
+  intros n1 e2 e2' Hs1. induction Hs1.
   - eapply multi_refl.
   - eapply multi_step.
     + eapply step_Plus_r. eauto.
@@ -598,10 +599,10 @@ Proof.
 Qed.
 
 Corollary multi_Plus_compose :
-  forall e1 e2 e1' e2',
-    e1 -->* e1' ->
+  forall e1 e2 n1 e2',
+    e1 -->* (Num n1) ->
     e2 -->* e2' ->
-    Plus e1 e2 -->* Plus e1' e2'.
+    Plus e1 e2 -->* Plus (Num n1) e2'.
 Proof.
   intros e1 e2 n1 e2' Hs1 Hs2.
   eapply multi_transitive.
@@ -622,11 +623,11 @@ Proof.
 Qed.
 
 Lemma multi_Mult_compose_r :
-  forall e1 e2 e2',
+  forall n1 e2 e2',
     e2 -->* e2' ->
-    Mult e1 e2 -->* Mult e1 e2'.
+    Mult (Num n1) e2 -->* Mult (Num n1) e2'.
 Proof.
-  intros e1 e2 e1' Hs1. induction Hs1.
+  intros n1 e2 e2' Hs1. induction Hs1.
   - eapply multi_refl.
   - eapply multi_step.
     + eapply step_Mult_r; eauto.
@@ -646,10 +647,10 @@ Proof.
 Qed.
 
 Lemma multi_Mult_compose :
-  forall e1 e2 e1' e2',
-    e1 -->* e1' ->
+  forall e1 e2 n1 e2',
+    e1 -->* (Num n1) ->
     e2 -->* e2' ->
-    Mult e1 e2 -->* Mult e1' e2'.
+    Mult e1 e2 -->* Mult (Num n1) e2'.
 Proof.
   intros e1 e2 n1 e2' Hs1 Hs2.
   eapply multi_transitive.
@@ -658,11 +659,11 @@ Proof.
 Qed.
 
 Lemma multi_Minus_compose_r :
-  forall e1 e2 e2',
+  forall n1 e2 e2',
     e2 -->* e2' ->
-    Minus e1 e2 -->* Minus e1 e2'.
+    Minus (Num n1) e2 -->* Minus (Num n1) e2'.
 Proof.
-  intros e1 e2 e1' Hs1. induction Hs1.
+  intros n1 e2 e2' Hs1. induction Hs1.
   - eapply multi_refl.
   - eapply multi_step.
     + eapply step_Minus_r; eauto.
@@ -670,10 +671,10 @@ Proof.
 Qed.
 
 Corollary multi_Minus_compose :
-  forall e1 e2 e1' e2',
-    e1 -->* e1' ->
+  forall e1 e2 n1 e2',
+    e1 -->* (Num n1) ->
     e2 -->* e2' ->
-    Minus e1 e2 -->* Minus e1' e2'.
+    Minus e1 e2 -->* Minus (Num n1) e2'.
 Proof.
   intros e1 e2 n1 e2' Hs1 Hs2.
   eapply multi_transitive.
