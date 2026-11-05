@@ -532,7 +532,7 @@ Qed.
 (** Rocq also has conditional statements (if-then-else) that can be
     used instead of pattern matching to write the above functions: *)
 
-Definition orb' (b1:bool) (b2:bool) : bool := if b1 then true else b2.
+Definition orb' (b1:bool) (b2:bool) : bool := if b1 is true then true else b2.
 
 (** Recall that [bool] is not a primitive type. The if-then-else
     construct is just syntactic sugar for pattern matching and can be
